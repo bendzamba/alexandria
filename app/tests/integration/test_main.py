@@ -10,7 +10,8 @@ def test_get_bookshelves():
     assert response.json() == {"get_bookshelves": "success"}
 
 def test_create_bookshelf():
-    response = client.post("/bookshelf")
+    body = {'title': 'This is a title', 'description': 'This is a description'}
+    response = client.post("/bookshelf", json=body)
     assert response.status_code == 200
     assert response.json() == {"create_bookshelf": "success"}
 
