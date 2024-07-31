@@ -30,8 +30,8 @@ class DB:
                 bookshelf_id INTEGER,
                 book_id INTEGER,
                 PRIMARY KEY (bookshelf_id, book_id),
-                FOREIGN KEY (bookshelf_id) REFERENCES bookshelves (id),
-                FOREIGN KEY (book_id) REFERENCES books (id)
+                FOREIGN KEY (bookshelf_id) REFERENCES bookshelves (id) ON DELETE CASCADE,
+                FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE
             )
         ''')
         self.connection.commit()
