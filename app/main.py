@@ -32,7 +32,7 @@ def get_bookshelf_books(
 def get_books():
     return {"get_books": "success"}
 
-@app.get("/books/{book_id}")
+@app.get("/book/{book_id}")
 def get_book(
     book_id: Annotated[int, Path(title="The ID of the book to get")]
 ):
