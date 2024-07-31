@@ -1,4 +1,5 @@
 from typing import Annotated
+from app.models.bookshelf import Bookshelf
 
 from fastapi import FastAPI, Path
 
@@ -9,7 +10,9 @@ def get_bookshelves():
     return {"get_bookshelves": "success"}
 
 @app.post("/bookshelf")
-def create_bookshelf():
+def create_bookshelf(
+    bookshelf: Bookshelf
+):
     return {"create_bookshelf": "success"}
 
 @app.get("/bookshelf/{bookshelf_id}")
