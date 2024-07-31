@@ -3,61 +3,44 @@ from app.models.bookshelf import Bookshelf
 from app.models.book import Book
 from app.services.openlibrary import OpenLibrary
 from fastapi import FastAPI, Path
-import json
+from app.db.sqllite import DB
 
 openlibrary = OpenLibrary()
-
+db = DB()
 app = FastAPI()
 
 @app.get("/bookshelves")
 def get_bookshelves():
-    bookshelves = []
-    with open("db/bookshelves.txt", "r") as myfile:
-        for line in myfile:
-            bookshelves.append(json.loads(line))
-    return bookshelves
+    return db.execute(query='SELECT * FROM bookshelves').fetchall()
 
 @app.post("/bookshelves")
 def create_bookshelf(
     bookshelf: Bookshelf
 ):
-    with open("db/bookshelves.txt", "a") as myfile:
-        myfile.write(json.dumps(
-            {
-                'title': bookshelf.title,
-                'description': bookshelf.description
-            }
-        ))
-        myfile.write('\n')
-        myfile.flush()
-
-    return {"create_bookshelf": "success"}
+    db.execute(query='INSERT INTO bookshelves (title, description) VALUES (?, ?)', values=(bookshelf.title, bookshelf.description))
+    return {"message": "Bookshelf added"}
 
 @app.get("/bookshelves/{bookshelf_id}")
 def get_bookshelf(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to get")]
 ):
-    return {"get_bookshelf " + str(bookshelf_id): "success"}
+    return db.execute(query='SELECT * FROM bookshelves WHERE id = ?', values=(bookshelf_id,)).fetchone()
 
 @app.get("/bookshelves/{bookshelf_id}/books")
 def get_bookshelf_books(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to get")]
 ):
-    return {"get_bookshelf_books "  + str(bookshelf_id): "success"}
+    return db.execute(query='SELECT * FROM books WHERE bookshelf_id = ?', values=(bookshelf_id,)).fetchone()
 
 @app.get("/books")
 def get_books():
-    books = []
-    with open("db/books.txt", "r") as myfile:
-        for line in myfile:
-            books.append(json.loads(line))
-    return books
+    return db.execute('SELECT * FROM books').fetchall()
 
 @app.get("/books/{book_id}")
 def get_book(
     book_id: Annotated[int, Path(title="The ID of the book to get")]
 ):
-    return {"get_book " + str(book_id): "success"}
+    return db.execute(query='SELECT * FROM books WHERE id = ?', values=(book_id,)).fetchone()
 
 @app.post("/books")
 async def create_book(
@@ -70,19 +53,7 @@ async def create_book(
     if olid is None:
         return {"No cover found"}
     
-    cover = "https://covers.openlibrary.org/b/olid/{olid}-M.jpg".format(olid=olid)
+    cover_image = "https://covers.openlibrary.org/b/olid/{olid}-M.jpg".format(olid=olid)
     
-    with open("db/books.txt", "a") as myfile:
-        myfile.write(json.dumps(
-            {
-                'title': book.title,
-                'author': book.author,
-                'year': book.year,
-                'category': book.category,
-                'cover': cover
-            }
-        ))
-        myfile.write('\n')
-        myfile.flush()
-
-    return {"Success"}
+    db.execute(query='INSERT INTO books (title, author, year, category, cover_image) VALUES (?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, cover_image))
+    return {"message": "Book added"}
