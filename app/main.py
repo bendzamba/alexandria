@@ -2,11 +2,10 @@ from typing import Annotated
 from app.models.bookshelf import Bookshelf
 from app.models.book import Book
 from app.services.openlibrary import OpenLibrary
+from fastapi import FastAPI, Path
 import json
 
 openlibrary = OpenLibrary()
-
-from fastapi import FastAPI, Path
 
 app = FastAPI()
 
