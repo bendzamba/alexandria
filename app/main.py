@@ -1,6 +1,10 @@
 from typing import Annotated
 from app.models.bookshelf import Bookshelf
 from app.models.book import Book
+from app.services.openlibrary import OpenLibrary
+import json
+
+openlibrary = OpenLibrary()
 
 from fastapi import FastAPI, Path
 
@@ -30,7 +34,11 @@ def get_bookshelf_books(
 
 @app.get("/books")
 def get_books():
-    return {"get_books": "success"}
+    books = []
+    with open("db/books.txt", "r") as myfile:
+        for line in myfile:
+            books.append(json.loads(line))
+    return books
 
 @app.get("/book/{book_id}")
 def get_book(
@@ -39,7 +47,29 @@ def get_book(
     return {"get_book " + str(book_id): "success"}
 
 @app.post("/book")
-def create_book(
+async def create_book(
     book: Book
 ):
-    return {"create_book": "success"}
+    search_results = await openlibrary.search(book=book)
+
+    olid = openlibrary.find_olid(olid_response=search_results)
+
+    if olid is None:
+        return {"No cover found"}
+    
+    cover = "https://covers.openlibrary.org/b/olid/{olid}-M.jpg".format(olid=olid)
+    
+    with open("db/books.txt", "a") as myfile:
+        myfile.write(json.dumps(
+            {
+                'title': book.title,
+                'author': book.author,
+                'year': book.year,
+                'category': book.category,
+                'cover': cover
+            }
+        ))
+        myfile.write('\n')
+        myfile.flush()
+
+    return {"Success"}
