@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model
+from typing import Optional
 from enum import StrEnum
 
 class Category(StrEnum):
@@ -45,3 +46,8 @@ class Book(BaseModel):
 
 class BookId(BaseModel):
     book_id: int
+
+BookUpdate = create_model(
+    'BookUpdate',
+    **{field: (Optional[type_hint], None) for field, type_hint in Book.__annotations__.items()}
+)
