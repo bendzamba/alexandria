@@ -42,3 +42,6 @@ class Book(BaseModel):
     author: str
     year: int
     category: Category
+
+class BookId(BaseModel):
+    book_id: int

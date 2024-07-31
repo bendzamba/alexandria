@@ -1,6 +1,6 @@
 from typing import Annotated
 from app.models.bookshelf import Bookshelf
-from app.models.book import Book
+from app.models.book import Book, BookId
 from app.services.openlibrary import OpenLibrary
 from fastapi import FastAPI, Path
 from app.db.sqllite import DB
@@ -31,7 +31,15 @@ def get_bookshelf(
 def get_bookshelf_books(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to get")]
 ):
-    return db.execute(query='SELECT * FROM books WHERE bookshelf_id = ?', values=(bookshelf_id,)).fetchone()
+    return db.execute(query='SELECT books.* FROM books JOIN bookshelves_books ON books.id = bookshelves_books.book_id WHERE bookshelves_books.bookshelf_id = ?', values=(bookshelf_id,)).fetchall()
+
+@app.post("/bookshelves/{bookshelf_id}/books")
+def get_bookshelf_books(
+    bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to get")],
+    book_id: BookId
+):
+    db.execute(query='INSERT INTO bookshelves_books (bookshelf_id, book_id) VALUES (?, ?)', values=(bookshelf_id, book_id.book_id))
+    return {f"Book {book_id} has been added to {bookshelf_id}"}
 
 @app.get("/books")
 def get_books():
