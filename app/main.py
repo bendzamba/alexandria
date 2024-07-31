@@ -58,7 +58,15 @@ def get_bookshelf_books(
     book_id: BookId
 ):
     db.execute(query='INSERT INTO bookshelves_books (bookshelf_id, book_id) VALUES (?, ?)', values=(bookshelf_id, book_id.book_id))
-    return {f"Book {book_id} has been added to {bookshelf_id}"}
+    return {f"Book {book_id.book_id} has been added to {bookshelf_id}"}
+
+@app.delete("/bookshelves/{bookshelf_id}")
+def delete_bookshelf(
+    bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to delete")],
+):
+    print(bookshelf_id)
+    db.execute(query='DELETE FROM bookshelves WHERE id = ?', values=(bookshelf_id,))
+    return {f"Bookshelf {bookshelf_id} has been deleted"}
 
 @app.get("/books")
 def get_books():
@@ -105,3 +113,10 @@ def update_bookshelf(
     parameters.append(book_id)
     db.execute(query=query, values=parameters)
     return {"message": f"Book id {book_id} has been updated"}
+
+@app.delete("/books/{book_id}")
+def delete_bookshelf(
+    book_id: Annotated[int, Path(title="The ID of the book to delete")],
+):
+    db.execute(query='DELETE FROM books WHERE id = ?', values=(book_id))
+    return {f"Book {book_id} has been deleted"}
