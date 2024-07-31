@@ -7,6 +7,8 @@ class DB:
         self.cursor = self.connection.cursor()
         # self.cursor.execute('''DROP TABLE IF EXISTS bookshelves''')
         # self.cursor.execute('''DROP TABLE IF EXISTS books''')
+        # self.cursor.execute('''DROP TABLE IF EXISTS bookshelves_books''')
+        self.cursor.execute("PRAGMA foreign_keys = ON")
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS bookshelves (
                 id INTEGER PRIMARY KEY, 
