@@ -17,7 +17,7 @@ def get_bookshelves():
             bookshelves.append(json.loads(line))
     return bookshelves
 
-@app.post("/bookshelf")
+@app.post("/bookshelves")
 def create_bookshelf(
     bookshelf: Bookshelf
 ):
@@ -33,13 +33,13 @@ def create_bookshelf(
 
     return {"create_bookshelf": "success"}
 
-@app.get("/bookshelf/{bookshelf_id}")
+@app.get("/bookshelves/{bookshelf_id}")
 def get_bookshelf(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to get")]
 ):
     return {"get_bookshelf " + str(bookshelf_id): "success"}
 
-@app.get("/bookshelf/{bookshelf_id}/books")
+@app.get("/bookshelves/{bookshelf_id}/books")
 def get_bookshelf_books(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to get")]
 ):
@@ -53,13 +53,13 @@ def get_books():
             books.append(json.loads(line))
     return books
 
-@app.get("/book/{book_id}")
+@app.get("/books/{book_id}")
 def get_book(
     book_id: Annotated[int, Path(title="The ID of the book to get")]
 ):
     return {"get_book " + str(book_id): "success"}
 
-@app.post("/book")
+@app.post("/books")
 async def create_book(
     book: Book
 ):
