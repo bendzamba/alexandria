@@ -11,12 +11,26 @@ app = FastAPI()
 
 @app.get("/bookshelves")
 def get_bookshelves():
-    return {"get_bookshelves": "success"}
+    bookshelves = []
+    with open("db/bookshelves.txt", "r") as myfile:
+        for line in myfile:
+            bookshelves.append(json.loads(line))
+    return bookshelves
 
 @app.post("/bookshelf")
 def create_bookshelf(
     bookshelf: Bookshelf
 ):
+    with open("db/bookshelves.txt", "a") as myfile:
+        myfile.write(json.dumps(
+            {
+                'title': bookshelf.title,
+                'description': bookshelf.description
+            }
+        ))
+        myfile.write('\n')
+        myfile.flush()
+
     return {"create_bookshelf": "success"}
 
 @app.get("/bookshelf/{bookshelf_id}")
