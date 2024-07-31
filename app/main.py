@@ -17,8 +17,9 @@ def get_bookshelves():
 def create_bookshelf(
     bookshelf: Bookshelf
 ):
-    db.execute(query='INSERT INTO bookshelves (title, description) VALUES (?, ?)', values=(bookshelf.title, bookshelf.description))
-    return {"message": "Bookshelf added"}
+    cursor = db.execute(query='INSERT INTO bookshelves (title, description) VALUES (?, ?)', values=(bookshelf.title, bookshelf.description))
+    bookshelf_id = cursor.lastrowid
+    return {"message": f"New bookshelf id: {bookshelf_id}"}
 
 @app.get("/bookshelves/{bookshelf_id}")
 def get_bookshelf(
@@ -55,5 +56,6 @@ async def create_book(
     
     cover_image = "https://covers.openlibrary.org/b/olid/{olid}-M.jpg".format(olid=olid)
     
-    db.execute(query='INSERT INTO books (title, author, year, category, cover_image) VALUES (?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, cover_image))
-    return {"message": "Book added"}
+    cursor = db.execute(query='INSERT INTO books (title, author, year, category, cover_image) VALUES (?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, cover_image))
+    book_id = cursor.lastrowid
+    return {"message": f"New book id: {book_id}"}
