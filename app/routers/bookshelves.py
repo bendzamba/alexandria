@@ -56,7 +56,7 @@ def get_bookshelf_books(
     return db.execute(query='SELECT books.* FROM books JOIN bookshelves_books ON books.id = bookshelves_books.book_id WHERE bookshelves_books.bookshelf_id = ?', values=(bookshelf_id,)).fetchall()
 
 @router.post("/{bookshelf_id}/books")
-def get_bookshelf_books(
+def add_book_to_bookshelf(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to get")],
     book_id: BookId,
     db = Depends(get_db)
@@ -69,6 +69,14 @@ def delete_bookshelf(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to delete")],
     db = Depends(get_db)
 ):
-    print(bookshelf_id)
     db.execute(query='DELETE FROM bookshelves WHERE id = ?', values=(bookshelf_id,))
     return {f"Bookshelf {bookshelf_id} has been deleted"}
+
+@router.delete("/{bookshelf_id}/books/{book_id}")
+def delete_book_from_bookshelf(
+    bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to delete from")],
+    book_id: Annotated[int, Path(title="The ID of the book to delete")],
+    db = Depends(get_db)
+):
+    db.execute(query='DELETE FROM bookshelves_books WHERE bookshelf_id = ? AND book_id = ?', values=(bookshelf_id,book_id,))
+    return {f"Books {book_id} has been deleted from bookshelf {bookshelf_id}"}
