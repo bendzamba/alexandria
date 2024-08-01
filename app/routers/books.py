@@ -1,27 +1,27 @@
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, status
 from typing import Annotated
 from app.models.book import Book, BookUpdate
 from app.services.openlibrary import OpenLibrary
-from app.db.sqllite import get_db
+from app.db.sqlite import get_db
 
 openlibrary = OpenLibrary()
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("/", status_code=status.HTTP_200_OK)
 def get_books(
     db = Depends(get_db)
 ):
     return db.execute('SELECT * FROM books').fetchall()
 
-@router.get("/{book_id}")
+@router.get("/{book_id}", status_code=status.HTTP_200_OK)
 def get_book(
     book_id: Annotated[int, Path(title="The ID of the book to get")],
     db = Depends(get_db)
 ):
     return db.execute(query='SELECT * FROM books WHERE id = ?', values=(book_id,)).fetchone()
 
-@router.post("/")
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_book(
     book: Book,
     db = Depends(get_db)
@@ -35,11 +35,10 @@ async def create_book(
     
     cover_image = "https://covers.openlibrary.org/b/olid/{olid}-M.jpg".format(olid=olid)
     
-    cursor = db.execute(query='INSERT INTO books (title, author, year, category, cover_image) VALUES (?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, cover_image))
-    book_id = cursor.lastrowid
-    return {"message": f"New book id: {book_id}"}
+    db.execute(query='INSERT INTO books (title, author, year, category, cover_image) VALUES (?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, cover_image))
+    return None
 
-@router.patch("/{book_id}")
+@router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 def update_bookshelf(
     book_id: Annotated[int, Path(title="The ID of the book to update")],
     book: BookUpdate,
@@ -57,12 +56,12 @@ def update_bookshelf(
     query = f"UPDATE books SET {', '.join(update_fields)} WHERE id = ?"
     parameters.append(book_id)
     db.execute(query=query, values=parameters)
-    return {"message": f"Book id {book_id} has been updated"}
+    return None
 
-@router.delete("/{book_id}")
+@router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_bookshelf(
     book_id: Annotated[int, Path(title="The ID of the book to delete")],
     db = Depends(get_db)
 ):
-    db.execute(query='DELETE FROM books WHERE id = ?', values=(book_id))
-    return {f"Book {book_id} has been deleted"}
+    db.execute(query='DELETE FROM books WHERE id = ?', values=(book_id,))
+    return None
