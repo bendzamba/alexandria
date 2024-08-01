@@ -29,7 +29,6 @@ async def lifespan(app: FastAPI):
             title TEXT, 
             author TEXT, 
             year INTEGER, 
-            bookshelf_id INTEGER, 
             category TEXT, 
             cover_image TEXT
         )
