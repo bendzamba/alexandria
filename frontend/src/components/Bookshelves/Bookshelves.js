@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Bookshelf from '../Bookshelf/Bookshelf';
-import { GetBookshelves } from '../../services/api'
+import Container from 'react-bootstrap/Container';
+import Bookshelf from './Bookshelf';
+import { GetBookshelves } from '../../services/bookshelves'
 
 function Bookshelves() {
   const [bookshelves, setBookshelves] = useState([]);
@@ -28,21 +29,20 @@ function Bookshelves() {
   }
 
   return (
-    <>
-      <Row className="mt-4 mb-4">
+    <Container>
+      <Row>
         <Col><h2>Bookshelves</h2></Col>
       </Row>
-      <Row>
+      <Row className="mt-3 mb-3">
         {bookshelves.map((shelf) => (
           <Bookshelf
-            className="mt-2"
             id={shelf.id}
             title={shelf.title}
             description={shelf.description}
           />
         ))}
       </Row>
-    </>
+    </Container>
   );
 }
 
