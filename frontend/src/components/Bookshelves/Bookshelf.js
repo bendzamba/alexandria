@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import { GetBookshelfBooks } from '../../services/api'
+import Container from 'react-bootstrap/Container';
+import { GetBookshelfBooks } from '../../services/bookshelves'
 
 function Bookshelf({ id, title, description }) {
 
-    const [books, setBooks] = useState([]);
+  const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,7 +29,7 @@ function Bookshelf({ id, title, description }) {
   }
 
   return (
-    <>
+    <Container>
         <Row class="mt-3">
             <Col>
                 <span class="h5 pull-left">{title} | </span>
@@ -42,7 +43,7 @@ function Bookshelf({ id, title, description }) {
                 </Col>
             ))}
         </Row>
-    </>
+    </Container>
   );
 }
 
