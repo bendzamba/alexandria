@@ -4,6 +4,7 @@ class DB:
 
     def __init__(self):
         self.connection = sqlite3.connect('bookshelf.db', check_same_thread=False)
+        self.connection.row_factory = sqlite3.Row
         self.cursor = self.connection.cursor()
         self.cursor.execute("PRAGMA foreign_keys = ON")
         self.connection.commit()
