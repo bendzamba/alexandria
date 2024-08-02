@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'
 import { CreateBookshelf as CreateBookshelfService } from '../../services/bookshelves';
 
 function CreateBookshelf() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await CreateBookshelfService({ title, description });
     setTitle('');
     setDescription('');
-    // Optionally, you can update the parent component or redirect
+    navigate(`/`);
   };
 
   return (

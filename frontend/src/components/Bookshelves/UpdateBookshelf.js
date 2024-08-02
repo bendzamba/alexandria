@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom'
 import { GetBookshelf as GetBookshelfService, UpdateBookshelf as UpdateBookshelfService } from '../../services/bookshelves';
 
-function UpdateBookshelf({ match }) {
+function UpdateBookshelf() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const bookshelfId = match.params.id; // Assuming you are using react-router
+  // get ID from path using react-router
+  const bookshelfId = useParams().id;
 
   useEffect(() => {
     const fetchBookshelf = async () => {
-      const bookshelf = await GetBookshelfService();
+      const bookshelf = await GetBookshelfService(bookshelfId);
       setTitle(bookshelf.title);
       setDescription(bookshelf.description);
       setLoading(false);
@@ -22,7 +25,10 @@ function UpdateBookshelf({ match }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     await UpdateBookshelfService(bookshelfId, { title, description });
-    // Optionally, you can update the parent component or redirect
+    // not sure if I need this
+    setTitle('');
+    setDescription('');
+    navigate(`/`);
   };
 
   if (loading) {
