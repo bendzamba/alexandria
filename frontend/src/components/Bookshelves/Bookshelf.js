@@ -2,15 +2,31 @@ import React, { useState, useEffect } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
-import { GetBookshelfBooks } from '../../services/bookshelves'
+import { NavLink, useParams } from 'react-router-dom';
+import { GetBookshelfBooks, GetBookshelf } from '../../services/bookshelves'
 
-function Bookshelf({ id, title, description }) {
+function Bookshelf({ bookshelfId = null }) {
 
+  const useParamsId = useParams();
+  const id = bookshelfId || useParamsId.id;
+
+  const [data, setData] = useState([]);
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      try {
+        const data = await GetBookshelf(id);
+        setData(data);
+      } catch (error) {
+        console.error('Error fetching bookshelf:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchBooks = async () => {
       try {
         const data = await GetBookshelfBooks(id);
         setBooks(data);
@@ -22,6 +38,7 @@ function Bookshelf({ id, title, description }) {
     };
 
     fetchData();
+    fetchBooks();
   }, [id]);
 
   if (loading) {
@@ -32,8 +49,21 @@ function Bookshelf({ id, title, description }) {
     <Container>
         <Row class="mt-3">
             <Col>
-                <span class="h5 pull-left">{title} | </span>
-                <span class="text-secondary">{description}</span>
+              <NavLink 
+                className="nav-link" 
+                to={"/bookshelves/" + id}
+                >
+                  <span class="h5 pull-left">{data.title} | </span>
+              </NavLink>
+                <span class="text-secondary">{data.description}</span>
+            </Col>
+            <Col>
+              <NavLink 
+                className="nav-link" 
+                to={"/bookshelves/update/" + id}
+                >
+                  Update Bookshelf
+              </NavLink>
             </Col>
         </Row>
         <Row class="mt-1">
