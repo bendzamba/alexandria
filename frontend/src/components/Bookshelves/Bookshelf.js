@@ -5,7 +5,7 @@ import Container from 'react-bootstrap/Container';
 import { NavLink, useParams } from 'react-router-dom';
 import { GetBookshelfBooks, GetBookshelf } from '../../services/bookshelves'
 
-function Bookshelf({ bookshelfId = null }) {
+function Bookshelf({ bookshelfId = null, preview = false }) {
 
   const useParamsId = useParams();
   const id = bookshelfId || useParamsId.id;
@@ -47,27 +47,35 @@ function Bookshelf({ bookshelfId = null }) {
 
   return (
     <Container>
-        <Row class="mt-3">
-            <Col>
+        <Row className="mt-4 align-items-center" style={{ 'borderBottom': '3px solid black' }}>
+            <Col md="auto">
               <NavLink 
                 className="nav-link" 
                 to={"/bookshelves/" + id}
                 >
-                  <span class="h5 pull-left">{data.title} | </span>
-              </NavLink>
-                <span class="text-secondary">{data.description}</span>
-            </Col>
-            <Col>
-              <NavLink 
-                className="nav-link" 
-                to={"/bookshelves/update/" + id}
-                >
-                  Update Bookshelf
+                  <span className="h4 pull-left">{data.title}</span>
               </NavLink>
             </Col>
+            <Col md="auto" style={{
+              textAlign:"right"
+            }}>
+              <span className="text-secondary">{data.description}</span>
+            </Col>
+            { ! preview && (
+              <Col md="auto" style={{
+                textAlign:"right"
+              }}>
+                <NavLink 
+                  className="nav-link" 
+                  to={"/bookshelves/update/" + id}
+                  >
+                    Update Bookshelf
+                </NavLink>
+              </Col>
+            )}
         </Row>
-        <Row class="mt-1">
-            {books.map((book) => (
+        <Row className="mt-2">
+            {books.slice(0, 5).map((book) => (
                 <Col md="auto">
                     <img height="150px" src={book.cover_image} alt="Book Cover" /> 
                 </Col>
