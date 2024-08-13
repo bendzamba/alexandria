@@ -3,7 +3,8 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
-import { GetBookshelfBooks, GetBookshelf } from '../../services/bookshelves'
+import { GetBookshelfBooks, GetBookshelf, DeleteBookshelf } from '../../services/bookshelves'
+import {confirm} from 'react-bootstrap-confirmation';
 
 function Bookshelf({ bookshelfId = null, preview = false }) {
 
@@ -53,7 +54,11 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
 
   const handleDelete = async (e) => {
     e.preventDefault();
-    // navigate(`/bookshelves/update/{id}`);
+    const result = await confirm('Are you sure you want to delete this bookshelf?');
+    if (result) {
+      await DeleteBookshelf(id);
+      navigate(`/`);
+    }
   };
 
   return (
@@ -73,12 +78,6 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
               }}>
                 <button type="button" className="btn btn-primary" onClick={handleUpdate}>Update</button>
                 <button type="button" className="btn btn-danger ms-1" onClick={handleDelete}>Delete</button>
-                {/* <NavLink 
-                  className="nav-link" 
-                  to={"/bookshelves/update/" + id}
-                  >
-                    Update Bookshelf
-                </NavLink> */}
               </Col>
             )}
         </Row>
