@@ -28,14 +28,14 @@ function UpdateBookshelf() {
     // not sure if I need this
     setTitle('');
     setDescription('');
-    navigate(`/`);
+    navigate(`/bookshelves/` + bookshelfId);
   };
 
   const handleCancel = async (e) => {
     e.preventDefault();
     setTitle('');
     setDescription('');
-    navigate(`/`);
+    navigate(`/bookshelves/` + bookshelfId);
   };
 
   if (loading) {
