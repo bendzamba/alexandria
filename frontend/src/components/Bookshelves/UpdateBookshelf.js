@@ -31,6 +31,13 @@ function UpdateBookshelf() {
     navigate(`/`);
   };
 
+  const handleCancel = async (e) => {
+    e.preventDefault();
+    setTitle('');
+    setDescription('');
+    navigate(`/`);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -60,6 +67,7 @@ function UpdateBookshelf() {
           />
         </div>
         <button type="submit" className="btn btn-primary">Update</button>
+        <button type="button" className="btn btn-danger ms-1" onClick={handleCancel}>Cancel</button>
       </form>
     </div>
   );
