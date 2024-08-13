@@ -99,9 +99,11 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
           </Col>
         </Row>
         <Row className="mt-2">
-          <Col md="auto">
-            <button type="button" className="btn btn-outline-primary" style={{ 'width': '90px', 'height': '150px' }} onClick={handleShowModal}>+</button>
-          </Col>
+          { ! preview && (
+            <Col md="auto">
+              <button type="button" className="btn btn-outline-primary" style={{ 'width': '90px', 'height': '150px' }} onClick={handleShowModal}>+</button>
+            </Col>
+          )}
             {books.slice(0, 5).map((book) => (
                 <Col md="auto">
                     <img height="150px" src={book.cover_image} alt="Book Cover" /> 
