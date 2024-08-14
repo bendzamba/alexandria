@@ -41,13 +41,18 @@ export const GetBookshelfBooks = async (id) => {
     return await response.json();
   };
 
-export const AddBookToBookshelf = async (bookshelfId, bookId) => {
+export const GetBooksNotOnBookshelf = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/bookshelves/${id}/books/exclude`);
+  return await response.json();
+};
+
+export const AddBooksToBookshelf = async (bookshelfId, bookIds) => {
   return await fetch(`${API_BASE_URL}/bookshelves/${bookshelfId}/books`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ 'book_id': bookId }),
+    body: JSON.stringify({ 'book_ids': bookIds }),
   });
 };
 
