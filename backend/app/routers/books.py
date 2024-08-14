@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, Path, status
 from typing import Annotated
-from app.models.book import Book, BookUpdate
+from app.models.book import Book, BookUpdate, Category
 from app.services.openlibrary import OpenLibrary
 from app.db.sqlite import get_db
+import inspect
 
 openlibrary = OpenLibrary()
 
@@ -65,3 +66,8 @@ def delete_bookshelf(
 ):
     db.execute(query='DELETE FROM books WHERE id = ?', values=(book_id,))
     return None
+
+@router.get("/categories/", status_code=status.HTTP_200_OK)
+def get_book_categories():
+    attributes = inspect.getmembers(Category, lambda a:not(inspect.isroutine(a)))
+    return [a[1] for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))]
