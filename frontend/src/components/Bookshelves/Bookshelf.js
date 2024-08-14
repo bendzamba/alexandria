@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -21,33 +21,33 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
   const [showModal, setShowModal] = useState(false)
   const navigate = useNavigate();
 
+  const fetchData = useCallback(async () => {
+    try {
+      const data = await GetBookshelf(id);
+      setData(data);
+    } catch (error) {
+      console.error('Error fetching bookshelf:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  const fetchBooks = useCallback(async () => {
+    try {
+      // TODO Limit books we fetch depending on preview or not
+      const data = await GetBookshelfBooks(id);
+      setBooks(data);
+    } catch (error) {
+      console.error('Error fetching bookshelf books:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await GetBookshelf(id);
-        setData(data);
-      } catch (error) {
-        console.error('Error fetching bookshelf:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchBooks = async () => {
-      try {
-        // TODO Limit books we fetch depending on preview or not
-        const data = await GetBookshelfBooks(id);
-        setBooks(data);
-      } catch (error) {
-        console.error('Error fetching bookshelf books:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
     fetchBooks();
-  }, [id]);
+  }, [id, fetchData, fetchBooks]);
 
   useEffect(() => {
     console.log('Updated booksToAdd:', booksToAdd);
@@ -84,6 +84,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
       await AddBooksToBookshelf(id, booksToAdd);
     }
     setShowModal(false);
+    fetchBooks();
   };
 
   const handleDeleteBookFromBookshelf = async (e, bookToDelete) => {
@@ -91,6 +92,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
     const result = await confirm('Are you sure you want to remove this book from this bookshelf?');
     if (result) {
       await DeleteBookFromBookshelf(id, bookToDelete);
+      fetchBooks();
     }
   };
 
