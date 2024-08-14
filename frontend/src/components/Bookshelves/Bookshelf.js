@@ -5,7 +5,7 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
-import { GetBookshelfBooks, GetBookshelf, DeleteBookshelf, GetBooksNotOnBookshelf, AddBooksToBookshelf } from '../../services/bookshelves'
+import { GetBookshelfBooks, GetBookshelf, DeleteBookshelf, GetBooksNotOnBookshelf, AddBooksToBookshelf, DeleteBookFromBookshelf } from '../../services/bookshelves'
 import {confirm} from 'react-bootstrap-confirmation';
 
 function Bookshelf({ bookshelfId = null, preview = false }) {
@@ -35,6 +35,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
 
     const fetchBooks = async () => {
       try {
+        // TODO Limit books we fetch depending on preview or not
         const data = await GetBookshelfBooks(id);
         setBooks(data);
       } catch (error) {
@@ -80,9 +81,17 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
 
   const handleSaveChanges = async (e) => {
     if (booksToAdd.length) {
-      await AddBooksToBookshelf(id, booksToAdd)
+      await AddBooksToBookshelf(id, booksToAdd);
     }
     setShowModal(false);
+  };
+
+  const handleDeleteBookFromBookshelf = async (e, bookToDelete) => {
+    e.preventDefault();
+    const result = await confirm('Are you sure you want to remove this book from this bookshelf?');
+    if (result) {
+      await DeleteBookFromBookshelf(id, bookToDelete);
+    }
   };
 
   const fetchBooksThatCanBeAdded = async (e) => {
@@ -139,9 +148,14 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
               <button type="button" className="btn btn-outline-primary" style={{ 'width': '90px', 'height': '150px' }} onClick={handleShowModal}>+</button>
             </Col>
           )}
-            {books.slice(0, 5).map((book) => (
+            {books.map((book) => (
                 <Col md="auto">
-                  <img height="150px" src={book.cover_image} alt="Book Cover" /> 
+                  <div class="bookshelf-book-image-wrapper">
+                    <img height="150px" src={book.cover_image} alt="Book Cover" /> 
+                    <div class="remove-book-from-bookshelf-button">
+                      <button class="btn btn-close" onClick={(event) => {handleDeleteBookFromBookshelf(event, book.id)}}></button>
+                    </div>
+                  </div>
                 </Col>
             ))}
         </Row>

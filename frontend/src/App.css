@@ -36,3 +36,29 @@
     transform: rotate(360deg);
   }
 }
+
+div.bookshelf-book-image-wrapper {
+  position: relative;
+}
+
+div.bookshelf-book-image-wrapper:hover div.remove-book-from-bookshelf-button {
+  display: inline-flex;
+}
+
+div.remove-book-from-bookshelf-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: white;
+  border: 1px solid #dc3545;
+  padding: 0;
+  margin: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+div.remove-book-from-bookshelf-button .btn-close {
+  width: .25em;
+  height: .25em;
+}
