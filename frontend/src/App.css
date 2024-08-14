@@ -62,3 +62,10 @@ div.remove-book-from-bookshelf-button .btn-close {
   width: .25em;
   height: .25em;
 }
+
+.add-books-to-bookshelf-modal {
+  width: 700px;
+  max-width: 700px;
+  height: 500px;
+  max-height: 500px;
+}

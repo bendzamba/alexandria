@@ -154,18 +154,20 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
               <button type="button" className="btn btn-outline-primary" style={{ 'width': '90px', 'height': '150px' }} onClick={handleShowModal}>+</button>
             </Col>
           )}
-            {books.map((book) => (
-                <Col md="auto">
-                  <div class="bookshelf-book-image-wrapper">
-                    <img height="150px" src={book.cover_image} alt="Book Cover" /> 
+          {books.map((book) => (
+              <Col md="auto">
+                <div class="bookshelf-book-image-wrapper">
+                  <img height="150px" src={book.cover_image} alt="Book Cover" /> 
+                  { ! preview && (
                     <div class="remove-book-from-bookshelf-button">
                       <button class="btn btn-close" onClick={(event) => {handleDeleteBookFromBookshelf(event, book.id)}}></button>
                     </div>
-                  </div>
-                </Col>
+                  )}
+                </div>
+              </Col>
             ))}
         </Row>
-        <Modal show={showModal} onShow={fetchBooksThatCanBeAdded} onHide={handleCloseModal} onExit={handleResetBooksToAdd} centered>
+        <Modal size="lg" contentClassName="add-books-to-bookshelf-modal" show={showModal} onShow={fetchBooksThatCanBeAdded} onHide={handleCloseModal} onExit={handleResetBooksToAdd} centered>
           <Modal.Header closeButton>
             <Modal.Title>Choose one or more book to add</Modal.Title>
           </Modal.Header>
