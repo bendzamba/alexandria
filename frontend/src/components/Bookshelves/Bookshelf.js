@@ -5,7 +5,7 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
-import { GetBookshelfBooks, GetBookshelf, DeleteBookshelf } from '../../services/bookshelves'
+import { GetBookshelfBooks, GetBookshelf, DeleteBookshelf, GetBooksNotOnBookshelf, AddBooksToBookshelf } from '../../services/bookshelves'
 import {confirm} from 'react-bootstrap-confirmation';
 
 function Bookshelf({ bookshelfId = null, preview = false }) {
@@ -15,6 +15,8 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
 
   const [data, setData] = useState([]);
   const [books, setBooks] = useState([]);
+  const [booksToAdd, setBooksToAdd] = useState([]);
+  const [booksThatCanBeAdded, setBooksThatCanBeAdded] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false)
   const navigate = useNavigate();
@@ -46,6 +48,10 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
     fetchBooks();
   }, [id]);
 
+  useEffect(() => {
+    console.log('Updated booksToAdd:', booksToAdd);
+  }, [booksToAdd]);
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -69,8 +75,37 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
   };
 
   const handleCloseModal = async (e) => {
-    console.log('closing modal');
     setShowModal(false);
+  };
+
+  const handleSaveChanges = async (e) => {
+    if (booksToAdd.length) {
+      await AddBooksToBookshelf(id, booksToAdd)
+    }
+    setShowModal(false);
+  };
+
+  const fetchBooksThatCanBeAdded = async (e) => {
+    const booksThatCanBeAdded = await GetBooksNotOnBookshelf(id);
+    setBooksThatCanBeAdded(booksThatCanBeAdded);
+  };
+
+  const toggleBookSelection = async (e, bookToToggle) => {
+    e.preventDefault();
+    e.currentTarget.classList.toggle("border-light");
+    e.currentTarget.classList.toggle("border-primary");
+
+    setBooksToAdd((prevBooks) => {
+      const isBookInArray = prevBooks.some((book) => book === bookToToggle);
+  
+      if (isBookInArray) {
+        // If the book is already in the array, remove it
+        return prevBooks.filter((book) => book !== bookToToggle);
+      } else {
+        // If the book is not in the array, add it
+        return [...prevBooks, bookToToggle];
+      }
+    });
   };
 
   return (
@@ -106,20 +141,30 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
           )}
             {books.slice(0, 5).map((book) => (
                 <Col md="auto">
-                    <img height="150px" src={book.cover_image} alt="Book Cover" /> 
+                  <img height="150px" src={book.cover_image} alt="Book Cover" /> 
                 </Col>
             ))}
         </Row>
-        <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal show={showModal} onShow={fetchBooksThatCanBeAdded} onHide={handleCloseModal} centered>
           <Modal.Header closeButton>
-            <Modal.Title>Modal heading</Modal.Title>
+            <Modal.Title>Choose one or more book to add</Modal.Title>
           </Modal.Header>
-          <Modal.Body>Woohoo, you are reading this text in a modal!</Modal.Body>
+          <Modal.Body>
+            <Container>
+              <Row>
+                {booksThatCanBeAdded.map((book) => (
+                  <Col>
+                    <img src={book.cover_image} onClick={(event) => toggleBookSelection(event, book.id)} alt="Book Cover" class="border border-2 border-light" style={{'boxSizing': 'border-box', 'height': '175px', 'padding': '2px'}} /> 
+                  </Col>
+                ))}
+              </Row>
+            </Container>
+          </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>
               Close
             </Button>
-            <Button variant="primary" onClick={handleCloseModal}>
+            <Button variant="primary" onClick={handleSaveChanges}>
               Save Changes
             </Button>
           </Modal.Footer>
