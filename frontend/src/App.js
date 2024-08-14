@@ -1,19 +1,27 @@
 import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 import './App.css';
-import Bookshelves from './components/Bookshelves/Bookshelves';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Bookshelves from './components/bookshelves/Bookshelves';
+import Bookshelf from './components/bookshelves/Bookshelf';
+import CreateBookshelf from './components/bookshelves/CreateBookshelf';
+import UpdateBookshelf from './components/bookshelves/UpdateBookshelf';
+import Header from './components/common/Header';
 
 function App() {
   return (
-    <Container>
-      <Row>
-        <Col>
-          <h1 class="display-2">Welcome to your Book Case</h1>
-        </Col>
-      </Row>
-      <Bookshelves></Bookshelves>
-    </Container>
+    <Router>
+      <Container>
+        <Header />
+        <div className="container mt-4">
+          <Routes>
+            <Route path="/" element={<Bookshelves />} />
+            <Route path="/bookshelves/:id" element={<Bookshelf />} />
+            <Route path="/bookshelves/create" element={<CreateBookshelf />} />
+            <Route path="/bookshelves/update/:id" element={<UpdateBookshelf />} />
+          </Routes>
+        </div>
+      </Container>
+    </Router>
   );
 }
 
