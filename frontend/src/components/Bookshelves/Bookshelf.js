@@ -127,12 +127,17 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
     <Container>
         <Row className="mt-4 align-items-center" style={{ 'borderBottom': '3px solid black'}}>
             <Col xs={9}>
+            { preview && (
               <NavLink 
                 className="nav-link" 
                 to={"/bookshelves/" + id}
                 >
-                  <span className="h4 pull-left">{data.title}</span>
+                  <h1 className="display-6 pull-left">{data.title}</h1>
               </NavLink>
+            )}
+            { ! preview && (
+              <h1 className="display-5 pull-left">{data.title}</h1>
+            )}
             </Col>
             { ! preview && (
               <Col xs={3} style={{
@@ -143,9 +148,14 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
               </Col>
             )}
         </Row>
-        <Row>
+        <Row className="mt-2 align-items-center">
           <Col md="auto">
+            { preview && (
               <span className="text-secondary">{data.description}</span>
+            )}
+            { ! preview && (
+              <h5 className="text-secondary">{data.description}</h5>
+            )}
           </Col>
         </Row>
         <Row className="mt-2">
