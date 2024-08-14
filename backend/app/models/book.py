@@ -44,8 +44,8 @@ class Book(BaseModel):
     year: int
     category: Category
 
-class BookId(BaseModel):
-    book_id: int
+class BookIds(BaseModel):
+    book_ids: list[int]
 
 BookUpdate = create_model(
     'BookUpdate',
