@@ -96,6 +96,10 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
     }
   };
 
+  const handleResetBooksToAdd = async (e) => {
+    setBooksToAdd([]);
+  };
+
   const fetchBooksThatCanBeAdded = async (e) => {
     const booksThatCanBeAdded = await GetBooksNotOnBookshelf(id);
     setBooksThatCanBeAdded(booksThatCanBeAdded);
@@ -161,7 +165,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
                 </Col>
             ))}
         </Row>
-        <Modal show={showModal} onShow={fetchBooksThatCanBeAdded} onHide={handleCloseModal} centered>
+        <Modal show={showModal} onShow={fetchBooksThatCanBeAdded} onHide={handleCloseModal} onExit={handleResetBooksToAdd} centered>
           <Modal.Header closeButton>
             <Modal.Title>Choose one or more book to add</Modal.Title>
           </Modal.Header>
