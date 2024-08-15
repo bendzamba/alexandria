@@ -68,3 +68,7 @@ div.remove-book-from-bookshelf-button .btn-close {
   max-height: 500px;
   overflow: scroll;
 }
+
+#responsive-navbar-nav {
+  justify-content: flex-end !important;
+}
