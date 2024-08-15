@@ -7,7 +7,8 @@ class Image:
 
         self.local_image_directory = '/assets/cover_images/'
         self.default_cover_image = 'No_Image_Available.jpg'
-        self.relative_path_to_file = '../../../frontend/public/assets/cover_images/{filename}.jpg'
+        self.relative_path_to_file = '../../../frontend/public/assets/cover_images/{filename}{extension}'
+        self.image_file_extension = '.jpg'
 
     def sanitize_book_title_for_filename(self, book_title: str) -> str:
 
@@ -19,9 +20,9 @@ class Image:
         current_directory = os.path.dirname(__file__)
 
         # Assemble final local file destination
-        return os.path.join(current_directory, self.relative_path_to_file.format(filename=filename))
+        return os.path.join(current_directory, self.relative_path_to_file.format(filename=filename, extension=self.image_file_extension))
         
-    def download(self, remote_url: str, local_filename: str) -> None:
+    async def download(self, remote_url: str, local_filename: str) -> None:
 
         return urllib.request.urlretrieve(remote_url, local_filename)
     
@@ -35,4 +36,4 @@ class Image:
     
     def get_cover_with_path_for_database(self, filename: str) -> str:
 
-        return self.local_image_directory + filename
+        return self.local_image_directory + filename + self.image_file_extension
