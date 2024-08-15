@@ -167,13 +167,13 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
         {books.map((book) => (
             <Col md="auto" className="mt-3">
               <div class="bookshelf-book-image-wrapper">
-                <img height="150px" src={book.cover_image} alt="Book Cover" /> 
+                <img height="150px" src={book.cover_uri} alt="Book Cover" /> 
                 { ! preview && (
                   <div class="remove-book-from-bookshelf-button">
                     <button class="btn btn-close" onClick={(event) => {handleDeleteBookFromBookshelf(event, book.id)}}></button>
                   </div>
                 )}
-              </div>
+              </div>  
             </Col>
           ))}
       </Row>
@@ -186,7 +186,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
             <Row>
               {booksThatCanBeAdded.map((book) => (
                 <Col>
-                  <img src={book.cover_image} onClick={(event) => toggleBookSelection(event, book.id)} alt="Book Cover" class="border border-2 border-light" style={{'boxSizing': 'border-box', 'height': '175px', 'padding': '2px'}} /> 
+                  <img src={book.cover_uri} onClick={(event) => toggleBookSelection(event, book.id)} alt="Book Cover" class="border border-2 border-light" style={{'boxSizing': 'border-box', 'height': '175px', 'padding': '2px'}} /> 
                 </Col>
               ))}
             </Row>
