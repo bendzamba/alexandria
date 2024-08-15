@@ -125,82 +125,82 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
 
   return (
     <Container>
-        <Row className="mt-4 align-items-center" style={{ 'borderBottom': '3px solid black'}}>
-            <Col xs={9}>
-            { preview && (
-              <NavLink 
-                className="nav-link" 
-                to={"/bookshelves/" + id}
-                >
-                  <h1 className="display-6 pull-left">{data.title}</h1>
-              </NavLink>
-            )}
-            { ! preview && (
-              <h1 className="display-5 pull-left">{data.title}</h1>
-            )}
-            </Col>
-            { ! preview && (
-              <Col xs={3} style={{
-                textAlign:"right"
-              }}>
-                <button type="button" className="btn btn-primary" onClick={handleUpdate}>Update</button>
-                <button type="button" className="btn btn-danger ms-1" onClick={handleDelete}>Delete</button>
-              </Col>
-            )}
-        </Row>
-        <Row className="mt-2 align-items-center">
-          <Col md="auto">
-            { preview && (
-              <span className="text-secondary">{data.description}</span>
-            )}
-            { ! preview && (
-              <h5 className="text-secondary">{data.description}</h5>
-            )}
-          </Col>
-        </Row>
-        <Row className="mt-2">
+      <Row className="mt-4 align-items-center" style={{ 'borderBottom': '3px solid black'}}>
+          <Col xs={9}>
+          { preview && (
+            <NavLink 
+              className="nav-link" 
+              to={"/bookshelves/" + id}
+              >
+                <h1 className="display-6 pull-left">{data.title}</h1>
+            </NavLink>
+          )}
           { ! preview && (
-            <Col md="auto">
-              <button type="button" className="btn btn-outline-primary" style={{ 'width': '90px', 'height': '150px' }} onClick={handleShowModal}>+</button>
+            <h1 className="display-5 pull-left">{data.title}</h1>
+          )}
+          </Col>
+          { ! preview && (
+            <Col xs={3} style={{
+              textAlign:"right"
+            }}>
+              <button type="button" className="btn btn-primary" onClick={handleUpdate}>Update</button>
+              <button type="button" className="btn btn-danger ms-1" onClick={handleDelete}>Delete</button>
             </Col>
           )}
-          {books.map((book) => (
-              <Col md="auto">
-                <div class="bookshelf-book-image-wrapper">
-                  <img height="150px" src={book.cover_image} alt="Book Cover" /> 
-                  { ! preview && (
-                    <div class="remove-book-from-bookshelf-button">
-                      <button class="btn btn-close" onClick={(event) => {handleDeleteBookFromBookshelf(event, book.id)}}></button>
-                    </div>
-                  )}
-                </div>
-              </Col>
-            ))}
-        </Row>
-        <Modal size="lg" contentClassName="add-books-to-bookshelf-modal" show={showModal} onShow={fetchBooksThatCanBeAdded} onHide={handleCloseModal} onExit={handleResetBooksToAdd} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>Choose one or more book to add</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Container>
-              <Row>
-                {booksThatCanBeAdded.map((book) => (
-                  <Col>
-                    <img src={book.cover_image} onClick={(event) => toggleBookSelection(event, book.id)} alt="Book Cover" class="border border-2 border-light" style={{'boxSizing': 'border-box', 'height': '175px', 'padding': '2px'}} /> 
-                  </Col>
-                ))}
-              </Row>
-            </Container>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseModal}>
-              Close
-            </Button>
-            <Button variant="primary" onClick={handleSaveChanges}>
-              Save Changes
-            </Button>
-          </Modal.Footer>
-        </Modal>
+      </Row>
+      <Row className="mt-2 align-items-center">
+        <Col md="auto">
+          { preview && (
+            <span className="text-secondary">{data.description}</span>
+          )}
+          { ! preview && (
+            <h5 className="text-secondary">{data.description}</h5>
+          )}
+        </Col>
+      </Row>
+      <Row className="mt-2">
+        { ! preview && (
+          <Col md="auto" className="mt-3">
+            <button type="button" className="btn btn-outline-primary" style={{ 'width': '90px', 'height': '150px' }} onClick={handleShowModal}>+</button>
+          </Col>
+        )}
+        {books.map((book) => (
+            <Col md="auto" className="mt-3">
+              <div class="bookshelf-book-image-wrapper">
+                <img height="150px" src={book.cover_image} alt="Book Cover" /> 
+                { ! preview && (
+                  <div class="remove-book-from-bookshelf-button">
+                    <button class="btn btn-close" onClick={(event) => {handleDeleteBookFromBookshelf(event, book.id)}}></button>
+                  </div>
+                )}
+              </div>
+            </Col>
+          ))}
+      </Row>
+      <Modal size="lg" contentClassName="add-books-to-bookshelf-modal" show={showModal} onShow={fetchBooksThatCanBeAdded} onHide={handleCloseModal} onExit={handleResetBooksToAdd} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Choose one or more book to add</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Container>
+            <Row>
+              {booksThatCanBeAdded.map((book) => (
+                <Col>
+                  <img src={book.cover_image} onClick={(event) => toggleBookSelection(event, book.id)} alt="Book Cover" class="border border-2 border-light" style={{'boxSizing': 'border-box', 'height': '175px', 'padding': '2px'}} /> 
+                </Col>
+              ))}
+            </Row>
+          </Container>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleSaveChanges}>
+            Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }
