@@ -45,11 +45,11 @@ async def create_book(
 
         local_file_destination = image.determine_local_file_destination(filename=sanitized_book_title)
 
-        image.download(cover_image=cover_image, local_filename=local_file_destination)
+        await image.download(remote_url=cover_image, local_filename=local_file_destination)
         
         filepath_for_db = image.get_cover_with_path_for_database(filename=sanitized_book_title)
 
-    db.execute(query='INSERT INTO books (title, author, year, category, cover_olid, cover_uri) VALUES (?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, olid, filepath_for_db))
+    db.execute(query='INSERT INTO books (title, author, year, category, cover_olid, cover_uri) VALUES (?, ?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, olid, filepath_for_db))
     return None
 
 @router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
