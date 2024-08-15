@@ -3,11 +3,11 @@ from typing import Annotated
 from app.models.book import Book, BookUpdate, Category
 from app.services.openlibrary import OpenLibrary
 from app.db.sqlite import get_db
+from app.utils.image import Image
 import inspect
-import urllib.request
-import os
 
 openlibrary = OpenLibrary()
+image = Image()
 
 router = APIRouter()
 
@@ -35,23 +35,21 @@ async def create_book(
 
     if olid is None:
         
-        filepath_for_db = '/assets/cover_images/No_Image_Available.jpg'
+        filepath_for_db = image.default_cover_image
 
     else:
     
-        cover_image = "https://covers.openlibrary.org/b/olid/{olid}-M.jpg".format(olid=olid)
+        cover_image = openlibrary.build_image_url_from_olid(olid=olid)
 
-        # Determine local filename for saving
-        dirname = os.path.dirname(__file__)
-        book_title_as_filename = "".join(c for c in book.title if c.isalpha() or c.isdigit() or c==' ').replace(' ', '_').rstrip()
-        final_filename = os.path.join(dirname, '../../../frontend/public/assets/cover_images/' + book_title_as_filename + '.jpg')
+        sanitized_book_title = image.sanitize_book_title_for_filename(book_title=book.title)
 
-        # Fetch and save file
-        urllib.request.urlretrieve(cover_image, final_filename)
+        local_file_destination = image.determine_local_file_destination(filename=sanitized_book_title)
+
+        image.download(cover_image=cover_image, local_filename=local_file_destination)
         
-        filepath_for_db = '/assets/cover_images/' + book_title_as_filename + '.jpg'
+        filepath_for_db = image.get_cover_with_path_for_database(filename=sanitized_book_title)
 
-    db.execute(query='INSERT INTO books (title, author, year, category, cover_image) VALUES (?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, filepath_for_db))
+    db.execute(query='INSERT INTO books (title, author, year, category, cover_olid, cover_uri) VALUES (?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, olid, filepath_for_db))
     return None
 
 @router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
