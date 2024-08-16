@@ -25,7 +25,7 @@ function Book({ bookId = null, preview = false }) {
       setAuthor(data.author);
       setYear(data.year);
       setCategory(data.category);
-      setCover(data.cover_image);
+      setCover(data.cover_uri);
     } catch (error) {
       console.error('Error fetching book:', error);
     } finally {

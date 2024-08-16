@@ -6,8 +6,12 @@ class OpenLibrary:
 
     def __init__(self):
         self.search_url = "https://openlibrary.org/search.json?title={title}"
+        self.cover_image_url = "https://covers.openlibrary.org/b/olid/{olid}-{size}.jpg"
+        # Options are S, M, L
+        self.cover_image_size = "M"
 
     async def search(self, book: Book) -> Dict[str, Any]:
+
         async with httpx.AsyncClient() as client:
             response = await client.get(self.search_url.format(title=book.title))
             response.raise_for_status()
@@ -25,3 +29,7 @@ class OpenLibrary:
                     break
 
         return olid
+    
+    def build_image_url_from_olid(self, olid: str):
+
+        return self.cover_image_url.format(olid=olid, size=self.cover_image_size)
