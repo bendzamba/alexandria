@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'
-import { CreateBook as CreateBookService, GetBookCategories } from '../../services/books';
+import { CreateBook as CreateBookService, GetBookCategories, SearchBookByTitle } from '../../services/books';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
 
 function CreateBook() {
   const [title, setTitle] = useState('');
@@ -9,7 +12,27 @@ function CreateBook() {
   const [category, setCategory] = useState('');
   const [availableCategories, setAvailableCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState(false);
+  const [coverEditionKey, setCoverEditionKey] = useState('');
+  const [editionKey, setEditionKey] = useState([]);
   const navigate = useNavigate();
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    setSearching(true);
+    setAuthor('');
+    setYear('');
+    setCoverEditionKey('');
+    setEditionKey('');
+    let response = await SearchBookByTitle(title);
+    setAuthor(response.author_name);
+    setYear(response.first_publish_year);
+    setCoverEditionKey(response.cover_edition_key);
+    setEditionKey(response.edition_key);
+    setSearching(false);
+    setSearchResults(true);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,57 +74,58 @@ function CreateBook() {
   }
 
   return (
-    <div className="container mt-4">
-      <h2>Create Book</h2>
-      <form onSubmit={handleSubmit}>
+    <Container className="mt-4">
+      {/* <h2>Create Book</h2> */}
+      <form onSubmit={handleSearch}>
         <div className="mb-3">
-          <label htmlFor="title" className="form-label">Title</label>
           <input
             type="text"
             className="form-control"
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder="Search for a title..."
           />
         </div>
-        <div className="mb-3">
-          <label htmlFor="author" className="form-label">Author</label>
-          <input
-            type="text"
-            className="form-control"
-            id="author"
-            value={author}
-            onChange={(e) => setAuthor(e.target.value)}
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="year" className="form-label">Year</label>
-          <input
-            type="text"
-            className="form-control"
-            id="year"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="category" className="form-label">Category</label>
-          <select 
-            className="form-select form-control"
-            id="category" 
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-           >
-            <option selected></option>
-            {availableCategories.map((category) => (
-                <option value={category}>{category}</option>
-            ))}
-          </select>
-        </div>
-        <button type="submit" className="btn btn-primary">Create</button>
+        <button type="submit" className="btn btn-primary">Search</button>
         <button type="button" className="btn btn-danger ms-1" onClick={handleCancel}>Cancel</button>
       </form>
-    </div>
+
+      { searching && (
+        <Row>
+          <h4>Searching...</h4>
+        </Row>
+      )}
+
+      { searchResults && (
+        <>
+          <Row className='mt-4'>
+            <h4>Search Results</h4>
+          </Row>
+          <Row>
+            <span>Author: {author}</span>
+          </Row>
+          <Row>
+            <span>Year: {year}</span>
+          </Row>
+          <Row>
+            <span>Select a cover image</span>
+          </Row>
+          <Row className="mt-4" style={{ maxHeight: '500px', overflow: 'scroll', border: '1px solid grey', borderRadius: '.375em' }}>
+          { editionKey && (
+              editionKey.map((editionKey) => (
+                <Col className='mt-2'>
+                  <img src={'https://covers.openlibrary.org/b/olid/' + editionKey + '-M.jpg'} style={{ height: '150px' }} />
+                </Col>
+              ))
+          )}
+          </Row>
+        </>
+      )}
+      
+      
+
+    </Container>
   );
 }
 
