@@ -104,7 +104,7 @@ function CreateBook() {
 
   useEffect(() => {
     if (olids.length === 0) {
-      setCoverUrl('/assets/cover_images/No_Image_Available.png');
+      setCoverUrl('/assets/cover_images/No_Image_Available.jpg');
     }
   }, [olids])
 
