@@ -26,8 +26,13 @@ class OpenLibrary:
             response = await client.get(self.search_title_url.format(title=title))
             response.raise_for_status()
             try:
-                work = Work(**response.json()['docs'][0])
-                return work
+                response_json = response.json()
+
+                if len(response_json['docs']) == 0:
+                    return False
+
+                return Work(**response_json['docs'][0])
+            
             except ValidationError as e:
                 print("Validation error occurred:", e)
         
