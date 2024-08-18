@@ -23,8 +23,13 @@ class OpenLibrary:
     async def search_by_title(self, title: str) -> Dict[str, Any]:
 
         async with httpx.AsyncClient() as client:
-            response = await client.get(self.search_title_url.format(title=title))
-            response.raise_for_status()
+            try:
+                response = await client.get(self.search_title_url.format(title=title), timeout=10.0)
+                response.raise_for_status()
+            except Exception as e:
+                print("Exception occurred", e)
+                return None
+            
             try:
                 response_json = response.json()
 
@@ -35,6 +40,7 @@ class OpenLibrary:
             
             except ValidationError as e:
                 print("Validation error occurred:", e)
+                return None
         
     def find_olid(self, olid_response: Dict[str, Any]) -> str | None:
 
