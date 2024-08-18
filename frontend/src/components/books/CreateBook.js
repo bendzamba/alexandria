@@ -6,6 +6,7 @@ import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 
 function CreateBook() {
+  const [searchTitle, setSearchTitle] = useState('');
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [year, setYear] = useState('');
@@ -30,8 +31,9 @@ function CreateBook() {
     setOlids([]);
     setCoverUrl('');
     setOlid('');
+    setTitle('');
 
-    let response = await SearchBookByTitle(title);
+    let response = await SearchBookByTitle(searchTitle);
 
     setSearching(false);
 
@@ -41,6 +43,7 @@ function CreateBook() {
     }
 
     setSearchResults(true);
+    setTitle(response.title);
     setAuthor(response.author_name);
     setYear(response.first_publish_year);
     setOlids(response.olids);
@@ -51,6 +54,7 @@ function CreateBook() {
     e.preventDefault();
     await CreateBookService({ title, author, year, olid, category });
     setTitle('');
+    setSearchTitle('');
     setAuthor('');
     setYear('');
     setCategory('');
@@ -62,6 +66,7 @@ function CreateBook() {
   const handleCancel = async (e) => {
     e.preventDefault();
     setTitle('');
+    setSearchTitle('');
     setAuthor('');
     setYear('');
     setCategory('');
@@ -125,9 +130,9 @@ function CreateBook() {
           <input
             type="text"
             className="form-control"
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            id="searchTitle"
+            value={searchTitle}
+            onChange={(e) => setSearchTitle(e.target.value)}
             placeholder="Search for a title..."
           />
         </div>
@@ -182,7 +187,6 @@ function CreateBook() {
                   <Row style={{ maxHeight: '500px', overflow: 'scroll', border: '1px solid grey', borderRadius: '.375em' }}>
                   { olids.map((map_olid) => (
                     <Col key={map_olid} className={"m-2"}>
-                      {/* index >= editionKey.length - (editionKey.length % 9) ? "m-2 col-auto" :  */}
                       <img 
                         src={'https://covers.openlibrary.org/b/olid/' + map_olid + '-M.jpg'} 
                         style={{ height: '150px', boxSizing: 'border-box', padding: '2px' }} 
