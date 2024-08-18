@@ -73,7 +73,7 @@ function Book({ bookId = null, preview = false }) {
         </Row>
       )}
       <Row>
-        <Col xs={3}>
+        <Col className={ ! preview ? 'col-auto' : '' } xs={ preview ? 3 : null}>
           <NavLink 
             className="nav-link" 
             to={"/books/" + id}
@@ -81,7 +81,7 @@ function Book({ bookId = null, preview = false }) {
             <img src={cover} className="img-fluid" alt="Book Cover" />
           </NavLink>
         </Col>
-        <Col xs={9}>
+        <Col className={ ! preview ? 'col-auto' : '' } xs={ preview ? 9 : null}>
           { preview && (
             <NavLink 
               className="nav-link" 

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Path, status
 from typing import Annotated
 from app.models.book import Book, BookUpdate, Category
+from app.models.openlibrary import Work
 from app.services.openlibrary import OpenLibrary
 from app.db.sqlite import get_db
 from app.utils.image import Image
@@ -29,17 +30,14 @@ async def create_book(
     book: Book,
     db = Depends(get_db)
 ):
-    search_results = await openlibrary.search(book=book)
 
-    olid = openlibrary.find_olid(olid_response=search_results)
-
-    if olid is None:
+    if book.olid is None:
         
         filepath_for_db = image.default_cover_image
 
     else:
     
-        cover_image = openlibrary.build_image_url_from_olid(olid=olid)
+        cover_image = openlibrary.build_image_url_from_olid(olid=book.olid)
 
         sanitized_book_title = image.sanitize_book_title_for_filename(book_title=book.title)
 
@@ -49,7 +47,7 @@ async def create_book(
         
         filepath_for_db = image.get_cover_with_path_for_database(filename=sanitized_book_title)
 
-    db.execute(query='INSERT INTO books (title, author, year, category, cover_olid, cover_uri) VALUES (?, ?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, olid, filepath_for_db))
+    db.execute(query='INSERT INTO books (title, author, year, category, olid, cover_uri) VALUES (?, ?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, book.olid, filepath_for_db))
     return None
 
 @router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -84,3 +82,14 @@ def delete_bookshelf(
 def get_book_categories():
     attributes = inspect.getmembers(Category, lambda a:not(inspect.isroutine(a)))
     return [a[1] for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))]
+
+@router.get("/search/{title}", status_code=status.HTTP_200_OK)
+async def search_by_title(
+    title: Annotated[str, Path(title="The title we are searching for")]
+):
+    search_results: Work = await openlibrary.search_by_title(title=title)
+
+    if not search_results:
+        return {}
+
+    return search_results.model_dump()

@@ -41,3 +41,8 @@ export const GetBookCategories = async () => {
     const response = await fetch(`${API_BASE_URL}/books/categories/`);
     return await response.json();
 };
+
+export const SearchBookByTitle = async (title) => {
+    const response = await fetch(`${API_BASE_URL}/books/search/${title}`)
+    return await response.json();
+};

@@ -1,21 +1,40 @@
 import httpx
-from app.models.book import Book
 from typing import Any, Dict
+from app.models.openlibrary import Work
+from pydantic import ValidationError
 
 class OpenLibrary:
 
     def __init__(self):
-        self.search_url = "https://openlibrary.org/search.json?title={title}"
+        self.search_title_url = "https://openlibrary.org/search.json?title={title}"
+        # We don't currently need all fields returned
+        # We only include title so we have a nice response format to unpack without dealing with the supplied title
+        self.search_fields_key = 'fields'
+        # taken from Work keys: 'title', 'author_name', 'cover_edition_key', 'edition_key', 'first_publish_year'
+        self.search_fields_values = Work.__dict__.keys()
+        self.search_fields_separator = ','
+        # We currently on;y need one result, as the default sort is 'relevance'
+        self.search_limit_key = 'limit'
+        self.search_limit_value = '1'
+        # For fetching cover images. Size options are S, M, L (small, medium, large)
         self.cover_image_url = "https://covers.openlibrary.org/b/olid/{olid}-{size}.jpg"
-        # Options are S, M, L
         self.cover_image_size = "M"
 
-    async def search(self, book: Book) -> Dict[str, Any]:
+    async def search_by_title(self, title: str) -> Dict[str, Any]:
 
         async with httpx.AsyncClient() as client:
-            response = await client.get(self.search_url.format(title=book.title))
+            response = await client.get(self.search_title_url.format(title=title))
             response.raise_for_status()
-            return response.json()
+            try:
+                response_json = response.json()
+
+                if len(response_json['docs']) == 0:
+                    return False
+
+                return Work(**response_json['docs'][0])
+            
+            except ValidationError as e:
+                print("Validation error occurred:", e)
         
     def find_olid(self, olid_response: Dict[str, Any]) -> str | None:
 
