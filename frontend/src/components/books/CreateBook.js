@@ -10,13 +10,13 @@ function CreateBook() {
   const [author, setAuthor] = useState('');
   const [year, setYear] = useState('');
   const [category, setCategory] = useState('Literary Fiction');
-  const [cover_olid, setCover_olid] = useState('');
+  const [olid, setOlid] = useState('');
   const [availableCategories, setAvailableCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState(false);
   const [noResults, setNoResults] = useState(false);
-  const [editionKeys, setEditionKeys] = useState([]);
+  const [olids, setOlids] = useState([]);
   const [coverUrl, setCoverUrl] = useState('');
   const navigate = useNavigate();
 
@@ -27,9 +27,9 @@ function CreateBook() {
     setNoResults(false);
     setAuthor('');
     setYear('');
-    setEditionKeys([]);
+    setOlids([]);
     setCoverUrl('');
-    setCover_olid('');
+    setOlid('');
 
     let response = await SearchBookByTitle(title);
 
@@ -43,18 +43,19 @@ function CreateBook() {
     setSearchResults(true);
     setAuthor(response.author_name);
     setYear(response.first_publish_year);
-    setEditionKeys(response.edition_keys);
+    setOlids(response.olids);
     setCoverUrl('/assets/cover_images/Select_A_Book_Cover.png')
   };
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    await CreateBookService({ title, author, year, cover_olid, category });
+    await CreateBookService({ title, author, year, olid, category });
     setTitle('');
     setAuthor('');
     setYear('');
     setCategory('');
-    setCover_olid('');
+    setOlid('');
+    setOlids([]);
     navigate(`/books/`);
   };
 
@@ -64,17 +65,18 @@ function CreateBook() {
     setAuthor('');
     setYear('');
     setCategory('');
-    setCover_olid('');
+    setOlid('');
+    setOlids([]);
     navigate(`/books/`);
   };
 
-  const imageOnload = async (event, editionKey) => {
+  const imageOnload = async (event, olid) => {
     const img = event.target;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
     if (img.naturalWidth === 1 || img.naturalHeight === 1) {
-      setEditionKeys(prevEditionKeys => {
-        return prevEditionKeys.filter(item => {
-          return item !== editionKey;
+      setOlids(prevOlids => {
+        return prevOlids.filter(prevOlid => {
+          return prevOlid !== olid;
         })
       });
     }
@@ -96,19 +98,19 @@ function CreateBook() {
   }, []);
 
   useEffect(() => {
-    if (editionKeys.length === 0) {
+    if (olids.length === 0) {
       setCoverUrl('/assets/cover_images/No_Image_Available.png');
     }
-  }, [editionKeys])
+  }, [olids])
 
-  const toggleBookSelection = async (e, bookToToggle) => {
+  const toggleBookCoverSelection = async (e, olidToToggle) => {
     e.preventDefault();
-    const localCoverOlid = cover_olid === bookToToggle ? '' : bookToToggle;
-    setCover_olid(localCoverOlid);
-    if (cover_olid === bookToToggle) {
+    const localOlid = olid === olidToToggle ? '' : olidToToggle;
+    setOlid(localOlid);
+    if (olid === olidToToggle) {
       setCoverUrl('/assets/cover_images/Select_A_Book_Cover.png')
     } else {
-      setCoverUrl('https://covers.openlibrary.org/b/olid/' + bookToToggle + '-L.jpg');
+      setCoverUrl('https://covers.openlibrary.org/b/olid/' + olidToToggle + '-L.jpg');
     }
   };
 
@@ -118,7 +120,6 @@ function CreateBook() {
 
   return (
     <Container className="mt-4">
-      {/* <h2>Create Book</h2> */}
       <form onSubmit={handleSearch}>
         <div className="mb-3">
           <input
@@ -175,19 +176,19 @@ function CreateBook() {
                 <h6>{year}</h6>
               </div>
             </Col>
-            { editionKeys && editionKeys.length > 0 && (
+            { olids && olids.length > 0 && (
               <>
                 <Col xs={6}>
                   <Row style={{ maxHeight: '500px', overflow: 'scroll', border: '1px solid grey', borderRadius: '.375em' }}>
-                  { editionKeys.map((editionKey) => (
-                    <Col key={editionKey} className={"m-2"}>
+                  { olids.map((map_olid) => (
+                    <Col key={map_olid} className={"m-2"}>
                       {/* index >= editionKey.length - (editionKey.length % 9) ? "m-2 col-auto" :  */}
                       <img 
-                        src={'https://covers.openlibrary.org/b/olid/' + editionKey + '-M.jpg'} 
+                        src={'https://covers.openlibrary.org/b/olid/' + map_olid + '-M.jpg'} 
                         style={{ height: '150px', boxSizing: 'border-box', padding: '2px' }} 
-                        onLoad={(event) => imageOnload(event, editionKey)} 
-                        onClick={(event) => toggleBookSelection(event, editionKey)} 
-                        className={`border border-2 ${cover_olid === editionKey ? 'border-primary' : 'border-light' }`}
+                        onLoad={(event) => imageOnload(event, map_olid)} 
+                        onClick={(event) => toggleBookCoverSelection(event, map_olid)} 
+                        className={`border border-2 ${olid === map_olid ? 'border-primary' : 'border-light' }`}
                         alt='Book Cover'
                       />
                     </Col>
@@ -200,8 +201,6 @@ function CreateBook() {
         </>
       )}
       
-      
-
     </Container>
   );
 }
