@@ -9,38 +9,52 @@ function CreateBook() {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [year, setYear] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState('Literary Fiction');
+  const [cover_olid, setCover_olid] = useState('');
   const [availableCategories, setAvailableCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState(false);
-  const [coverEditionKey, setCoverEditionKey] = useState('');
-  const [editionKey, setEditionKey] = useState([]);
+  const [noResults, setNoResults] = useState(false);
+  const [editionKeys, setEditionKeys] = useState([]);
+  const [coverUrl, setCoverUrl] = useState('');
   const navigate = useNavigate();
 
   const handleSearch = async (e) => {
     e.preventDefault();
     setSearching(true);
+    setSearchResults(false);
+    setNoResults(false);
     setAuthor('');
     setYear('');
-    setCoverEditionKey('');
-    setEditionKey('');
+    setEditionKeys([]);
+    setCoverUrl('');
+    setCover_olid('');
+
     let response = await SearchBookByTitle(title);
+
+    setSearching(false);
+
+    if (Object.keys(response).length === 0 && response.constructor === Object) {
+      setNoResults(true);
+      return;
+    }
+
+    setSearchResults(true);
     setAuthor(response.author_name);
     setYear(response.first_publish_year);
-    setCoverEditionKey(response.cover_edition_key);
-    setEditionKey(response.edition_key);
-    setSearching(false);
-    setSearchResults(true);
+    setEditionKeys(response.edition_keys);
+    setCoverUrl('/assets/cover_images/Select_A_Book_Cover.png')
   };
 
-  const handleSubmit = async (e) => {
+  const handleCreate = async (e) => {
     e.preventDefault();
-    await CreateBookService({ title, author, year, category });
+    await CreateBookService({ title, author, year, cover_olid, category });
     setTitle('');
     setAuthor('');
     setYear('');
     setCategory('');
+    setCover_olid('');
     navigate(`/books/`);
   };
 
@@ -50,14 +64,26 @@ function CreateBook() {
     setAuthor('');
     setYear('');
     setCategory('');
+    setCover_olid('');
     navigate(`/books/`);
+  };
+
+  const imageOnload = async (event, editionKey) => {
+    const img = event.target;
+    // Images returned from Open Library that are 'blank' seem to render as 1x1s
+    if (img.naturalWidth === 1 || img.naturalHeight === 1) {
+      setEditionKeys(prevEditionKeys => {
+        return prevEditionKeys.filter(item => {
+          return item !== editionKey;
+        })
+      });
+    }
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await GetBookCategories();
-        console.log('this is the category data: ', data);
         setAvailableCategories(data);
       } catch (error) {
         console.error('Error fetching book categories:', error);
@@ -68,6 +94,23 @@ function CreateBook() {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (editionKeys.length === 0) {
+      setCoverUrl('/assets/cover_images/No_Image_Available.png');
+    }
+  }, [editionKeys])
+
+  const toggleBookSelection = async (e, bookToToggle) => {
+    e.preventDefault();
+    const localCoverOlid = cover_olid === bookToToggle ? '' : bookToToggle;
+    setCover_olid(localCoverOlid);
+    if (cover_olid === bookToToggle) {
+      setCoverUrl('/assets/cover_images/Select_A_Book_Cover.png')
+    } else {
+      setCoverUrl('https://covers.openlibrary.org/b/olid/' + bookToToggle + '-L.jpg');
+    }
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -97,28 +140,62 @@ function CreateBook() {
         </Row>
       )}
 
+      { noResults && (
+        <Row className='mt-4'>
+          <h4>No Results Found. Please Try Another Search.</h4>
+        </Row>
+      )}
+
       { searchResults && (
         <>
-          <Row className='mt-4'>
-            <h4>Search Results</h4>
+          <Row className="mt-4 mb-4 align-items-center" style={{ 'borderBottom': '3px solid black'}}>
+            <Col x3={9}>
+              <div>
+                <h1 className="display-5 pull-left">Search Results</h1>
+              </div>
+            </Col>
+            <Col xs={3} style={{
+              textAlign:"right"
+            }}>
+              <button type="button" className="btn btn-primary" onClick={handleCreate}>Create</button>
+            </Col>
           </Row>
           <Row>
-            <span>Author: {author}</span>
-          </Row>
-          <Row>
-            <span>Year: {year}</span>
-          </Row>
-          <Row>
-            <span>Select a cover image</span>
-          </Row>
-          <Row className="mt-4" style={{ maxHeight: '500px', overflow: 'scroll', border: '1px solid grey', borderRadius: '.375em' }}>
-          { editionKey && (
-              editionKey.map((editionKey) => (
-                <Col className='mt-2'>
-                  <img src={'https://covers.openlibrary.org/b/olid/' + editionKey + '-M.jpg'} style={{ height: '150px' }} />
+            <Col xs={3}>
+              <img src={coverUrl} className="img-fluid" alt="Book Cover" height="300px"/>
+            </Col>
+            <Col xs={3}>
+              <div>
+                <h2>{title}</h2>
+              </div>
+              <div>
+                <h4>{author}</h4>
+              </div>
+              <div>
+                <h6>{year}</h6>
+              </div>
+            </Col>
+            { editionKeys && editionKeys.length > 0 && (
+              <>
+                <Col xs={6}>
+                  <Row style={{ maxHeight: '500px', overflow: 'scroll', border: '1px solid grey', borderRadius: '.375em' }}>
+                  { editionKeys.map((editionKey) => (
+                    <Col key={editionKey} className={"m-2"}>
+                      {/* index >= editionKey.length - (editionKey.length % 9) ? "m-2 col-auto" :  */}
+                      <img 
+                        src={'https://covers.openlibrary.org/b/olid/' + editionKey + '-M.jpg'} 
+                        style={{ height: '150px', boxSizing: 'border-box', padding: '2px' }} 
+                        onLoad={(event) => imageOnload(event, editionKey)} 
+                        onClick={(event) => toggleBookSelection(event, editionKey)} 
+                        className={`border border-2 ${cover_olid === editionKey ? 'border-primary' : 'border-light' }`}
+                        alt='Book Cover'
+                      />
+                    </Col>
+                  ))}
+                  </Row>  
                 </Col>
-              ))
-          )}
+              </>
+            )}
           </Row>
         </>
       )}
