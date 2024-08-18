@@ -32,7 +32,7 @@ function Books() {
     <Container>
       <Row>
         {books.map((book) => (
-          <Col xs={4} className="mt-3 mb-3">
+          <Col xs={4} className="mt-3 mb-3" key={book.id}>
             <Book
               bookId={book.id}
               preview={true}
