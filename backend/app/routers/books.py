@@ -31,13 +31,13 @@ async def create_book(
     db = Depends(get_db)
 ):
 
-    if book.cover_olid is None:
+    if book.olid is None:
         
         filepath_for_db = image.default_cover_image
 
     else:
     
-        cover_image = openlibrary.build_image_url_from_olid(olid=book.cover_olid)
+        cover_image = openlibrary.build_image_url_from_olid(olid=book.olid)
 
         sanitized_book_title = image.sanitize_book_title_for_filename(book_title=book.title)
 
@@ -47,7 +47,7 @@ async def create_book(
         
         filepath_for_db = image.get_cover_with_path_for_database(filename=sanitized_book_title)
 
-    db.execute(query='INSERT INTO books (title, author, year, category, cover_olid, cover_uri) VALUES (?, ?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, book.cover_olid, filepath_for_db))
+    db.execute(query='INSERT INTO books (title, author, year, category, olid, cover_uri) VALUES (?, ?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, book.olid, filepath_for_db))
     return None
 
 @router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)

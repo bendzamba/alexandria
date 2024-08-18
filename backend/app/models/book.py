@@ -43,7 +43,7 @@ class Book(BaseModel):
     author: str
     year: int
     category: Category
-    cover_olid: Optional[str]
+    olid: Optional[str]
 
 class BookIds(BaseModel):
     book_ids: list[int]
