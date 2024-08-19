@@ -18,7 +18,7 @@ class OpenLibrary:
         self.search_limit_value = '1'
         # For fetching cover images. Size options are S, M, L (small, medium, large)
         self.cover_image_url = "https://covers.openlibrary.org/b/olid/{olid}-{size}.jpg"
-        self.cover_image_size = "M"
+        self.cover_image_size = "L"
 
     async def search_by_title(self, title: str) -> Dict[str, Any]:
 

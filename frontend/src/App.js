@@ -8,7 +8,6 @@ import UpdateBookshelf from './components/bookshelves/UpdateBookshelf';
 import Books from './components/books/Books';
 import Book from './components/books/Book';
 import CreateBook from './components/books/CreateBook';
-import UpdateBook from './components/books/UpdateBook';
 import Header from './components/common/Header';
 
 function App() {
@@ -25,7 +24,6 @@ function App() {
             <Route path="/books/" element={<Books />} />
             <Route path="/books/:id" element={<Book />} />
             <Route path="/books/create" element={<CreateBook />} />
-            <Route path="/books/update/:id" element={<UpdateBook />} />
          </Routes>
         </div>
       </Container>

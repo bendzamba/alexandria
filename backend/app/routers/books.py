@@ -6,6 +6,7 @@ from app.services.openlibrary import OpenLibrary
 from app.db.sqlite import get_db
 from app.utils.image import Image
 import inspect
+import os.path
 
 openlibrary = OpenLibrary()
 image = Image()
@@ -39,19 +40,17 @@ async def create_book(
     
         cover_image = openlibrary.build_image_url_from_olid(olid=book.olid)
 
-        sanitized_book_title = image.sanitize_book_title_for_filename(book_title=book.title)
-
-        local_file_destination = image.determine_local_file_destination(filename=sanitized_book_title)
+        local_file_destination = image.determine_local_file_destination(filename=book.olid)
 
         await image.download(remote_url=cover_image, local_filename=local_file_destination)
         
-        filepath_for_db = image.get_cover_with_path_for_database(filename=sanitized_book_title)
+        filepath_for_db = image.get_cover_with_path_for_database(filename=book.olid)
 
     db.execute(query='INSERT INTO books (title, author, year, category, olid, cover_uri) VALUES (?, ?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, book.olid, filepath_for_db))
     return None
 
 @router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
-def update_bookshelf(
+async def update_bookshelf(
     book_id: Annotated[int, Path(title="The ID of the book to update")],
     book: BookUpdate,
     db = Depends(get_db)
@@ -64,6 +63,21 @@ def update_bookshelf(
         if book_dict[attribute] is not None:
             update_fields.append(f"{attribute} = ?")
             parameters.append(book_dict[attribute])
+
+    if book.olid is not None:
+    
+        local_file_destination = image.determine_local_file_destination(filename=book.olid)
+
+        if os.path.isfile(local_file_destination) == False:
+
+            cover_image = openlibrary.build_image_url_from_olid(olid=book.olid)
+
+            await image.download(remote_url=cover_image, local_filename=local_file_destination)
+        
+            filepath_for_db = image.get_cover_with_path_for_database(filename=book.olid)
+
+            update_fields.append(f"cover_uri = ?")
+            parameters.append(filepath_for_db)
 
     query = f"UPDATE books SET {', '.join(update_fields)} WHERE id = ?"
     parameters.append(book_id)
