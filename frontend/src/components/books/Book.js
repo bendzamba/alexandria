@@ -136,7 +136,7 @@ function Book({ bookId = null, preview = false }) {
                 className="nav-link" 
                 to={"/books/" + id}
               >
-                <img src={coverUri} className="img-fluid" alt="Book Cover" />
+                <img src={coverUri} className="img-fluid" alt="Book Cover" loading="lazy" />
               </NavLink>
             </Col>
             <Col className={ ! preview ? 'col-auto' : '' } xs={ preview ? 9 : null }>
@@ -202,6 +202,7 @@ function Book({ bookId = null, preview = false }) {
                     onClick={(event) => toggleBookCoverSelection(event, map_olid)} 
                     className={`border border-2 ${olid === map_olid ? 'border-primary' : 'border-light' }`}
                     alt='Book Cover'
+                    loading='lazy'
                   />
                 </Col>
               ))}
