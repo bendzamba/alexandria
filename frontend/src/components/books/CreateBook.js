@@ -194,6 +194,7 @@ function CreateBook() {
                         onClick={(event) => toggleBookCoverSelection(event, map_olid)} 
                         className={`border border-2 ${olid === map_olid ? 'border-primary' : 'border-light' }`}
                         alt='Book Cover'
+                        loading='lazy'
                       />
                     </Col>
                   ))}

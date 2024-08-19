@@ -29,14 +29,14 @@ function Bookshelves() {
 
   return (
     <Container>
-      <Row className="mt-3 mb-3">
-        {bookshelves.map((bookshelf) => (
+      {bookshelves.map((bookshelf) => (
+        <Row className="mt-3 mb-3" style={{ 'min-height': '250px' }} key={bookshelf.id}>
           <Bookshelf
             bookshelfId={bookshelf.id}
             preview={true}
           />
-        ))}
-      </Row>
+        </Row>
+      ))}
     </Container>
   );
 }

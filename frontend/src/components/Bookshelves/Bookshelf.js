@@ -7,6 +7,7 @@ import Modal from 'react-bootstrap/Modal';
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
 import { GetBookshelfBooks, GetBookshelf, DeleteBookshelf, GetBooksNotOnBookshelf, AddBooksToBookshelf, DeleteBookFromBookshelf } from '../../services/bookshelves'
 import {confirm} from 'react-bootstrap-confirmation';
+import LazyImage from '../common/LazyLoadImage';
 
 function Bookshelf({ bookshelfId = null, preview = false }) {
 
@@ -126,27 +127,27 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
   return (
     <Container>
       <Row className="mt-4 align-items-center" style={{ 'borderBottom': '3px solid black'}}>
-          <Col xs={9}>
-          { preview && (
-            <NavLink 
-              className="nav-link" 
-              to={"/bookshelves/" + id}
-              >
-                <h1 className="display-6 pull-left">{data.title}</h1>
-            </NavLink>
-          )}
-          { ! preview && (
-            <h1 className="display-5 pull-left">{data.title}</h1>
-          )}
+        <Col xs={9}>
+        { preview && (
+          <NavLink 
+            className="nav-link" 
+            to={"/bookshelves/" + id}
+            >
+              <h1 className="display-6 pull-left">{data.title}</h1>
+          </NavLink>
+        )}
+        { ! preview && (
+          <h1 className="display-5 pull-left">{data.title}</h1>
+        )}
+        </Col>
+        { ! preview && (
+          <Col xs={3} style={{
+            textAlign:"right"
+          }}>
+            <button type="button" className="btn btn-primary" onClick={handleUpdate}>Update</button>
+            <button type="button" className="btn btn-danger ms-1" onClick={handleDelete}>Delete</button>
           </Col>
-          { ! preview && (
-            <Col xs={3} style={{
-              textAlign:"right"
-            }}>
-              <button type="button" className="btn btn-primary" onClick={handleUpdate}>Update</button>
-              <button type="button" className="btn btn-danger ms-1" onClick={handleDelete}>Delete</button>
-            </Col>
-          )}
+        )}
       </Row>
       <Row className="mt-2 align-items-center">
         <Col md="auto">
@@ -158,24 +159,30 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
           )}
         </Col>
       </Row>
-      <Row className="mt-2">
+      <Row className="mt-2" style={{ 'min-height': '150px' }}>
         { ! preview && (
           <Col md="auto" className="mt-3">
             <button type="button" className="btn btn-outline-primary" style={{ 'width': '90px', 'height': '150px' }} onClick={handleShowModal}>+</button>
           </Col>
         )}
         {books.map((book) => (
-            <Col md="auto" className="mt-3">
-              <div class="bookshelf-book-image-wrapper">
-                <img height="150px" src={book.cover_uri} alt="Book Cover" /> 
-                { ! preview && (
-                  <div class="remove-book-from-bookshelf-button">
-                    <button class="btn btn-close" onClick={(event) => {handleDeleteBookFromBookshelf(event, book.id)}}></button>
-                  </div>
-                )}
-              </div>  
-            </Col>
-          ))}
+          <Col md="auto" className="mt-3" style={{ 'min-height': '150px', 'min-width': '80px' }}>
+            <div class="bookshelf-book-image-wrapper" style={{ 'min-height': '150px', 'min-width': '80px' }}>
+              <img 
+                height="150px" 
+                src={book.cover_uri} 
+                alt="Book Cover" 
+                loading="lazy" 
+                style={{ 'height': '150px', 'min-height': '150px', 'min-width': '80px' }}
+              />
+              { ! preview && (
+                <div class="remove-book-from-bookshelf-button">
+                  <button class="btn btn-close" onClick={(event) => {handleDeleteBookFromBookshelf(event, book.id)}}></button>
+                </div>
+              )}
+            </div>  
+          </Col>
+        ))}
       </Row>
       <Modal size="lg" contentClassName="add-books-to-bookshelf-modal" show={showModal} onShow={fetchBooksThatCanBeAdded} onHide={handleCloseModal} onExit={handleResetBooksToAdd} centered>
         <Modal.Header closeButton>
@@ -185,8 +192,18 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
           <Container>
             <Row>
               {booksThatCanBeAdded.map((book) => (
-                <Col>
-                  <img src={book.cover_uri} onClick={(event) => toggleBookSelection(event, book.id)} alt="Book Cover" class="border border-2 border-light" style={{'boxSizing': 'border-box', 'height': '175px', 'padding': '2px'}} /> 
+                <Col 
+                  className='m-3'
+                  onClick={(event) => toggleBookSelection(event, book.id)}
+                  style={{'height': '175px', 'min-height': '175px', 'min-width': '100px', 'padding': '2px'}}
+                >
+                  <LazyImage 
+                    src={book.cover_uri} 
+                    alt="Book Cover" 
+                    class="border border-2 border-light" 
+                    style={{'boxSizing': 'border-box', 'height': '175px', 'min-height': '175px', 'min-width': '100px', 'padding': '2px'}}
+                    rootElement={document.querySelector('.modal-content')}
+                  ></LazyImage>
                 </Col>
               ))}
             </Row>
