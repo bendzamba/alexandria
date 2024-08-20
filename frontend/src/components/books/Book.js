@@ -6,6 +6,7 @@ import { GetBook, DeleteBook, UpdateBook } from '../../services/books'
 import Container from 'react-bootstrap/esm/Container';
 import {confirm} from 'react-bootstrap-confirmation';
 import { SearchBookByTitle } from '../../services/books';
+import styles from './css/Book.module.css';
 
 function Book({ bookId = null, preview = false }) {
 
@@ -17,6 +18,8 @@ function Book({ bookId = null, preview = false }) {
   const [author, setAuthor] = useState('');
   const [year, setYear] = useState('');
   const [category, setCategory] = useState('');
+  const [rating, setRating] = useState('');
+  const [review, setReview] = useState('');
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState(false);
@@ -36,6 +39,8 @@ function Book({ bookId = null, preview = false }) {
       setSavedOlid(data.olid);
       setCoverUri(data.cover_uri);
       setSavedCoverUri(data.cover_uri);
+      setRating(data.rating);
+      setReview(data.review);
     } catch (error) {
       console.error('Error fetching book:', error);
     } finally {
@@ -56,7 +61,7 @@ function Book({ bookId = null, preview = false }) {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    await UpdateBook(id, { title, author, year, category, olid });
+    await UpdateBook(id, { olid });
 
     setSearchResults(false);
     setOlids([]);
@@ -94,13 +99,21 @@ function Book({ bookId = null, preview = false }) {
     }
   };
 
+  const changeRating = async (e) => {
+    const newRating = parseInt(e.target.value);
+    if (rating !== newRating) {
+      setRating(newRating);
+      await UpdateBook(id, { rating: newRating });
+    }
+  };
+
   useEffect(() => {
     fetchBook();
   }, [fetchBook]);
 
   useEffect(() => {
     // pass
-  }, [olids])
+  }, [olids]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -186,6 +199,18 @@ function Book({ bookId = null, preview = false }) {
                   </h6>
                 )}
               </div>
+              <fieldset className={`${styles.rating} ${preview ? styles['rating-preview'] : ''}`}>
+                <input type="radio" id={`star5-${id}`} name={`rating-${id}`} value="5" onClick={changeRating} checked={rating === 5} />
+                <label htmlFor={`star5-${id}`}>5 stars</label>
+                <input type="radio" id={`star4-${id}`} name={`rating-${id}`} value="4" onClick={changeRating} checked={rating === 4} />
+                <label htmlFor={`star4-${id}`}>4 stars</label>
+                <input type="radio" id={`star3-${id}`} name={`rating-${id}`} value="3" onClick={changeRating} checked={rating === 3} />
+                <label htmlFor={`star3-${id}`}>3 stars</label>
+                <input type="radio" id={`star2-${id}`} name={`rating-${id}`} value="2" onClick={changeRating} checked={rating === 2} />
+                <label htmlFor={`star2-${id}`}>2 stars</label>
+                <input type="radio" id={`star1-${id}`} name={`rating-${id}`} value="1" onClick={changeRating} checked={rating === 1} />
+                <label htmlFor={`star1-${id}`}>1 star</label> 
+              </fieldset>
             </Col>
           </Row>
         </Col>
