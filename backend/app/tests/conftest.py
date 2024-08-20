@@ -21,7 +21,6 @@ class DB:
                 title TEXT, 
                 author TEXT, 
                 year INTEGER, 
-                category TEXT, 
                 cover_image TEXT
             )
         ''')
