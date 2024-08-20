@@ -120,11 +120,7 @@ function Book({ bookId = null, preview = false }) {
   }
 
   const changeReview = async (e) => {
-    const el = document.getElementById('review');
-    let newReview = el.innerHTML;
-    // innerHtml will get <div> and <br> elements added by contentenditable <div>
-    // swap these for newlines
-    newReview = newReview.replace(/<br\s*\/?>/gi, '\n').replace(/<\/div>|<\/p>/gi, '\n').replace(/<div>|<p>/gi, '');
+    const newReview = getReview();
     if (newReview !== savedReview) {
       setReview(newReview);
       await UpdateBook(id, { review: newReview });
@@ -134,13 +130,19 @@ function Book({ bookId = null, preview = false }) {
 
   const blurReview = async (e) => {
     const el = document.getElementById('review');
-    let newReview = el.innerHTML;
-    newReview = newReview.replace(/<br\s*\/?>/gi, '\n').replace(/<\/div>|<\/p>/gi, '\n').replace(/<div>|<p>/gi, '');
-    console.log('new review', newReview);
+    const newReview = getReview();
     if ( ! newReview || newReview === savedReview) {
       el.setAttribute('placeholder', reviewPlaceholder);
       setAddingReview(false);
     }
+  };
+
+  const getReview = () => {
+    const el = document.getElementById('review');
+    let newReview = el.innerHTML;
+    // innerHtml will get <div> and <br> elements added by contentenditable <div>
+    // swap these for newlines
+    return newReview.replace(/<br\s*\/?>/gi, '\n').replace(/<\/div>|<\/p>/gi, '\n').replace(/<div>|<p>/gi, '');
   };
 
   useEffect(() => {
