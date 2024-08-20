@@ -44,6 +44,8 @@ class Book(BaseModel):
     year: int
     category: Category
     olid: Optional[str]
+    rating: Optional[int]
+    review: Optional[str]
 
 class BookIds(BaseModel):
     book_ids: list[int]
