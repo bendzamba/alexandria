@@ -43,7 +43,9 @@ class Book(BaseModel):
     author: str
     year: int
     category: Category
-    olid: Optional[str]
+    olid: Optional[str] = None
+    rating: Optional[int] = None
+    review: Optional[str] = None
 
 class BookIds(BaseModel):
     book_ids: list[int]

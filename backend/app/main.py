@@ -42,7 +42,9 @@ async def lifespan(app: FastAPI):
             year INTEGER, 
             category TEXT, 
             olid TEXT,
-            cover_uri TEXT
+            cover_uri TEXT,
+            rating INTEGER
+            review TEXT
         )
     ''')
     cursor.execute('''
