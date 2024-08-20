@@ -20,6 +20,7 @@ function Book({ bookId = null, preview = false }) {
   const [category, setCategory] = useState('');
   const [rating, setRating] = useState('');
   const [review, setReview] = useState('');
+  const [savedReview, setSavedReview] = useState('');
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState(false);
@@ -27,6 +28,8 @@ function Book({ bookId = null, preview = false }) {
   const [savedOlid, setSavedOlid] = useState([]);
   const [olids, setOlids] = useState([]);
   const navigate = useNavigate();
+  const [addingReview, setAddingReview] = useState(false);
+  const reviewPlaceholder = 'Share your thoughts on this book ...';
 
   const fetchBook = useCallback(async () => {
     try {
@@ -41,6 +44,7 @@ function Book({ bookId = null, preview = false }) {
       setSavedCoverUri(data.cover_uri);
       setRating(data.rating);
       setReview(data.review);
+      setSavedReview(data.review);
     } catch (error) {
       console.error('Error fetching book:', error);
     } finally {
@@ -107,6 +111,38 @@ function Book({ bookId = null, preview = false }) {
     }
   };
 
+  const editReview = async (e) => {
+    const el = e.target;
+    if (addingReview === false) {
+      el.setAttribute('placeholder', '');
+      setAddingReview(true);
+    }
+  }
+
+  const changeReview = async (e) => {
+    const el = document.getElementById('review');
+    let newReview = el.innerHTML;
+    // innerHtml will get <div> and <br> elements added by contentenditable <div>
+    // swap these for newlines
+    newReview = newReview.replace(/<br\s*\/?>/gi, '\n').replace(/<\/div>|<\/p>/gi, '\n').replace(/<div>|<p>/gi, '');
+    if (newReview !== savedReview) {
+      setReview(newReview);
+      await UpdateBook(id, { review: newReview });
+      setAddingReview(false);
+    }
+  };
+
+  const blurReview = async (e) => {
+    const el = document.getElementById('review');
+    let newReview = el.innerHTML;
+    newReview = newReview.replace(/<br\s*\/?>/gi, '\n').replace(/<\/div>|<\/p>/gi, '\n').replace(/<div>|<p>/gi, '');
+    console.log('new review', newReview);
+    if ( ! newReview || newReview === savedReview) {
+      el.setAttribute('placeholder', reviewPlaceholder);
+      setAddingReview(false);
+    }
+  };
+
   useEffect(() => {
     fetchBook();
   }, [fetchBook]);
@@ -142,84 +178,107 @@ function Book({ bookId = null, preview = false }) {
         </Row>
       )}
       <Row>
-        <Col xs={ preview ? 12 : (olids && olids.length > 0 ? 8 : 12)}>
-          <Row>
-            <Col className={ ! preview ? 'col-auto' : '' } xs={ preview ? 3 : null}>
-              <NavLink 
-                className="nav-link" 
-                to={"/books/" + id}
-              >
-                <img src={coverUri} className="img-fluid" alt="Book Cover" loading="lazy" />
-              </NavLink>
-            </Col>
-            <Col className={ ! preview ? 'col-auto' : '' } xs={ preview ? 9 : null }>
-              { preview && (
-                <NavLink 
-                  className="nav-link" 
-                  to={"/books/" + id}
-                >
-                  <div>
-                    <span><strong>{title}</strong></span>
-                  </div>
-                </NavLink>
-              )}
-              <div>  
-                { preview && (
-                  <span className="text-secondary">
-                    <small>{author}</small>
-                  </span>
-                )}
-                { ! preview && (
-                  <h3>
-                    {author}
-                  </h3>
-                )}
-              </div>
+        <Col xs={3}>
+          <NavLink 
+            className="nav-link" 
+            to={"/books/" + id}
+          >
+            <img src={coverUri} className="img-fluid" alt="Book Cover" loading="lazy" />
+          </NavLink>
+        </Col>
+        <Col className='text-truncate' xs={ olids && olids.length > 0 ? 5 : 9}>
+          { preview && (
+            <NavLink 
+              className="nav-link" 
+              to={"/books/" + id}
+            >
               <div>
-                { preview && (
-                  <span>
-                    <small>{year}</small>
-                  </span>
-                )}
-                { ! preview && (
-                  <h5>
-                    {year}
-                  </h5>
-                )}
+                <span><strong>{title}</strong></span>
               </div>
-              <div>
-                { preview && (
-                  <span>
-                    <small>{category}</small>
-                  </span>
-                )}
-                { ! preview && (
-                  <h6>
-                    {category}
-                  </h6>
-                )}
-              </div>
-              <fieldset className={`${styles.rating} ${preview ? styles['rating-preview'] : ''}`}>
-                <input type="radio" id={`star5-${id}`} name={`rating-${id}`} value="5" onClick={changeRating} checked={rating === 5} />
-                <label htmlFor={`star5-${id}`}>5 stars</label>
-                <input type="radio" id={`star4-${id}`} name={`rating-${id}`} value="4" onClick={changeRating} checked={rating === 4} />
-                <label htmlFor={`star4-${id}`}>4 stars</label>
-                <input type="radio" id={`star3-${id}`} name={`rating-${id}`} value="3" onClick={changeRating} checked={rating === 3} />
-                <label htmlFor={`star3-${id}`}>3 stars</label>
-                <input type="radio" id={`star2-${id}`} name={`rating-${id}`} value="2" onClick={changeRating} checked={rating === 2} />
-                <label htmlFor={`star2-${id}`}>2 stars</label>
-                <input type="radio" id={`star1-${id}`} name={`rating-${id}`} value="1" onClick={changeRating} checked={rating === 1} />
-                <label htmlFor={`star1-${id}`}>1 star</label> 
-              </fieldset>
-            </Col>
+            </NavLink>
+          )}
+          <Row>  
+            { preview && (
+              <span className="text-secondary">
+                <small>{author}</small>
+              </span>
+            )}
+            { ! preview && (
+              <h3>
+                {author}
+              </h3>
+            )}
           </Row>
+          <Row>
+            { preview && (
+              <span>
+                <small>{year}</small>
+              </span>
+            )}
+            { ! preview && (
+              <h5>
+                {year}
+              </h5>
+            )}
+          </Row>
+          <Row>
+            { preview && (
+              <span>
+                <small>{category}</small>
+              </span>
+            )}
+            { ! preview && (
+              <h6>
+                {category}
+              </h6>
+            )}
+          </Row>
+          <Row className='ms-auto'>
+            <fieldset className={`${styles.rating} ${preview ? styles['rating-preview'] : ''}`}>
+              <input type="radio" id={`star5-${id}`} name={`rating-${id}`} value="5" onClick={changeRating} checked={rating === 5} />
+              <label htmlFor={`star5-${id}`}>5 stars</label>
+              <input type="radio" id={`star4-${id}`} name={`rating-${id}`} value="4" onClick={changeRating} checked={rating === 4} />
+              <label htmlFor={`star4-${id}`}>4 stars</label>
+              <input type="radio" id={`star3-${id}`} name={`rating-${id}`} value="3" onClick={changeRating} checked={rating === 3} />
+              <label htmlFor={`star3-${id}`}>3 stars</label>
+              <input type="radio" id={`star2-${id}`} name={`rating-${id}`} value="2" onClick={changeRating} checked={rating === 2} />
+              <label htmlFor={`star2-${id}`}>2 stars</label>
+              <input type="radio" id={`star1-${id}`} name={`rating-${id}`} value="1" onClick={changeRating} checked={rating === 1} />
+              <label htmlFor={`star1-${id}`}>1 star</label> 
+            </fieldset>
+          </Row>
+          { ! preview && (
+            <Row className='mt-2'>
+              <Col>
+                <div 
+                  contentEditable="true"
+                  id='review' 
+                  name='review' 
+                  onClick={editReview}
+                  onBlur={blurReview}
+                  placeholder={reviewPlaceholder}
+                  className='text-secondary book-review'
+                  style={{ 'minHeight': '200px', 'border': 'none', 'fontStyle': 'italic', 'outline': 'none', 'textWrap': 'wrap', 'whiteSpace': 'pre-wrap'}}
+                >
+                  {review}
+                </div>                  
+              </Col>
+            </Row>
+          )}
+          { ! preview && addingReview && (
+            <Row className='mt-2'>
+              <Col>
+                <button type="button" className="btn btn-sm btn-primary" onClick={changeReview}>Update Review</button>
+              </Col>
+            </Row>
+          )}
         </Col>
         { olids && olids.length > 0 && (
           <>
             <Col xs={4}>
               <Row style={{ maxHeight: '500px', overflow: 'scroll', border: '1px solid grey', borderRadius: '.375em' }}>
               { olids.map((map_olid) => (
-                <Col key={map_olid} className={"m-2"}>
+                <Col key={map_olid} className="m-1">
                   <img 
                     src={'https://covers.openlibrary.org/b/olid/' + map_olid + '-M.jpg'} 
                     style={{ height: '150px', boxSizing: 'border-box', padding: '2px' }} 
