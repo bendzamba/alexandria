@@ -10,7 +10,6 @@ function CreateBook() {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [year, setYear] = useState('');
-  const [category, setCategory] = useState('Literary Fiction');
   const [olid, setOlid] = useState('');
   const [availableCategories, setAvailableCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,12 +51,11 @@ function CreateBook() {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    await CreateBookService({ title, author, year, olid, category });
+    await CreateBookService({ title, author, year, olid });
     setTitle('');
     setSearchTitle('');
     setAuthor('');
     setYear('');
-    setCategory('');
     setOlid('');
     setOlids([]);
     navigate(`/books/`);
@@ -69,7 +67,6 @@ function CreateBook() {
     setSearchTitle('');
     setAuthor('');
     setYear('');
-    setCategory('');
     setOlid('');
     setOlids([]);
     navigate(`/books/`);

@@ -17,7 +17,6 @@ function Book({ bookId = null, preview = false }) {
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [year, setYear] = useState('');
-  const [category, setCategory] = useState('');
   const [rating, setRating] = useState('');
   const [review, setReview] = useState('');
   const [savedReview, setSavedReview] = useState('');
@@ -37,7 +36,6 @@ function Book({ bookId = null, preview = false }) {
       setTitle(data.title);
       setAuthor(data.author);
       setYear(data.year);
-      setCategory(data.category);
       setOlid(data.olid);
       setSavedOlid(data.olid);
       setCoverUri(data.cover_uri);
@@ -221,18 +219,6 @@ function Book({ bookId = null, preview = false }) {
               <h5>
                 {year}
               </h5>
-            )}
-          </Row>
-          <Row>
-            { preview && (
-              <span>
-                <small>{category}</small>
-              </span>
-            )}
-            { ! preview && (
-              <h6>
-                {category}
-              </h6>
             )}
           </Row>
           <Row className='ms-auto'>
