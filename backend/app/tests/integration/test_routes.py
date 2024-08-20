@@ -47,34 +47,34 @@ def test_get_books():
     assert response.json() == []
 
 def test_create_book():
-    body = {'title': 'Book Title', 'author': 'Book Author', 'year': 2000, 'category': 'Biography'}
+    body = {'title': 'Book Title', 'author': 'Book Author', 'year': 2000}
     response = client.post("/books", json=body)
     assert response.status_code == 201
     assert response.json() == None
 
 def test_get_books_after_create():
     book_id = 1
-    result = [{'id': book_id, 'title': 'Book Title', 'author': 'Book Author', 'year': 2000, 'category': 'Biography', 'cover_image': 'https://covers.openlibrary.org/b/olid/12345-M.jpg'}]
+    result = [{'id': book_id, 'title': 'Book Title', 'author': 'Book Author', 'year': 2000, 'cover_image': 'https://covers.openlibrary.org/b/olid/12345-M.jpg'}]
     response = client.get("/books")
     assert response.status_code == 200
     assert response.json() == result
 
 def test_get_book():
     book_id = 1
-    result = {'id': book_id, 'title': 'Book Title', 'author': 'Book Author', 'year': 2000, 'category': 'Biography', 'cover_image': 'https://covers.openlibrary.org/b/olid/12345-M.jpg'}
+    result = {'id': book_id, 'title': 'Book Title', 'author': 'Book Author', 'year': 2000, 'cover_image': 'https://covers.openlibrary.org/b/olid/12345-M.jpg'}
     response = client.get(f"/books/{book_id}")
     assert response.status_code == 200
     assert response.json() == result
 
 def test_patch_book():
-    body = {'title': 'New Book Title', 'author': 'New Book Author', 'year': 1999, 'category': 'Science Fiction', 'cover_image': 'https://covers.openlibrary.org/b/olid/12345-M.jpg'}
+    body = {'title': 'New Book Title', 'author': 'New Book Author', 'year': 1999, 'cover_image': 'https://covers.openlibrary.org/b/olid/12345-M.jpg'}
     book_id = 1
     response = client.patch(f"/books/{book_id}", json=body)
     assert response.status_code == 204
 
 def test_get_book_after_patch():
     book_id = 1
-    result = {'id': book_id, 'title': 'New Book Title', 'author': 'New Book Author', 'year': 1999, 'category': 'Science Fiction', 'cover_image': 'https://covers.openlibrary.org/b/olid/12345-M.jpg'}
+    result = {'id': book_id, 'title': 'New Book Title', 'author': 'New Book Author', 'year': 1999, 'cover_image': 'https://covers.openlibrary.org/b/olid/12345-M.jpg'}
     response = client.get(f"/books/{book_id}")
     assert response.status_code == 200
     assert response.json() == result
@@ -96,7 +96,7 @@ def test_add_book_to_bookshelf():
 def test_get_bookshelf_books_after_add():
     bookshelf_id = 1
     book_id = 1
-    result = [{'id': book_id, 'title': 'New Book Title', 'author': 'New Book Author', 'year': 1999, 'category': 'Science Fiction', 'cover_image': 'https://covers.openlibrary.org/b/olid/12345-M.jpg'}]
+    result = [{'id': book_id, 'title': 'New Book Title', 'author': 'New Book Author', 'year': 1999, 'cover_image': 'https://covers.openlibrary.org/b/olid/12345-M.jpg'}]
     response = client.get(f"/bookshelves/{bookshelf_id}/books")
     assert response.status_code == 200
     assert response.json() == result

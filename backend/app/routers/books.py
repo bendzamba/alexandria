@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Path, status
 from typing import Annotated
-from app.models.book import Book, BookUpdate, Category
+from app.models.book import Book, BookUpdate
 from app.models.openlibrary import Work
 from app.services.openlibrary import OpenLibrary
 from app.db.sqlite import get_db
@@ -46,7 +46,7 @@ async def create_book(
         
         filepath_for_db = image.get_cover_with_path_for_database(filename=book.olid)
 
-    db.execute(query='INSERT INTO books (title, author, year, category, olid, cover_uri) VALUES (?, ?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.category, book.olid, filepath_for_db))
+    db.execute(query='INSERT INTO books (title, author, year, olid, cover_uri) VALUES (?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.olid, filepath_for_db))
     return None
 
 @router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -91,11 +91,6 @@ def delete_bookshelf(
 ):
     db.execute(query='DELETE FROM books WHERE id = ?', values=(book_id,))
     return None
-
-@router.get("/categories/", status_code=status.HTTP_200_OK)
-def get_book_categories():
-    attributes = inspect.getmembers(Category, lambda a:not(inspect.isroutine(a)))
-    return [a[1] for a in attributes if not(a[0].startswith('__') and a[0].endswith('__'))]
 
 @router.get("/search/{title}", status_code=status.HTTP_200_OK)
 async def search_by_title(

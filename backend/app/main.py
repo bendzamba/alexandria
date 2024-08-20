@@ -40,7 +40,6 @@ async def lifespan(app: FastAPI):
             title TEXT, 
             author TEXT, 
             year INTEGER, 
-            category TEXT, 
             olid TEXT,
             cover_uri TEXT,
             rating INTEGER
