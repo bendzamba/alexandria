@@ -3,9 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.routers import books, bookshelves
 from sqlmodel import SQLModel, text
-from app.models.book import Book # imported for create_all call
-from app.models.bookshelf import Bookshelf # imported for create_all call
 from app.db.sqlite import DB
+
+ # These are only imported for the create_all call
+from app.models.book import Book
+from app.models.bookshelf import Bookshelf
+from app.models.book_bookshelf import BookBookshelfLink
 
 db = DB()
 engine = db.get_engine()
