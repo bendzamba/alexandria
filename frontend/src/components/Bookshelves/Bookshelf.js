@@ -15,7 +15,6 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
   const id = bookshelfId || useParamsId.id;
 
   const [data, setData] = useState([]);
-  const [books, setBooks] = useState([]);
   const [booksToAdd, setBooksToAdd] = useState([]);
   const [booksThatCanBeAdded, setBooksThatCanBeAdded] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -152,7 +151,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
             <button type="button" className="btn btn-outline-primary" style={{ 'width': '90px', 'height': '150px' }} onClick={handleShowModal}>+</button>
           </Col>
         )}
-        {books.map((book) => (
+        {data.books.map((book) => (
           <Col md="auto" className="mt-3" style={{ 'min-height': '150px', 'min-width': '80px' }}>
             <div class="bookshelf-book-image-wrapper" style={{ 'min-height': '150px', 'min-width': '80px' }}>
               <img 
