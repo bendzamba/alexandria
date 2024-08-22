@@ -13,6 +13,10 @@ function Books() {
     const fetchData = async () => {
       try {
         const data = await GetBooks();
+        if ( ! data ) {
+          // A message to the user may be warranted here
+          return false;
+        }
         setBooks(data);
       } catch (error) {
         console.error('Error fetching books:', error);

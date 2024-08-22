@@ -24,6 +24,10 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
   const fetchData = useCallback(async () => {
     try {
       const data = await GetBookshelf(id);
+      if ( ! data ) { 
+        // A message to the user may be warranted here
+        return false;
+      }
       setData(data);
     } catch (error) {
       console.error('Error fetching bookshelf:', error);
@@ -53,7 +57,12 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
     e.preventDefault();
     const result = await confirm('Are you sure you want to delete this bookshelf?');
     if (result) {
-      await DeleteBookshelf(id);
+      let response = await DeleteBookshelf(id);
+      if ( ! response ) { 
+        // A message to the user may be warranted here
+        // Especially if we are going to prevent navigation
+        return false;
+      }
       navigate(`/`);
     }
   };
@@ -68,9 +77,15 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
 
   const handleSaveChanges = async (e) => {
     if (booksToAdd.length) {
-      await AddBooksToBookshelf(id, booksToAdd);
+      let response = await AddBooksToBookshelf(id, booksToAdd);
+      setShowModal(false);
+      if ( ! response ) { 
+        // A message to the user may be warranted here
+        return false;
+      }
     }
-    setShowModal(false);
+    
+    // No sense fetching data if the update failed
     fetchData();
   };
 
@@ -78,8 +93,14 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
     e.preventDefault();
     const result = await confirm('Are you sure you want to remove this book from this bookshelf?');
     if (result) {
-      await DeleteBookFromBookshelf(id, bookToDelete);
-      fetchData();
+      let response = await DeleteBookFromBookshelf(id, bookToDelete);
+      if ( ! response ) { 
+        // A message to the user may be warranted here
+        return false;
+      }
+
+    // No sense fetching data if the deletion failed
+    fetchData();
     }
   };
 

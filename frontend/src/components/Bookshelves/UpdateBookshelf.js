@@ -14,6 +14,10 @@ function UpdateBookshelf() {
   useEffect(() => {
     const fetchBookshelf = async () => {
       const bookshelf = await GetBookshelfService(bookshelfId);
+      if ( ! bookshelf ) { 
+        // A message to the user may be warranted here
+        return false;
+      }
       setTitle(bookshelf.title);
       setDescription(bookshelf.description);
       setLoading(false);
@@ -24,7 +28,11 @@ function UpdateBookshelf() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await UpdateBookshelfService(bookshelfId, { title, description });
+    let response = await UpdateBookshelfService(bookshelfId, { title, description });
+    if ( ! response ) { 
+      // A message to the user may be warranted here
+      return false;
+    }
     // not sure if I need this
     setTitle('');
     setDescription('');
