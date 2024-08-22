@@ -40,7 +40,7 @@ async def create_book(
     cover_uri = openlibrary.get_cover_uri()
 
     with Session(db.get_engine()) as session:
-        db_book = book_create.model_validate(book_create, update={"cover_uri": cover_uri})
+        db_book = Book.model_validate(book_create, update={"cover_uri": cover_uri})
         session.add(db_book)
         session.commit()
 
