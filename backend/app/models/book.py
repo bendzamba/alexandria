@@ -26,10 +26,13 @@ class BookPublic(BookBase):
     id: int
     cover_uri: str
 
-BookUpdate = create_model(
-    'BookUpdate',
-    **{field: (Optional[type_hint], None) for field, type_hint in BookBase.__annotations__.items()}
-)
+class BookUpdate(SQLModel):
+    title: Optional[str] = None
+    author: Optional[str] = None
+    year: Optional[int] = None
+    olid: Optional[str] = None
+    rating: Optional[int] = None
+    review: Optional[str] = None
 
 class BookPublicWithBookshelves(BookPublic):
     bookshelves: List["BookshelfPublic"] = []

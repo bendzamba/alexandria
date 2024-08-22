@@ -20,10 +20,9 @@ class BookshelfCreate(BookshelfBase):
 class BookshelfPublic(BookshelfBase):
     id: int
 
-BookshelfUpdate = create_model(
-    'BookshelfUpdate',
-    **{field: (Optional[type_hint], None) for field, type_hint in BookshelfBase.__annotations__.items()}
-)
+class BookshelfUpdate(SQLModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
 
 class BookshelfPublicWithBooks(BookshelfPublic):
     books: list["BookPublic"] = []
