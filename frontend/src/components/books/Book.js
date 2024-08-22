@@ -186,7 +186,7 @@ function Book({ bookId = null, preview = false }) {
             <img src={coverUri} className="img-fluid" alt="Book Cover" loading="lazy" />
           </NavLink>
         </Col>
-        <Col className='text-truncate' xs={ olids && olids.length > 0 ? 5 : 9}>
+        <Col xs={ olids && olids.length > 0 ? 5 : 9}>
           { preview && (
             <NavLink 
               className="nav-link" 
