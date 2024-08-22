@@ -11,7 +11,6 @@ function CreateBook() {
   const [author, setAuthor] = useState('');
   const [year, setYear] = useState('');
   const [olid, setOlid] = useState('');
-  const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState(false);
   const [noResults, setNoResults] = useState(false);
@@ -99,10 +98,6 @@ function CreateBook() {
       setCoverUrl('https://covers.openlibrary.org/b/olid/' + olidToToggle + '-L.jpg');
     }
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <Container className="mt-4">
