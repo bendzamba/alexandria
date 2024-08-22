@@ -34,9 +34,14 @@ function CreateBook() {
 
     setSearching(false);
 
+    if ( ! response ) { 
+      // A message to the user may be warranted here
+      return false;
+    }
+
     if (Object.keys(response).length === 0 && response.constructor === Object) {
       setNoResults(true);
-      return;
+      return true;
     }
 
     setSearchResults(true);
@@ -49,7 +54,11 @@ function CreateBook() {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    await CreateBookService({ title, author, year, olid });
+    let response = await CreateBookService({ title, author, year, olid });
+    if ( ! response ) { 
+      // A message to the user may be warranted here
+      return false;
+    }
     setTitle('');
     setSearchTitle('');
     setAuthor('');

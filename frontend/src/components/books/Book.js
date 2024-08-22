@@ -33,6 +33,10 @@ function Book({ bookId = null, preview = false }) {
   const fetchBook = useCallback(async () => {
     try {
       const data = await GetBook(id);
+      if ( ! data ) {
+        // A message to the user may be warranted here
+        return false;
+      }
       setTitle(data.title);
       setAuthor(data.author);
       setYear(data.year);
@@ -54,17 +58,24 @@ function Book({ bookId = null, preview = false }) {
     e.preventDefault();
     setSearching(true);
 
-    let response = await SearchBookByTitle(title);
-
-    setSearching(false);
-    setSearchResults(true);
-    setOlids(response.olids);
+    try {
+      let response = await SearchBookByTitle(title);
+      if ( ! response ) {
+        // A message to the user may be warranted here
+        return false;
+      }
+      setOlids(response.olids);
+    } catch (error) {
+      console.error('Error searching book:', error);
+    } finally {
+      setSearching(false);
+      setSearchResults(true);
+    }
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     await UpdateBook(id, { olid });
-
     setSearchResults(false);
     setOlids([]);
   };
@@ -73,7 +84,12 @@ function Book({ bookId = null, preview = false }) {
     e.preventDefault();
     const result = await confirm('Are you sure you want to delete this book?');
     if (result) {
-      await DeleteBook(id);
+      let response = await DeleteBook(id);
+      if ( ! response ) {
+        // A message to the user may be warranted here
+        // Especially if we are going to prevent navigation
+        return false;
+      }
       navigate(`/books/`);
     }
   };
@@ -121,8 +137,12 @@ function Book({ bookId = null, preview = false }) {
     const newReview = getReview();
     if (newReview !== savedReview) {
       setReview(newReview);
-      await UpdateBook(id, { review: newReview });
+      let response = await UpdateBook(id, { review: newReview });
       setAddingReview(false);
+      if ( ! response ) {
+        // A message to the user may be warranted here
+        return false;
+      }
     }
   };
 

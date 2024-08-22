@@ -9,7 +9,12 @@ function CreateBookshelf() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await CreateBookshelfService({ title, description });
+    let response = await CreateBookshelfService({ title, description });
+    if ( ! response ) { 
+      // A message to the user may be warranted here
+      // Especially if we are going to prevent navigation
+      return false;
+    }
     setTitle('');
     setDescription('');
     navigate(`/`);
