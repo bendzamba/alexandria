@@ -40,7 +40,7 @@ async def create_book(
     cover_uri = openlibrary.get_cover_uri()
 
     with Session(db.get_engine()) as session:
-        db_book = Book.model_validate(book_create, update={"cover_uri": cover_uri})
+        db_book = book_create.model_validate(book_create, update={"cover_uri": cover_uri})
         session.add(db_book)
         session.commit()
 
@@ -57,12 +57,13 @@ async def update_bookshelf(
         if not db_book:
             raise HTTPException(status_code=404, detail="Book not found")
         
+        book_data = book_update.model_dump(exclude_unset=True)
+
         if book_update.olid:
             await openlibrary.fetch_image_from_olid(book_update.olid)
             cover_uri = openlibrary.get_cover_uri()
-            db_book = Book.model_validate(book_data, update={"cover_uri": cover_uri})
+            book_data.update({"cover_uri": cover_uri})
 
-        book_data = book_update.model_dump(exclude_unset=True)
         db_book.sqlmodel_update(book_data)
         session.add(db_book)
         session.commit()
