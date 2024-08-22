@@ -70,7 +70,7 @@ def delete_bookshelf(
 
     return None
 
-@router.get("/{bookshelf_id}/books/exclude", status_code=status.HTTP_200_OK)
+@router.get("/{bookshelf_id}/books/exclude/", status_code=status.HTTP_200_OK)
 def get_bookshelf_books(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf for which we want to see books NOT on the shelf")],
     db = Depends(get_db)
@@ -91,7 +91,7 @@ def get_bookshelf_books(
 
     return books
 
-@router.post("/{bookshelf_id}/books", status_code=status.HTTP_201_CREATED)
+@router.post("/{bookshelf_id}/books/", status_code=status.HTTP_201_CREATED)
 def add_book_to_bookshelf(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to add a book to.")],
     book_ids: BookIds,
