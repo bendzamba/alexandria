@@ -179,15 +179,14 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
             <Row>
               {booksThatCanBeAdded.map((book) => (
                 <Col 
-                  className='m-3'
+                  className='m-3 border border-2 border-light'
                   onClick={(event) => toggleBookSelection(event, book.id)}
-                  style={{'height': '175px', 'min-height': '175px', 'min-width': '100px', 'padding': '2px'}}
+                  style={{'height': '175px', 'min-width': '100px', 'padding': '2px', 'boxSizing': 'border-box'}}
                 >
                   <LazyImage 
                     src={book.cover_uri} 
                     alt="Book Cover" 
-                    class="border border-2 border-light" 
-                    style={{'boxSizing': 'border-box', 'height': '175px', 'min-height': '175px', 'min-width': '100px', 'padding': '2px'}}
+                    style={{'max-width': '100%', 'max-height': '100%'}}
                     rootElement={document.querySelector('.modal-content')}
                   ></LazyImage>
                 </Col>

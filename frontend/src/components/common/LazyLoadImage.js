@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const LazyImage = ({ src, alt, element_class, style, rootElement }) => {
+const LazyImage = ({ src, alt, elementClass, style, rootElement }) => {
   const imgRef = useRef();
 
   console.log('root element', rootElement);
@@ -33,7 +33,7 @@ const LazyImage = ({ src, alt, element_class, style, rootElement }) => {
     
   }, [src, rootElement]);
 
-  return <img ref={imgRef} data-src={src} alt={alt} loading="lazy" class={element_class} style={style}/>;
+  return <img ref={imgRef} data-src={src} alt={alt} loading="lazy" className={elementClass} style={style}/>;
 };
 
 export default LazyImage;
