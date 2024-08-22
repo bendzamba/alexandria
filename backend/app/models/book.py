@@ -1,5 +1,4 @@
 from sqlmodel import SQLModel, Field, Relationship
-from pydantic import create_model
 from typing import Optional, TYPE_CHECKING, List
 from app.models.book_bookshelf import BookBookshelfLink
 
