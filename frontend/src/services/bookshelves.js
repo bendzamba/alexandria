@@ -36,11 +36,6 @@ export const DeleteBookshelf = async (id) => {
   });
 }
 
-export const GetBookshelfBooks = async (id) => {
-    const response = await fetch(`${API_BASE_URL}/bookshelves/${id}/books`);
-    return await response.json();
-  };
-
 export const GetBooksNotOnBookshelf = async (id) => {
   const response = await fetch(`${API_BASE_URL}/bookshelves/${id}/books/exclude`);
   return await response.json();

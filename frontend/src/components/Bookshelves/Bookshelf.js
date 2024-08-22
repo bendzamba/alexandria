@@ -5,7 +5,7 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
-import { GetBookshelfBooks, GetBookshelf, DeleteBookshelf, GetBooksNotOnBookshelf, AddBooksToBookshelf, DeleteBookFromBookshelf } from '../../services/bookshelves'
+import { GetBookshelf, DeleteBookshelf, GetBooksNotOnBookshelf, AddBooksToBookshelf, DeleteBookFromBookshelf } from '../../services/bookshelves'
 import {confirm} from 'react-bootstrap-confirmation';
 import LazyImage from '../common/LazyLoadImage';
 
@@ -33,21 +33,8 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
     }
   }, [id]);
 
-  const fetchBooks = useCallback(async () => {
-    try {
-      // TODO Limit books we fetch depending on preview or not
-      const data = await GetBookshelfBooks(id);
-      setBooks(data);
-    } catch (error) {
-      console.error('Error fetching bookshelf books:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
   useEffect(() => {
     fetchData();
-    fetchBooks();
   }, [id, fetchData, fetchBooks]);
 
   useEffect(() => {
