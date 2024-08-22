@@ -35,7 +35,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
 
   useEffect(() => {
     fetchData();
-  }, [id, fetchData, fetchBooks]);
+  }, [id, fetchData]);
 
   useEffect(() => {
     console.log('Updated booksToAdd:', booksToAdd);
