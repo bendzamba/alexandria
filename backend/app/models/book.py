@@ -1,18 +1,44 @@
-from pydantic import BaseModel, create_model
-from typing import Optional
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional, TYPE_CHECKING, List
+from app.models.book_bookshelf import BookBookshelfLink
 
-class Book(BaseModel):
+if TYPE_CHECKING:
+    from app.models.bookshelf import Bookshelf  # Only imported when type checking
+
+class BookBase(SQLModel):
     title: str
     author: str
     year: int
     olid: Optional[str] = None
     rating: Optional[int] = None
+    review: Optional[str] = None  
+
+class Book(BookBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    cover_uri: str
+    bookshelves: List["Bookshelf"] = Relationship(back_populates="books", link_model=BookBookshelfLink, sa_relationship_kwargs=dict(lazy="selectin"))
+  
+class BookCreate(BookBase):
+    pass
+
+class BookPublic(BookBase):
+    id: int
+    cover_uri: str
+
+class BookUpdate(SQLModel):
+    title: Optional[str] = None
+    author: Optional[str] = None
+    year: Optional[int] = None
+    olid: Optional[str] = None
+    rating: Optional[int] = None
     review: Optional[str] = None
 
-class BookIds(BaseModel):
-    book_ids: list[int]
+class BookPublicWithBookshelves(BookPublic):
+    bookshelves: List["BookshelfPublic"] = []
 
-BookUpdate = create_model(
-    'BookUpdate',
-    **{field: (Optional[type_hint], None) for field, type_hint in Book.__annotations__.items()}
-)
+from app.models.bookshelf import BookshelfPublic
+BookPublicWithBookshelves.model_rebuild()
+
+class BookIds(SQLModel):
+    book_ids: List[int]
+

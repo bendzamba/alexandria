@@ -1,22 +1,21 @@
-import sqlite3
+from sqlmodel import create_engine
 
 class DB:
 
     def __init__(self):
-        self.connection = sqlite3.connect('bookshelf.db', check_same_thread=False)
-        self.connection.row_factory = sqlite3.Row
-        self.cursor = self.connection.cursor()
-        self.cursor.execute("PRAGMA foreign_keys = ON")
-        self.connection.commit()
+        self.sqlite_file_name = "bookshelf.db"
+        self.sqlite_url = f"sqlite:///{self.sqlite_file_name}"
+        self.connect_args = {"check_same_thread": False}
+        self.engine = create_engine(self.sqlite_url, echo=True, connect_args=self.connect_args)
+
+    def get_engine(self):
+        return self.engine
     
-    def execute(self, query: str, values: tuple = ()):
-        self.cursor.execute(query, values)
-        self.connection.commit()
-        return self.cursor
-        
+    def execute(self):
+        pass
+
     def close(self):
-        self.connection.close()
-    
+        pass
 
 def get_db():
     db = DB()

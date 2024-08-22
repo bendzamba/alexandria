@@ -5,7 +5,7 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
-import { GetBookshelfBooks, GetBookshelf, DeleteBookshelf, GetBooksNotOnBookshelf, AddBooksToBookshelf, DeleteBookFromBookshelf } from '../../services/bookshelves'
+import { GetBookshelf, DeleteBookshelf, GetBooksNotOnBookshelf, AddBooksToBookshelf, DeleteBookFromBookshelf } from '../../services/bookshelves'
 import {confirm} from 'react-bootstrap-confirmation';
 import LazyImage from '../common/LazyLoadImage';
 
@@ -15,7 +15,6 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
   const id = bookshelfId || useParamsId.id;
 
   const [data, setData] = useState([]);
-  const [books, setBooks] = useState([]);
   const [booksToAdd, setBooksToAdd] = useState([]);
   const [booksThatCanBeAdded, setBooksThatCanBeAdded] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,22 +32,9 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
     }
   }, [id]);
 
-  const fetchBooks = useCallback(async () => {
-    try {
-      // TODO Limit books we fetch depending on preview or not
-      const data = await GetBookshelfBooks(id);
-      setBooks(data);
-    } catch (error) {
-      console.error('Error fetching bookshelf books:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
   useEffect(() => {
     fetchData();
-    fetchBooks();
-  }, [id, fetchData, fetchBooks]);
+  }, [id, fetchData]);
 
   useEffect(() => {
     console.log('Updated booksToAdd:', booksToAdd);
@@ -85,7 +71,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
       await AddBooksToBookshelf(id, booksToAdd);
     }
     setShowModal(false);
-    fetchBooks();
+    fetchData();
   };
 
   const handleDeleteBookFromBookshelf = async (e, bookToDelete) => {
@@ -93,7 +79,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
     const result = await confirm('Are you sure you want to remove this book from this bookshelf?');
     if (result) {
       await DeleteBookFromBookshelf(id, bookToDelete);
-      fetchBooks();
+      fetchData();
     }
   };
 
@@ -165,7 +151,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
             <button type="button" className="btn btn-outline-primary" style={{ 'width': '90px', 'height': '150px' }} onClick={handleShowModal}>+</button>
           </Col>
         )}
-        {books.map((book) => (
+        {data.books.map((book) => (
           <Col md="auto" className="mt-3" style={{ 'min-height': '150px', 'min-width': '80px' }}>
             <div class="bookshelf-book-image-wrapper" style={{ 'min-height': '150px', 'min-width': '80px' }}>
               <img 
@@ -193,15 +179,14 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
             <Row>
               {booksThatCanBeAdded.map((book) => (
                 <Col 
-                  className='m-3'
+                  className='m-3 border border-2 border-light'
                   onClick={(event) => toggleBookSelection(event, book.id)}
-                  style={{'height': '175px', 'min-height': '175px', 'min-width': '100px', 'padding': '2px'}}
+                  style={{'height': '175px', 'min-width': '100px', 'padding': '2px', 'boxSizing': 'border-box'}}
                 >
                   <LazyImage 
                     src={book.cover_uri} 
                     alt="Book Cover" 
-                    class="border border-2 border-light" 
-                    style={{'boxSizing': 'border-box', 'height': '175px', 'min-height': '175px', 'min-width': '100px', 'padding': '2px'}}
+                    style={{'max-width': '100%', 'max-height': '100%'}}
                     rootElement={document.querySelector('.modal-content')}
                   ></LazyImage>
                 </Col>

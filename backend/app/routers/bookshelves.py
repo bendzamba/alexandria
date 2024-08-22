@@ -1,31 +1,43 @@
 from fastapi import APIRouter, Depends, Path, status, HTTPException
 from typing import Annotated, List
-from app.models.bookshelf import Bookshelf, BookshelfUpdate
-from app.models.book import BookIds
+from app.models.bookshelf import Bookshelf, BookshelfCreate, BookshelfUpdate, BookshelfPublic, BookshelfPublicWithBooks
+from app.models.book import BookIds, Book
+from app.models.book_bookshelf import BookBookshelfLink
 from app.db.sqlite import get_db
+from sqlmodel import Session, select
 
 router = APIRouter()
 
-@router.get("/", status_code=status.HTTP_200_OK)
+@router.get("/", status_code=status.HTTP_200_OK, response_model=list[BookshelfPublic])
 def get_bookshelves(
     db = Depends(get_db)
 ):
-    return db.execute(query='SELECT * FROM bookshelves').fetchall()
-
-@router.post("/", status_code=status.HTTP_201_CREATED)
-def create_bookshelf(
-    bookshelf: Bookshelf,
-    db = Depends(get_db)
-):
-    db.execute(query='INSERT INTO bookshelves (title, description) VALUES (?, ?)', values=(bookshelf.title, bookshelf.description))
-    return None
-
-@router.get("/{bookshelf_id}", status_code=status.HTTP_200_OK)
+    with Session(db.get_engine()) as session:
+        bookshelves = session.exec(select(Bookshelf)).all()
+        return bookshelves
+    
+@router.get("/{bookshelf_id}", status_code=status.HTTP_200_OK, response_model=BookshelfPublicWithBooks)
 def get_bookshelf(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to get")],
     db = Depends(get_db)
 ):
-    return db.execute(query='SELECT * FROM bookshelves WHERE id = ?', values=(bookshelf_id,)).fetchone()
+    with Session(db.get_engine()) as session:
+        bookshelf = session.get(Bookshelf, bookshelf_id)
+        if not bookshelf:
+            raise HTTPException(status_code=404, detail="Bookshelf not found")
+        return bookshelf
+
+@router.post("/", status_code=status.HTTP_201_CREATED)
+def create_bookshelf(
+    bookshelf_create: BookshelfCreate,
+    db = Depends(get_db)
+):
+    with Session(db.get_engine()) as session:
+        db_bookshelf = Bookshelf.model_validate(bookshelf_create)
+        session.add(db_bookshelf)
+        session.commit()
+
+    return None
 
 @router.patch("/{bookshelf_id}", status_code=status.HTTP_204_NO_CONTENT)
 def update_bookshelf(
@@ -33,18 +45,15 @@ def update_bookshelf(
     bookshelf: BookshelfUpdate,
     db = Depends(get_db)
 ):
-    update_fields = []
-    parameters = []
-    
-    for attribute in BookshelfUpdate.__fields__.keys():
-        bookshelf_dict = bookshelf.__dict__
-        if bookshelf_dict[attribute] is not None:
-            update_fields.append(f"{attribute} = ?")
-            parameters.append(bookshelf_dict[attribute])
+    with Session(db.get_engine()) as session:
+        db_bookshelf = session.get(Bookshelf, bookshelf_id)
+        if not db_bookshelf:
+            raise HTTPException(status_code=404, detail="Bookshelf not found")
+        bookshelf_data = bookshelf.model_dump(exclude_unset=True)
+        db_bookshelf.sqlmodel_update(bookshelf_data)
+        session.add(db_bookshelf)
+        session.commit()
 
-    query = f"UPDATE bookshelves SET {', '.join(update_fields)} WHERE id = ?"
-    parameters.append(bookshelf_id)
-    db.execute(query=query, values=parameters)
     return None
 
 @router.delete("/{bookshelf_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -52,39 +61,63 @@ def delete_bookshelf(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to delete")],
     db = Depends(get_db)
 ):
-    db.execute(query='DELETE FROM bookshelves WHERE id = ?', values=(bookshelf_id,))
+    with Session(db.get_engine()) as session:
+        bookshelf = session.get(Bookshelf, bookshelf_id)
+        if not bookshelf:
+            raise HTTPException(status_code=404, detail="Bookshelf not found")
+        session.delete(bookshelf)
+        session.commit()
+
     return None
 
-@router.get("/{bookshelf_id}/books", status_code=status.HTTP_200_OK)
-def get_bookshelf_books(
-    bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf whose books we want to see")],
-    db = Depends(get_db)
-):
-    return db.execute(query='SELECT books.* FROM books JOIN bookshelves_books ON books.id = bookshelves_books.book_id WHERE bookshelves_books.bookshelf_id = ?', values=(bookshelf_id,)).fetchall()
-
-@router.get("/{bookshelf_id}/books/exclude", status_code=status.HTTP_200_OK)
+@router.get("/{bookshelf_id}/books/exclude/", status_code=status.HTTP_200_OK)
 def get_bookshelf_books(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf for which we want to see books NOT on the shelf")],
     db = Depends(get_db)
 ):
-    return db.execute(query='SELECT books.* FROM books WHERE books.id NOT IN (SELECT books.id FROM books JOIN bookshelves_books ON books.id = bookshelves_books.book_id WHERE bookshelves_books.bookshelf_id = ?)', values=(bookshelf_id,)).fetchall()
+    with Session(db.get_engine()) as session:
+        # Create a subquery to select book IDs that are in the bookshelf
+        subquery = select(BookBookshelfLink.book_id).where(BookBookshelfLink.bookshelf_id == bookshelf_id).distinct()
 
-@router.post("/{bookshelf_id}/books", status_code=status.HTTP_201_CREATED)
+        # Main query to select books not in the subquery results
+        query = (
+            select(Book)
+            .where(Book.id.not_in(subquery))
+        )
+        
+        # Execute the query and fetch all results
+        result = session.exec(query)
+        books = result.fetchall()
+
+    return books
+
+@router.post("/{bookshelf_id}/books/", status_code=status.HTTP_201_CREATED)
 def add_book_to_bookshelf(
     bookshelf_id: Annotated[int, Path(title="The ID of the bookshelf to add a book to.")],
     book_ids: BookIds,
     db = Depends(get_db)
 ):
-    # TODO should be able to roll this back on partial success
-    try:
+    with Session(db.get_engine()) as session:
+        # Fetch the bookshelf
+        bookshelf = session.get(Bookshelf, bookshelf_id)
+        if not bookshelf:
+            raise HTTPException(status_code=404, detail="Bookshelf not found")
+        
+        # Fetch all the books
+        books_to_add = []
         for book_id in book_ids.book_ids:
-            db.execute(
-                query='INSERT INTO bookshelves_books (bookshelf_id, book_id) VALUES (?, ?)',
-                values=(bookshelf_id, book_id,)
-            )
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail="Error adding books to bookshelf")
+            book = session.get(Book, book_id)
+            if not book:
+                raise HTTPException(status_code=404, detail=f"Book with ID {book_id} not found")
+            
+            books_to_add.append(book)
+        
+        # Add all the books to the bookshelf's books list
+        bookshelf.books.extend(books_to_add)
+        
+        # Commit the changes
+        session.commit()
+
     return None
 
 @router.delete("/{bookshelf_id}/books/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -93,5 +126,20 @@ def delete_book_from_bookshelf(
     book_id: Annotated[int, Path(title="The ID of the book to delete")],
     db = Depends(get_db)
 ):
-    db.execute(query='DELETE FROM bookshelves_books WHERE bookshelf_id = ? AND book_id = ?', values=(bookshelf_id,book_id,))
+    with Session(db.get_engine()) as session:
+        # Retrieve the Bookshelf instance
+        bookshelf = session.get(Bookshelf, bookshelf_id)
+        if not bookshelf:
+            raise HTTPException(status_code=404, detail="Bookshelf not found")
+
+        # Retrieve the Book instance to remove
+        book_to_remove = session.get(Book, book_id)
+        if not book_to_remove:
+            raise HTTPException(status_code=404, detail="Book not found")
+
+        # Remove the book from the bookshelf
+        if book_to_remove in bookshelf.books:
+            bookshelf.books.remove(book_to_remove)
+            session.commit()
+
     return None

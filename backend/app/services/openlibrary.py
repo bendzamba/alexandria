@@ -2,11 +2,14 @@ import httpx
 from typing import Any, Dict
 from app.models.openlibrary import Work
 from pydantic import ValidationError
+from app.utils.image import Image
+import os
 
 class OpenLibrary:
 
     def __init__(self):
         self.search_title_url = "https://openlibrary.org/search.json?title={title}"
+        # TODO the below limiting/filtering is not yet implemented!
         # We don't currently need all fields returned
         # We only include title so we have a nice response format to unpack without dealing with the supplied title
         self.search_fields_key = 'fields'
@@ -19,6 +22,10 @@ class OpenLibrary:
         # For fetching cover images. Size options are S, M, L (small, medium, large)
         self.cover_image_url = "https://covers.openlibrary.org/b/olid/{olid}-{size}.jpg"
         self.cover_image_size = "L"
+
+        # Use Image utility to help with image fetching and determining cover URI
+        self.image = Image()
+        self.cover_uri = ""
 
     async def search_by_title(self, title: str) -> Dict[str, Any]:
 
@@ -58,3 +65,25 @@ class OpenLibrary:
     def build_image_url_from_olid(self, olid: str):
 
         return self.cover_image_url.format(olid=olid, size=self.cover_image_size)
+    
+    async def fetch_image_from_olid(self, olid: str):
+
+        if olid is None:
+            self.cover_uri = self.image.default_cover_image
+        else:
+            # URL where we can find the cover image we want using OLID
+            open_library_url = self.build_image_url_from_olid(olid=olid)
+            # Local file destination where we want to store the image
+            local_file_destination = self.image.determine_local_file_destination(filename=olid)
+
+            if os.path.isfile(local_file_destination) == False:
+                # Download remote to local only if we don't already have the file
+                await self.image.download(remote_url=open_library_url, local_filename=local_file_destination)
+
+            # Get path for database, which can be different from full local file destination, such as 
+            # serving the image from a relative directory from the frontend application
+            self.cover_uri = self.image.get_cover_with_path_for_database(filename=olid)
+
+    def get_cover_uri(self):
+
+        return self.cover_uri

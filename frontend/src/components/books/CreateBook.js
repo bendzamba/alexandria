@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'
-import { CreateBook as CreateBookService, GetBookCategories, SearchBookByTitle } from '../../services/books';
+import { CreateBook as CreateBookService, SearchBookByTitle } from '../../services/books';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
@@ -11,8 +11,6 @@ function CreateBook() {
   const [author, setAuthor] = useState('');
   const [year, setYear] = useState('');
   const [olid, setOlid] = useState('');
-  const [availableCategories, setAvailableCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState(false);
   const [noResults, setNoResults] = useState(false);
@@ -85,21 +83,6 @@ function CreateBook() {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await GetBookCategories();
-        setAvailableCategories(data);
-      } catch (error) {
-        console.error('Error fetching book categories:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
     if (olids.length === 0) {
       setCoverUrl('/assets/cover_images/No_Image_Available.jpg');
     }
@@ -115,10 +98,6 @@ function CreateBook() {
       setCoverUrl('https://covers.openlibrary.org/b/olid/' + olidToToggle + '-L.jpg');
     }
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <Container className="mt-4">
