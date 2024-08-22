@@ -1,95 +1,86 @@
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, Path, status, HTTPException
 from typing import Annotated
-from app.models.book import Book, BookUpdate
+from app.models.book import Book, BookCreate, BookUpdate, BookPublic, BookPublicWithBookshelves
 from app.models.openlibrary import Work
 from app.services.openlibrary import OpenLibrary
-from app.db.sqlite import get_db
+from app.db.sqlite import DB
 from app.utils.image import Image
-import inspect
-import os.path
+from sqlmodel import Session, select
 
 openlibrary = OpenLibrary()
 image = Image()
 
 router = APIRouter()
 
-@router.get("/", status_code=status.HTTP_200_OK)
+@router.get("/", status_code=status.HTTP_200_OK, response_model=list[BookPublic])
 def get_books(
-    db = Depends(get_db)
+    db = Depends(DB)
 ):
-    return db.execute('SELECT * FROM books').fetchall()
-
-@router.get("/{book_id}", status_code=status.HTTP_200_OK)
+    with Session(db.get_engine()) as session:
+        books = session.exec(select(Book)).all()
+        return books
+    
+@router.get("/{book_id}", status_code=status.HTTP_200_OK, response_model=BookPublicWithBookshelves)
 def get_book(
     book_id: Annotated[int, Path(title="The ID of the book to get")],
-    db = Depends(get_db)
+    db = Depends(DB)
 ):
-    return db.execute(query='SELECT * FROM books WHERE id = ?', values=(book_id,)).fetchone()
+    with Session(db.get_engine()) as session:
+        book = session.get(Book, book_id)
+        if not book:
+            raise HTTPException(status_code=404, detail="Book not found")
+        return book
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_book(
-    book: Book,
-    db = Depends(get_db)
+    book_create: BookCreate,
+    db = Depends(DB)
 ):
+    await openlibrary.fetch_image_from_olid(book_create.olid)
+    cover_uri = openlibrary.get_cover_uri()
 
-    if book.olid is None:
-        
-        filepath_for_db = image.default_cover_image
+    with Session(db.get_engine()) as session:
+        db_book = Book.model_validate(book_create, update={"cover_uri": cover_uri})
+        session.add(db_book)
+        session.commit()
 
-    else:
-    
-        cover_image = openlibrary.build_image_url_from_olid(olid=book.olid)
-
-        local_file_destination = image.determine_local_file_destination(filename=book.olid)
-
-        await image.download(remote_url=cover_image, local_filename=local_file_destination)
-        
-        filepath_for_db = image.get_cover_with_path_for_database(filename=book.olid)
-
-    db.execute(query='INSERT INTO books (title, author, year, olid, cover_uri) VALUES (?, ?, ?, ?, ?)', values=(book.title, book.author, book.year, book.olid, filepath_for_db))
     return None
 
 @router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_bookshelf(
     book_id: Annotated[int, Path(title="The ID of the book to update")],
-    book: BookUpdate,
-    db = Depends(get_db)
+    book_update: BookUpdate,
+    db = Depends(DB)
 ):
-    update_fields = []
-    parameters = []
-    
-    for attribute in BookUpdate.__fields__.keys():
-        book_dict = book.__dict__
-        if book_dict[attribute] is not None:
-            update_fields.append(f"{attribute} = ?")
-            parameters.append(book_dict[attribute])
-
-    if book.olid is not None:
-    
-        local_file_destination = image.determine_local_file_destination(filename=book.olid)
-
-        if os.path.isfile(local_file_destination) == False:
-
-            cover_image = openlibrary.build_image_url_from_olid(olid=book.olid)
-
-            await image.download(remote_url=cover_image, local_filename=local_file_destination)
+    with Session(db.get_engine()) as session:
+        db_book = session.get(Book, book_id)
+        if not db_book:
+            raise HTTPException(status_code=404, detail="Book not found")
         
-            filepath_for_db = image.get_cover_with_path_for_database(filename=book.olid)
+        if book_update.olid:
+            await openlibrary.fetch_image_from_olid(book_update.olid)
+            cover_uri = openlibrary.get_cover_uri()
+            db_book = Book.model_validate(book_data, update={"cover_uri": cover_uri})
 
-            update_fields.append(f"cover_uri = ?")
-            parameters.append(filepath_for_db)
+        book_data = book_update.model_dump(exclude_unset=True)
+        db_book.sqlmodel_update(book_data)
+        session.add(db_book)
+        session.commit()
 
-    query = f"UPDATE books SET {', '.join(update_fields)} WHERE id = ?"
-    parameters.append(book_id)
-    db.execute(query=query, values=parameters)
     return None
 
 @router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_bookshelf(
     book_id: Annotated[int, Path(title="The ID of the book to delete")],
-    db = Depends(get_db)
+    db = Depends(DB)
 ):
-    db.execute(query='DELETE FROM books WHERE id = ?', values=(book_id,))
+    with Session(db.get_engine()) as session:
+        book = session.get(Book, book_id)
+        if not book:
+            raise HTTPException(status_code=404, detail="Book not found")
+        session.delete(book)
+        session.commit()
+
     return None
 
 @router.get("/search/{title}", status_code=status.HTTP_200_OK)
