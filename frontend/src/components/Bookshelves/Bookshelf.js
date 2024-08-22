@@ -71,7 +71,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
       await AddBooksToBookshelf(id, booksToAdd);
     }
     setShowModal(false);
-    fetchBooks();
+    fetchData();
   };
 
   const handleDeleteBookFromBookshelf = async (e, bookToDelete) => {
@@ -79,7 +79,7 @@ function Bookshelf({ bookshelfId = null, preview = false }) {
     const result = await confirm('Are you sure you want to remove this book from this bookshelf?');
     if (result) {
       await DeleteBookFromBookshelf(id, bookToDelete);
-      fetchBooks();
+      fetchData();
     }
   };
 
