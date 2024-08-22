@@ -22,7 +22,7 @@ export const GetBook = async (id) => {
 };
 
 export const UpdateBook = async (id, data) => {
-    return await fetch(`${API_BASE_URL}/books/${id}/`, {
+    return await fetch(`${API_BASE_URL}/books/${id}`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -32,15 +32,10 @@ export const UpdateBook = async (id, data) => {
 }
 
 export const DeleteBook = async (id) => {
-    await fetch(`${API_BASE_URL}/books/${id}/`, {
+    await fetch(`${API_BASE_URL}/books/${id}`, {
         method: 'DELETE',
     });
 }
-
-export const GetBookCategories = async () => {
-    const response = await fetch(`${API_BASE_URL}/books/categories/`);
-    return await response.json();
-};
 
 export const SearchBookByTitle = async (title) => {
     const response = await fetch(`${API_BASE_URL}/books/search/${title}`)
