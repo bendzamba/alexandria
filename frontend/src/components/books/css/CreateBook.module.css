@@ -1,0 +1,18 @@
+.search-result-book {
+    height: 125px;
+    box-sizing: border-box;
+    cursor: pointer;
+    overflow: scroll;
+}
+
+.search-result-book:hover {
+    background: lightblue;
+}
+
+.search-result-book-selected {
+    background: lightblue;
+}
+
+.search-result-book-metadata span {
+    font-size: 12px;
+}
