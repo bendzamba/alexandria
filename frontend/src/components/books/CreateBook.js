@@ -73,7 +73,8 @@ function CreateBook() {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    let response = await CreateBookService({ title, author, year, olid });
+    const json_olids = JSON.stringify(olids);
+    let response = await CreateBookService({ title, author, year, olid, olids: json_olids });
     if ( ! response ) { 
       // A message to the user may be warranted here
       return false;
