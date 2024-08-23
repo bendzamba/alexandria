@@ -10,6 +10,9 @@ class BookBase(SQLModel):
     author: str
     year: int
     olid: Optional[str] = None
+    # Instead of creating a new table to host unused OLIDs per book
+    # we store the full bore of them as a json-encoded list
+    olids: Optional[str] = None
     rating: Optional[int] = None
     review: Optional[str] = None  
 
