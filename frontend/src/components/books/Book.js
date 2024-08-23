@@ -21,11 +21,11 @@ function Book({ bookId = null, preview = false }) {
   const [review, setReview] = useState('');
   const [savedReview, setSavedReview] = useState('');
   const [loading, setLoading] = useState(true);
-  const [searching, setSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState(false);
   const [olid, setOlid] = useState([]);
   const [savedOlid, setSavedOlid] = useState([]);
   const [olids, setOlids] = useState([]);
+  const [selectingNewCover, setSelectingNewCover] = useState(false);
+
   const navigate = useNavigate();
   const [addingReview, setAddingReview] = useState(false);
   const reviewPlaceholder = 'Share your thoughts on this book ...';
@@ -42,6 +42,18 @@ function Book({ bookId = null, preview = false }) {
       setYear(data.year);
       setOlid(data.olid);
       setSavedOlid(data.olid);
+      // olids should come back as a JSON encoded array or null
+      try {
+        let allBookOlids = JSON.parse(data.olids);
+        if (allBookOlids === undefined) {
+          setOlids([]);
+        } else {
+          setOlids(allBookOlids);
+        }
+      } catch(e) {
+        console.log(e);
+        setOlids([]);
+      }
       setCoverUri(data.cover_uri);
       setSavedCoverUri(data.cover_uri);
       setRating(data.rating);
@@ -56,28 +68,13 @@ function Book({ bookId = null, preview = false }) {
 
   const handleChangeCover = async (e) => {
     e.preventDefault();
-    setSearching(true);
-
-    try {
-      let response = await SearchBookByTitle(title);
-      if ( ! response ) {
-        // A message to the user may be warranted here
-        return false;
-      }
-      setOlids(response.olids);
-    } catch (error) {
-      console.error('Error searching book:', error);
-    } finally {
-      setSearching(false);
-      setSearchResults(true);
-    }
+    setSelectingNewCover(true);
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     await UpdateBook(id, { olid });
-    setSearchResults(false);
-    setOlids([]);
+    setSelectingNewCover(false);
   };
 
   const handleDelete = async (e) => {
@@ -187,10 +184,10 @@ function Book({ bookId = null, preview = false }) {
           <Col xs={3} style={{
             textAlign:"right"
           }}>
-            { ! searchResults && (
+            { ! selectingNewCover && (
               <button type="button" className="btn btn-primary" onClick={handleChangeCover}>Change Cover</button>
             )}
-            { searchResults && (
+            { selectingNewCover && (
               <button type="button" className="btn btn-primary" onClick={handleUpdate}>Update</button>
             )}
             <button type="button" className="btn btn-danger ms-1" onClick={handleDelete}>Delete</button>
@@ -281,25 +278,34 @@ function Book({ bookId = null, preview = false }) {
             </Row>
           )}
         </Col>
-        { olids && olids.length > 0 && (
+        { selectingNewCover && (
           <>
-            <Col xs={4}>
-              <Row style={{ maxHeight: '500px', overflow: 'scroll', border: '1px solid grey', borderRadius: '.375em' }}>
-              { olids.map((map_olid) => (
-                <Col key={map_olid} className="m-1">
-                  <img 
-                    src={'https://covers.openlibrary.org/b/olid/' + map_olid + '-M.jpg'} 
-                    style={{ height: '150px', boxSizing: 'border-box', padding: '2px' }} 
-                    onLoad={(event) => imageOnload(event, map_olid)} 
-                    onClick={(event) => toggleBookCoverSelection(event, map_olid)} 
-                    className={`border border-2 ${olid === map_olid ? 'border-primary' : 'border-light' }`}
-                    alt='Book Cover'
-                    loading='lazy'
-                  />
-                </Col>
-              ))}
-              </Row>  
-            </Col>
+            { olids && olids.length > 0 && (
+              <Col xs={4}>
+                <Row style={{ maxHeight: '500px', overflow: 'scroll', border: '1px solid grey', borderRadius: '.375em' }}>
+                { olids.map((map_olid) => (
+                  <Col key={map_olid} className="m-1">
+                    <img 
+                      src={'https://covers.openlibrary.org/b/olid/' + map_olid + '-M.jpg'} 
+                      style={{ height: '150px', boxSizing: 'border-box', padding: '2px' }} 
+                      onLoad={(event) => imageOnload(event, map_olid)} 
+                      onClick={(event) => toggleBookCoverSelection(event, map_olid)} 
+                      className={`border border-2 ${olid === map_olid ? 'border-primary' : 'border-light' }`}
+                      alt='Book Cover'
+                      loading='lazy'
+                    />
+                  </Col>
+                ))}
+                </Row>  
+              </Col>
+            )}
+            { olids.length === 0 && (
+              <Col xs={4}>
+                <Row style={{ maxHeight: '500px', overflow: 'scroll', border: '1px solid grey', borderRadius: '.375em' }}>
+                  <h3>Sorry there are no additional covers to select from.</h3>
+                </Row>
+              </Col>
+            )}
           </>
         )}
       </Row>
