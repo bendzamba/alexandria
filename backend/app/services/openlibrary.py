@@ -1,24 +1,22 @@
 import httpx
 from typing import Any, Dict
-from app.models.openlibrary import Work
+from app.models.openlibrary import Work, Works
 from pydantic import ValidationError
 from app.utils.image import Image
 import os
+import urllib.parse
 
 class OpenLibrary:
 
     def __init__(self):
-        self.search_title_url = "https://openlibrary.org/search.json?title={title}"
-        # TODO the below limiting/filtering is not yet implemented!
+        self.search_title_url = "https://openlibrary.org/search.json?title={title}&"
+
         # We don't currently need all fields returned
         # We only include title so we have a nice response format to unpack without dealing with the supplied title
         self.search_fields_key = 'fields'
-        # taken from Work keys: 'title', 'author_name', 'cover_edition_key', 'edition_key', 'first_publish_year'
-        self.search_fields_values = Work.__dict__.keys()
+        self.search_fields_values = Work.__annotations__.keys()
         self.search_fields_separator = ','
-        # We currently on;y need one result, as the default sort is 'relevance'
-        self.search_limit_key = 'limit'
-        self.search_limit_value = '1'
+
         # For fetching cover images. Size options are S, M, L (small, medium, large)
         self.cover_image_url = "https://covers.openlibrary.org/b/olid/{olid}-{size}.jpg"
         self.cover_image_size = "L"
@@ -31,7 +29,9 @@ class OpenLibrary:
 
         async with httpx.AsyncClient() as client:
             try:
-                response = await client.get(self.search_title_url.format(title=title), timeout=10.0)
+                url = self.build_search_url(title=title)
+                print(url)
+                response = await client.get(url, timeout=10.0)
                 response.raise_for_status()
             except Exception as e:
                 print("Exception occurred", e)
@@ -40,15 +40,30 @@ class OpenLibrary:
             try:
                 response_json = response.json()
 
-                if len(response_json['docs']) == 0:
+                if 'docs' not in response_json or len(response_json['docs']) == 0:
                     return False
+                
+                works = []
+                for doc in response_json['docs']:
+                    
+                    try:
+                        Work.model_validate(doc)
+                        works.append(Work(**doc))
+                    except ValidationError as exc:
+                        print(repr(exc.errors()[0]['type']))
 
-                return Work(**response_json['docs'][0])
+                return Works(**{'works': works})
             
             except ValidationError as e:
                 print("Validation error occurred:", e)
                 return None
         
+    def build_search_url(self, title) -> str:
+
+        params = {self.search_fields_key: self.search_fields_separator.join(self.search_fields_values)}
+        return self.search_title_url.format(title=title) + urllib.parse.urlencode(params)
+
+
     def find_olid(self, olid_response: Dict[str, Any]) -> str | None:
 
         olid = None
@@ -62,11 +77,11 @@ class OpenLibrary:
 
         return olid
     
-    def build_image_url_from_olid(self, olid: str):
+    def build_image_url_from_olid(self, olid: str) -> str:
 
         return self.cover_image_url.format(olid=olid, size=self.cover_image_size)
     
-    async def fetch_image_from_olid(self, olid: str):
+    async def fetch_image_from_olid(self, olid: str) -> str:
 
         if olid is None:
             self.cover_uri = self.image.default_cover_image
