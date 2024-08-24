@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Container from 'react-bootstrap/Container';
-import Book from './Book';
-import { GetBooks } from '../../services/books'
+import React, { useState, useEffect } from "react";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
+import Book from "./Book";
+import { GetBooks } from "../../services/books";
 
 function Books() {
   const [books, setBooks] = useState([]);
@@ -13,13 +13,13 @@ function Books() {
     const fetchData = async () => {
       try {
         const data = await GetBooks();
-        if ( ! data ) {
+        if (!data) {
           // A message to the user may be warranted here
           return false;
         }
         setBooks(data);
       } catch (error) {
-        console.error('Error fetching books:', error);
+        console.error("Error fetching books:", error);
       } finally {
         setLoading(false);
       }
@@ -37,11 +37,7 @@ function Books() {
       <Row>
         {books.map((book) => (
           <Col xs={4} className="mt-3 mb-3" key={`col-${book.id}`}>
-            <Book
-              bookId={book.id}
-              preview={true}
-              key={book.id}
-            />
+            <Book bookId={book.id} preview={true} key={book.id} />
           </Col>
         ))}
       </Row>

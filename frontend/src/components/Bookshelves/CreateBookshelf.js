@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'
-import { CreateBookshelf as CreateBookshelfService } from '../../services/bookshelves';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { CreateBookshelf as CreateBookshelfService } from "../../services/bookshelves";
 
 function CreateBookshelf() {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     let response = await CreateBookshelfService({ title, description });
-    if ( ! response ) { 
+    if (!response) {
       // A message to the user may be warranted here
       // Especially if we are going to prevent navigation
       return false;
     }
-    setTitle('');
-    setDescription('');
+    setTitle("");
+    setDescription("");
     navigate(`/`);
   };
 
@@ -25,7 +25,9 @@ function CreateBookshelf() {
       <h2>Create Bookshelf</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label htmlFor="title" className="form-label">Title</label>
+          <label htmlFor="title" className="form-label">
+            Title
+          </label>
           <input
             type="text"
             className="form-control"
@@ -35,7 +37,9 @@ function CreateBookshelf() {
           />
         </div>
         <div className="mb-3">
-          <label htmlFor="description" className="form-label">Description</label>
+          <label htmlFor="description" className="form-label">
+            Description
+          </label>
           <input
             type="text"
             className="form-control"
@@ -44,7 +48,9 @@ function CreateBookshelf() {
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
-        <button type="submit" className="btn btn-primary">Create</button>
+        <button type="submit" className="btn btn-primary">
+          Create
+        </button>
       </form>
     </div>
   );

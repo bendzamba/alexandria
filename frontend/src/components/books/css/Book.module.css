@@ -1,9 +1,9 @@
 .rating {
-    float:left;
-    border:none;
-    width:auto !important;
-    padding-left:0 !important;
-  }
+  float: left;
+  border: none;
+  width: auto !important;
+  padding-left: 0 !important;
+}
 .rating-preview label {
   font-size: 1em !important;
 }
@@ -11,32 +11,37 @@
   display: none;
 }
 .rating:not(:checked) > label {
-  float:right;
-  width:1em;
-  padding:0 .1em 0 0;
-  overflow:hidden;
-  white-space:nowrap;
-  cursor:pointer;
-  font-size:200%;
-  line-height:1.2;
-  color:#ddd;
+  float: right;
+  width: 1em;
+  padding: 0 0.1em 0 0;
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: pointer;
+  font-size: 200%;
+  line-height: 1.2;
+  color: #ddd;
 }
 .rating:not(:checked) > label:before {
-  content:'★ ';
+  content: "★ ";
 }
 .rating > input:checked ~ label {
   color: #f70;
 }
-.rating:not(:checked) > label:hover, .rating:not(:checked) > label:hover ~ label {
+.rating:not(:checked) > label:hover,
+.rating:not(:checked) > label:hover ~ label {
   color: gold;
 }
-.rating > input:checked + label:hover, .rating > input:checked + label:hover ~ label, .rating > input:checked ~ label:hover, .rating > input:checked ~ label:hover ~ label, .rating > label:hover ~ input:checked ~ label {
+.rating > input:checked + label:hover,
+.rating > input:checked + label:hover ~ label,
+.rating > input:checked ~ label:hover,
+.rating > input:checked ~ label:hover ~ label,
+.rating > label:hover ~ input:checked ~ label {
   color: #ea0;
 }
 .rating > label:active {
-  position:relative;
+  position: relative;
 }
-[contenteditable=true]:empty:before{
+[contenteditable="true"]:empty:before {
   content: attr(placeholder);
   pointer-events: none;
   display: block; /* For Firefox */
