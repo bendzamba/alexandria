@@ -13,6 +13,7 @@ engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)
 
 ol = OpenLibrary()
 
+
 async def fetch_titles_that_are_missing_olids():
 
     books_without_olids = []
@@ -23,21 +24,25 @@ async def fetch_titles_that_are_missing_olids():
             books_without_olids.append(book.title)
 
     return books_without_olids
-    
+
+
 async def get_olids_by_title(title):
     search_results = await ol.search_by_title(title)
-    return search_results.model_dump()[0]['olids']
+    return search_results.model_dump()[0]["olids"]
+
 
 async def update_book_by_title(title, olids):
     with Session(engine) as session:
         db_book = session.exec(select(Book).where(Book.title == title)).first()
-        db_book.sqlmodel_update({'olids': json.dumps(olids)})
+        db_book.sqlmodel_update({"olids": json.dumps(olids)})
         session.add(db_book)
         session.commit()
 
+
 titles = asyncio.run(fetch_titles_that_are_missing_olids())
 
-for index in range(0,1):
+# Change this to run as many as needed, or loop through all
+for index in range(0, 1):
 
     olids = asyncio.run(get_olids_by_title(titles[index]))
     asyncio.run(update_book_by_title(titles[index], olids))
