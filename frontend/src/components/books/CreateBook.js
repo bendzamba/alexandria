@@ -211,7 +211,7 @@ function CreateBook() {
         </>
       )}
 
-      { booksToChooseFrom.length && (
+      { booksToChooseFrom.length > 0 && (
         <>
           <Row className='mt-4'>
             <Col>
