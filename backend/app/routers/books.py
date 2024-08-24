@@ -1,6 +1,12 @@
 from fastapi import APIRouter, Depends, Path, status, HTTPException
 from typing import Annotated
-from app.models.book import Book, BookCreate, BookUpdate, BookPublic, BookPublicWithBookshelves
+from app.models.book import (
+    Book,
+    BookCreate,
+    BookUpdate,
+    BookPublic,
+    BookPublicWithBookshelves,
+)
 from app.models.openlibrary import Works
 from app.services.openlibrary import OpenLibrary
 from app.db.sqlite import DB
@@ -12,18 +18,21 @@ image = Image()
 
 router = APIRouter()
 
+
 @router.get("/", status_code=status.HTTP_200_OK, response_model=list[BookPublic])
-def get_books(
-    db = Depends(DB)
-):
+def get_books(db=Depends(DB)):
     with Session(db.get_engine()) as session:
         books = session.exec(select(Book)).all()
         return books
-    
-@router.get("/{book_id}", status_code=status.HTTP_200_OK, response_model=BookPublicWithBookshelves)
+
+
+@router.get(
+    "/{book_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=BookPublicWithBookshelves,
+)
 def get_book(
-    book_id: Annotated[int, Path(title="The ID of the book to get")],
-    db = Depends(DB)
+    book_id: Annotated[int, Path(title="The ID of the book to get")], db=Depends(DB)
 ):
     with Session(db.get_engine()) as session:
         book = session.get(Book, book_id)
@@ -31,11 +40,9 @@ def get_book(
             raise HTTPException(status_code=404, detail="Book not found")
         return book
 
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_book(
-    book_create: BookCreate,
-    db = Depends(DB)
-):
+async def create_book(book_create: BookCreate, db=Depends(DB)):
     await openlibrary.fetch_image_from_olid(book_create.olid)
     cover_uri = openlibrary.get_cover_uri()
 
@@ -46,17 +53,18 @@ async def create_book(
 
     return None
 
+
 @router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_bookshelf(
     book_id: Annotated[int, Path(title="The ID of the book to update")],
     book_update: BookUpdate,
-    db = Depends(DB)
+    db=Depends(DB),
 ):
     with Session(db.get_engine()) as session:
         db_book = session.get(Book, book_id)
         if not db_book:
             raise HTTPException(status_code=404, detail="Book not found")
-        
+
         book_data = book_update.model_dump(exclude_unset=True)
 
         if book_update.olid:
@@ -70,10 +78,10 @@ async def update_bookshelf(
 
     return None
 
+
 @router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_bookshelf(
-    book_id: Annotated[int, Path(title="The ID of the book to delete")],
-    db = Depends(DB)
+    book_id: Annotated[int, Path(title="The ID of the book to delete")], db=Depends(DB)
 ):
     with Session(db.get_engine()) as session:
         book = session.get(Book, book_id)
@@ -83,6 +91,7 @@ def delete_bookshelf(
         session.commit()
 
     return None
+
 
 @router.get("/search/{title}", status_code=status.HTTP_200_OK)
 async def search_by_title(
