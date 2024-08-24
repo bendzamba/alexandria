@@ -15,7 +15,7 @@ def test_create_bookshelf():
     body = {"title": "Bookshelf Title", "description": "Bookshelf Description"}
     response = client.post("/bookshelves", json=body)
     assert response.status_code == 201
-    assert response.json() == None
+    assert response.json() is None
 
 
 def test_get_bookshelves_after_create():
@@ -68,7 +68,7 @@ def test_create_book():
     body = {"title": "Book Title", "author": "Book Author", "year": 2000}
     response = client.post("/books", json=body)
     assert response.status_code == 201
-    assert response.json() == None
+    assert response.json() is None
 
 
 def test_get_books_after_create():
@@ -140,7 +140,7 @@ def test_add_book_to_bookshelf():
     body = {"book_id": book_id}
     response = client.post(f"/bookshelves/{bookshelf_id}/books", json=body)
     assert response.status_code == 201
-    assert response.json() == None
+    assert response.json() is None
 
 
 def test_get_bookshelf_books_after_add():

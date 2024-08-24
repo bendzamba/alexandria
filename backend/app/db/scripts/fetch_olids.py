@@ -19,7 +19,7 @@ async def fetch_titles_that_are_missing_olids():
     books_without_olids = []
 
     with Session(engine) as session:
-        books = session.exec(select(Book).where(Book.olids == None)).all()
+        books = session.exec(select(Book).where(Book.olids is None)).all()
         for book in books:
             books_without_olids.append(book.title)
 

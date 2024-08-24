@@ -99,7 +99,7 @@ class OpenLibrary:
                 filename=olid
             )
 
-            if os.path.isfile(local_file_destination) == False:
+            if not os.path.isfile(local_file_destination):
                 # Download remote to local only if we don't already have the file
                 await self.image.download(
                     remote_url=open_library_url, local_filename=local_file_destination

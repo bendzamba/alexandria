@@ -1,3 +1,5 @@
+from app.models.book import Book
+from typing import Any, Dict
 import sys
 import sqlite3
 
@@ -65,10 +67,6 @@ def get_db():
 module = type(sys)("app.db.sqlite")
 module.get_db = get_db
 sys.modules["app.db.sqlite"] = module
-
-
-from app.models.book import Book
-from typing import Any, Dict
 
 
 class OpenLibrary:
