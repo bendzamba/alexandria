@@ -59,8 +59,8 @@ div.remove-book-from-bookshelf-button {
 }
 
 div.remove-book-from-bookshelf-button .btn-close {
-  width: .25em;
-  height: .25em;
+  width: 0.25em;
+  height: 0.25em;
 }
 
 .add-books-to-bookshelf-modal {

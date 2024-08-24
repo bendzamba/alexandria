@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import Row from 'react-bootstrap/Row';
-import Container from 'react-bootstrap/Container';
-import Bookshelf from './Bookshelf';
-import { GetBookshelves } from '../../services/bookshelves'
+import React, { useState, useEffect } from "react";
+import Row from "react-bootstrap/Row";
+import Container from "react-bootstrap/Container";
+import Bookshelf from "./Bookshelf";
+import { GetBookshelves } from "../../services/bookshelves";
 
 function Bookshelves() {
   const [bookshelves, setBookshelves] = useState([]);
@@ -14,7 +14,7 @@ function Bookshelves() {
         const data = await GetBookshelves();
         setBookshelves(data);
       } catch (error) {
-        console.error('Error fetching bookshelves:', error);
+        console.error("Error fetching bookshelves:", error);
       } finally {
         setLoading(false);
       }
@@ -30,11 +30,12 @@ function Bookshelves() {
   return (
     <Container>
       {bookshelves.map((bookshelf) => (
-        <Row className="mt-3 mb-3" style={{ 'min-height': '250px' }} key={bookshelf.id}>
-          <Bookshelf
-            bookshelfId={bookshelf.id}
-            preview={true}
-          />
+        <Row
+          className="mt-3 mb-3"
+          style={{ "min-height": "250px" }}
+          key={bookshelf.id}
+        >
+          <Bookshelf bookshelfId={bookshelf.id} preview={true} />
         </Row>
       ))}
     </Container>

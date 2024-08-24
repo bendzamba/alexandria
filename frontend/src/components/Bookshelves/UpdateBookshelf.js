@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom'
-import { GetBookshelf as GetBookshelfService, UpdateBookshelf as UpdateBookshelfService } from '../../services/bookshelves';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  GetBookshelf as GetBookshelfService,
+  UpdateBookshelf as UpdateBookshelfService,
+} from "../../services/bookshelves";
 
 function UpdateBookshelf() {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -14,7 +17,7 @@ function UpdateBookshelf() {
   useEffect(() => {
     const fetchBookshelf = async () => {
       const bookshelf = await GetBookshelfService(bookshelfId);
-      if ( ! bookshelf ) { 
+      if (!bookshelf) {
         // A message to the user may be warranted here
         return false;
       }
@@ -28,21 +31,24 @@ function UpdateBookshelf() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    let response = await UpdateBookshelfService(bookshelfId, { title, description });
-    if ( ! response ) { 
+    let response = await UpdateBookshelfService(bookshelfId, {
+      title,
+      description,
+    });
+    if (!response) {
       // A message to the user may be warranted here
       return false;
     }
     // not sure if I need this
-    setTitle('');
-    setDescription('');
+    setTitle("");
+    setDescription("");
     navigate(`/bookshelves/` + bookshelfId);
   };
 
   const handleCancel = async (e) => {
     e.preventDefault();
-    setTitle('');
-    setDescription('');
+    setTitle("");
+    setDescription("");
     navigate(`/bookshelves/` + bookshelfId);
   };
 
@@ -55,7 +61,9 @@ function UpdateBookshelf() {
       <h2>Update Bookshelf</h2>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label htmlFor="title" className="form-label">Title</label>
+          <label htmlFor="title" className="form-label">
+            Title
+          </label>
           <input
             type="text"
             className="form-control"
@@ -65,7 +73,9 @@ function UpdateBookshelf() {
           />
         </div>
         <div className="mb-3">
-          <label htmlFor="description" className="form-label">Description</label>
+          <label htmlFor="description" className="form-label">
+            Description
+          </label>
           <input
             type="text"
             className="form-control"
@@ -74,8 +84,16 @@ function UpdateBookshelf() {
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
-        <button type="submit" className="btn btn-primary">Update</button>
-        <button type="button" className="btn btn-danger ms-1" onClick={handleCancel}>Cancel</button>
+        <button type="submit" className="btn btn-primary">
+          Update
+        </button>
+        <button
+          type="button"
+          className="btn btn-danger ms-1"
+          onClick={handleCancel}
+        >
+          Cancel
+        </button>
       </form>
     </div>
   );
