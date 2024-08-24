@@ -49,9 +49,10 @@ class BookUpdate(SQLModel):
 class BookPublicWithBookshelves(BookPublic):
     bookshelves: List["BookshelfPublic"] = []
 
+
 # `noqa` is used to suppress linter errors
 # we needed the import here to avoid circular imports
-from app.models.bookshelf import BookshelfPublic # noqa
+from app.models.bookshelf import BookshelfPublic  # noqa
 
 BookPublicWithBookshelves.model_rebuild()
 

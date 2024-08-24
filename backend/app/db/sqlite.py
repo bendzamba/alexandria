@@ -2,7 +2,6 @@ from sqlmodel import create_engine
 
 
 class DB:
-
     def __init__(self):
         self.sqlite_file_name = "bookshelf.db"
         self.sqlite_url = f"sqlite:///{self.sqlite_file_name}"

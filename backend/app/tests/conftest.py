@@ -5,7 +5,6 @@ import sqlite3
 
 
 class DB:
-
     def __init__(self):
         self.connection = sqlite3.connect(":memory:", check_same_thread=False)
         self.connection.row_factory = sqlite3.Row
@@ -70,7 +69,6 @@ sys.modules["app.db.sqlite"] = module
 
 
 class OpenLibrary:
-
     def __init__(self):
         self.search_url = "https://openlibrary.org/search.json?title={title}"
 

@@ -95,7 +95,7 @@ def delete_bookshelf(
 
 @router.get("/search/{title}", status_code=status.HTTP_200_OK)
 async def search_by_title(
-    title: Annotated[str, Path(title="The title we are searching for")]
+    title: Annotated[str, Path(title="The title we are searching for")],
 ):
     search_results: Works = await openlibrary.search_by_title(title=title)
 
