@@ -36,11 +36,9 @@ class Work(BaseModel):
 
 
 class Works(BaseModel):
-
     works: list[Work]
 
     def model_dump(self):
-
         dumped_works = [super_work.model_dump() for super_work in self.works]
 
         # Initialize an empty set to track seen authors

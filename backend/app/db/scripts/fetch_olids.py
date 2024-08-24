@@ -15,11 +15,10 @@ ol = OpenLibrary()
 
 
 async def fetch_titles_that_are_missing_olids():
-
     books_without_olids = []
 
     with Session(engine) as session:
-        books = session.exec(select(Book).where(Book.olids == None)).all()
+        books = session.exec(select(Book).where(Book.olids is None)).all()
         for book in books:
             books_without_olids.append(book.title)
 
@@ -43,6 +42,5 @@ titles = asyncio.run(fetch_titles_that_are_missing_olids())
 
 # Change this to run as many as needed, or loop through all
 for index in range(0, 1):
-
     olids = asyncio.run(get_olids_by_title(titles[index]))
     asyncio.run(update_book_by_title(titles[index], olids))

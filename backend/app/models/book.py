@@ -1,6 +1,6 @@
+from app.models.book_bookshelf import BookBookshelfLink
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, TYPE_CHECKING, List
-from app.models.book_bookshelf import BookBookshelfLink
 
 if TYPE_CHECKING:
     from app.models.bookshelf import Bookshelf  # Only imported when type checking
@@ -50,7 +50,9 @@ class BookPublicWithBookshelves(BookPublic):
     bookshelves: List["BookshelfPublic"] = []
 
 
-from app.models.bookshelf import BookshelfPublic
+# `noqa` is used to suppress linter errors
+# we needed the import here to avoid circular imports
+from app.models.bookshelf import BookshelfPublic  # noqa
 
 BookPublicWithBookshelves.model_rebuild()
 

@@ -8,7 +8,6 @@ import urllib.parse
 
 
 class OpenLibrary:
-
     def __init__(self):
         self.search_title_url = "https://openlibrary.org/search.json?title={title}&"
 
@@ -27,7 +26,6 @@ class OpenLibrary:
         self.cover_uri = ""
 
     async def search_by_title(self, title: str) -> Dict[str, Any]:
-
         async with httpx.AsyncClient() as client:
             try:
                 url = self.build_search_url(title=title)
@@ -46,7 +44,6 @@ class OpenLibrary:
 
                 works = []
                 for doc in response_json["docs"]:
-
                     try:
                         Work.model_validate(doc)
                         works.append(Work(**doc))
@@ -60,7 +57,6 @@ class OpenLibrary:
                 return None
 
     def build_search_url(self, title) -> str:
-
         params = {
             self.search_fields_key: self.search_fields_separator.join(
                 self.search_fields_values
@@ -71,7 +67,6 @@ class OpenLibrary:
         )
 
     def find_olid(self, olid_response: Dict[str, Any]) -> str | None:
-
         olid = None
 
         if olid_response["numFound"] > 0:
@@ -84,11 +79,9 @@ class OpenLibrary:
         return olid
 
     def build_image_url_from_olid(self, olid: str) -> str:
-
         return self.cover_image_url.format(olid=olid, size=self.cover_image_size)
 
     async def fetch_image_from_olid(self, olid: str) -> str:
-
         if olid is None:
             self.cover_uri = self.image.default_cover_image
         else:
@@ -99,7 +92,7 @@ class OpenLibrary:
                 filename=olid
             )
 
-            if os.path.isfile(local_file_destination) == False:
+            if not os.path.isfile(local_file_destination):
                 # Download remote to local only if we don't already have the file
                 await self.image.download(
                     remote_url=open_library_url, local_filename=local_file_destination
@@ -110,5 +103,4 @@ class OpenLibrary:
             self.cover_uri = self.image.get_cover_with_path_for_database(filename=olid)
 
     def get_cover_uri(self):
-
         return self.cover_uri

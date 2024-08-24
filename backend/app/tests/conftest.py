@@ -1,9 +1,10 @@
+from app.models.book import Book
+from typing import Any, Dict
 import sys
 import sqlite3
 
 
 class DB:
-
     def __init__(self):
         self.connection = sqlite3.connect(":memory:", check_same_thread=False)
         self.connection.row_factory = sqlite3.Row
@@ -67,12 +68,7 @@ module.get_db = get_db
 sys.modules["app.db.sqlite"] = module
 
 
-from app.models.book import Book
-from typing import Any, Dict
-
-
 class OpenLibrary:
-
     def __init__(self):
         self.search_url = "https://openlibrary.org/search.json?title={title}"
 

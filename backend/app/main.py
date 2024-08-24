@@ -6,9 +6,10 @@ from sqlmodel import SQLModel, text
 from app.db.sqlite import DB
 
 # These are only imported for the create_all call
-from app.models.book import Book
-from app.models.bookshelf import Bookshelf
-from app.models.book_bookshelf import BookBookshelfLink
+# `noqa: F401` is used to suppress linter errors
+from app.models.book import Book  # noqa: F401
+from app.models.bookshelf import Bookshelf  # noqa: F401
+from app.models.book_bookshelf import BookBookshelfLink  # noqa: F401
 
 db = DB()
 engine = db.get_engine()

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Path, status, HTTPException
-from typing import Annotated, List
+from typing import Annotated
 from app.models.bookshelf import (
     Bookshelf,
     BookshelfCreate,
