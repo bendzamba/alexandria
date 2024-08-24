@@ -4,6 +4,7 @@ import { CreateBook as CreateBookService, SearchBookByTitle } from '../../servic
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
+import styles from './css/CreateBook.module.css';
 
 function CreateBook() {
   const [searchTitle, setSearchTitle] = useState('');
@@ -16,6 +17,8 @@ function CreateBook() {
   const [noResults, setNoResults] = useState(false);
   const [olids, setOlids] = useState([]);
   const [coverUrl, setCoverUrl] = useState('');
+  const [booksToChooseFrom, setBooksToChooseFrom] = useState([]);
+  const [selectedBook, setSelectedBook] = useState('');
   const navigate = useNavigate();
 
   const handleSearch = async (e) => {
@@ -39,22 +42,39 @@ function CreateBook() {
       return false;
     }
 
-    if (Object.keys(response).length === 0 && response.constructor === Object) {
+    if (response.length === 0) {
       setNoResults(true);
       return true;
     }
 
+    if (response.length === 1) {
+      setSearchResults(true);
+      setTitle(response.title);
+      setAuthor(response.author_name);
+      setYear(response.first_publish_year);
+      setOlids(response.olids);
+      setCoverUrl('/assets/cover_images/Select_A_Book_Cover.png')
+    } else {
+      setBooksToChooseFrom(response);
+    }
+    
+  };
+
+  const handleSelectBook = async (e, index) => {
+    e.preventDefault();
+    setSelectedBook(parseInt(index));
     setSearchResults(true);
-    setTitle(response.title);
-    setAuthor(response.author_name);
-    setYear(response.first_publish_year);
-    setOlids(response.olids);
-    setCoverUrl('/assets/cover_images/Select_A_Book_Cover.png')
+    setTitle(booksToChooseFrom[index].title);
+    setAuthor(booksToChooseFrom[index].author_name);
+    setYear(booksToChooseFrom[index].first_publish_year);
+    setOlids(booksToChooseFrom[index].olids);
+    setCoverUrl('/assets/cover_images/Select_A_Book_Cover.png');
   };
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    let response = await CreateBookService({ title, author, year, olid });
+    const json_olids = JSON.stringify(olids);
+    let response = await CreateBookService({ title, author, year, olid, olids: json_olids });
     if ( ! response ) { 
       // A message to the user may be warranted here
       return false;
@@ -187,6 +207,43 @@ function CreateBook() {
                 </Col>
               </>
             )}
+          </Row>
+        </>
+      )}
+
+      { booksToChooseFrom.length > 0 && (
+        <>
+          <Row className='mt-4'>
+            <Col>
+              <h3>Please select from the multiple results found</h3>
+            </Col>
+          </Row>
+          <Row className='mt-4'>
+            {booksToChooseFrom.map((book, index) => (
+              <Col 
+                xs={6} sm={4} md={2} 
+                className={`mt-4 ${styles['search-result-book']} ${index === selectedBook ? styles['search-result-book-selected'] : '' }`} 
+                key={`col-booktochoosefrom-${index}`}
+                onClick={(event) => handleSelectBook(event, index)}
+              >
+                <Row>
+                  <Col style={{'height': '125px'}}>
+                    <img src={'https://covers.openlibrary.org/b/olid/' + book['olids'][0] + '-M.jpg'} style={{'maxWidth': '100%', 'maxHeight': '100%'}} alt="Book Cover" loading="lazy" />
+                  </Col>
+                  <Col className={`p-1 ${styles['search-result-book-metadata']}`} style={{ 'overflow': 'scroll' }}>
+                    <Row>
+                      <span>{book['title']}</span> 
+                    </Row>   
+                    <Row>  
+                      <span className="text-secondary">{book['author_name']}</span>
+                    </Row>
+                    <Row>
+                      <span>{book['first_publish_year']}</span>
+                    </Row>
+                  </Col>
+                </Row>
+              </Col>
+            ))}
           </Row>
         </>
       )}

@@ -27,3 +27,26 @@ class Work(BaseModel):
         del data['cover_edition_key']
         del data['edition_key']
         return data
+    
+
+class Works(BaseModel):
+
+    works: list[Work]
+
+    def model_dump(self):
+
+        dumped_works = [super_work.model_dump() for super_work in self.works]
+
+        # Initialize an empty set to track seen authors
+        seen_authors = set()
+        deduplicated_list = []
+
+        # Loop through the list of dictionaries
+        for work in dumped_works:
+            # Check if the author is already in the seen_authors set
+            if work['author_name'] not in seen_authors:
+                # If not, add the author to the set and the entry to the deduplicated list
+                seen_authors.add(work['author_name'])
+                deduplicated_list.append(work)
+
+        return deduplicated_list

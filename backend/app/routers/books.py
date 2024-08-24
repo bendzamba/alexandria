@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Path, status, HTTPException
 from typing import Annotated
 from app.models.book import Book, BookCreate, BookUpdate, BookPublic, BookPublicWithBookshelves
-from app.models.openlibrary import Work
+from app.models.openlibrary import Works
 from app.services.openlibrary import OpenLibrary
 from app.db.sqlite import DB
 from app.utils.image import Image
@@ -88,7 +88,7 @@ def delete_bookshelf(
 async def search_by_title(
     title: Annotated[str, Path(title="The title we are searching for")]
 ):
-    search_results: Work = await openlibrary.search_by_title(title=title)
+    search_results: Works = await openlibrary.search_by_title(title=title)
 
     if not search_results:
         return {}
