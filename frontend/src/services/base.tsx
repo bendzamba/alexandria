@@ -1,4 +1,4 @@
-export const Base = async (url, options = {}) => {
+export const Base = async (url: string, options: RequestInit = {}) => {
   try {
     const response = await fetch(url, options);
 

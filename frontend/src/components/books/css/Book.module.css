@@ -42,7 +42,7 @@
   position: relative;
 }
 [contenteditable="true"]:empty:before {
-  content: attr(placeholder);
+  content: attr(data-placeholder);
   pointer-events: none;
   display: block; /* For Firefox */
 }

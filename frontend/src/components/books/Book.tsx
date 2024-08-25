@@ -5,23 +5,33 @@ import { useParams, useNavigate, NavLink } from "react-router-dom";
 import { GetBook, DeleteBook, UpdateBook } from "../../services/books";
 import Container from "react-bootstrap/esm/Container";
 import { confirm } from "react-bootstrap-confirmation";
-import { SearchBookByTitle } from "../../services/books";
 import styles from "./css/Book.module.css";
 
-function Book({ bookId = null, preview = false }) {
-  const useParamsId = useParams();
-  const id = bookId || useParamsId.id;
+interface BookProps {
+  bookId?: number;
+  preview?: boolean;
+}
+
+function Book({ bookId, preview }: BookProps) {
+  const { id } = useParams();
+
+  let _bookId = bookId || 0;
+
+  if (id) {
+    _bookId = parseInt(id);
+  }
+
   const [coverUri, setCoverUri] = useState("");
   const [savedCoverUri, setSavedCoverUri] = useState("");
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
-  const [year, setYear] = useState("");
-  const [rating, setRating] = useState("");
+  const [year, setYear] = useState(0);
+  const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
   const [savedReview, setSavedReview] = useState("");
   const [loading, setLoading] = useState(true);
-  const [olid, setOlid] = useState([]);
-  const [savedOlid, setSavedOlid] = useState([]);
+  const [olid, setOlid] = useState("");
+  const [savedOlid, setSavedOlid] = useState("");
   const [olids, setOlids] = useState([]);
   const [selectingNewCover, setSelectingNewCover] = useState(false);
 
@@ -31,7 +41,7 @@ function Book({ bookId = null, preview = false }) {
 
   const fetchBook = useCallback(async () => {
     try {
-      const data = await GetBook(id);
+      const data = await GetBook(_bookId);
       if (!data) {
         // A message to the user may be warranted here
         return false;
@@ -63,24 +73,24 @@ function Book({ bookId = null, preview = false }) {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [bookId]);
 
-  const handleChangeCover = async (e) => {
-    e.preventDefault();
+  const handleChangeCover = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
     setSelectingNewCover(true);
   };
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    await UpdateBook(id, { olid });
+  const handleUpdate = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    await UpdateBook(_bookId, { olid });
     setSelectingNewCover(false);
   };
 
-  const handleDelete = async (e) => {
-    e.preventDefault();
+  const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
     const result = await confirm("Are you sure you want to delete this book?");
     if (result) {
-      let response = await DeleteBook(id);
+      let response = await DeleteBook(_bookId);
       if (!response) {
         // A message to the user may be warranted here
         // Especially if we are going to prevent navigation
@@ -90,8 +100,8 @@ function Book({ bookId = null, preview = false }) {
     }
   };
 
-  const imageOnload = async (event, olid) => {
-    const img = event.target;
+  const imageOnload = async (event: React.SyntheticEvent<HTMLImageElement>, olid: string) => {
+    const img = event.currentTarget;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
     if (img.naturalWidth === 1 || img.naturalHeight === 1) {
       setOlids((prevOlids) => {
@@ -102,8 +112,8 @@ function Book({ bookId = null, preview = false }) {
     }
   };
 
-  const toggleBookCoverSelection = async (e, olidToToggle) => {
-    e.preventDefault();
+  const toggleBookCoverSelection = async (event: React.MouseEvent<HTMLImageElement>, olidToToggle: string) => {
+    event.preventDefault();
     const localOlid = olid === olidToToggle ? savedOlid : olidToToggle;
     setOlid(localOlid);
     if (olid === olidToToggle) {
@@ -115,27 +125,31 @@ function Book({ bookId = null, preview = false }) {
     }
   };
 
-  const changeRating = async (e) => {
-    const newRating = parseInt(e.target.value);
+  const changeRating = async (event: React.MouseEvent<HTMLInputElement>) => {
+    const newRating = parseInt(event.currentTarget.value);
     if (rating !== newRating) {
       setRating(newRating);
-      await UpdateBook(id, { rating: newRating });
+      await UpdateBook(_bookId, { rating: newRating });
     }
   };
 
-  const editReview = async (e) => {
-    const el = e.target;
+  const editReview = async (event: React.MouseEvent<HTMLDivElement>) => {
+    const el = event.currentTarget;
     if (addingReview === false) {
       el.setAttribute("placeholder", "");
       setAddingReview(true);
     }
   };
 
-  const changeReview = async (e) => {
+  const changeReview = async (event: React.MouseEvent<HTMLButtonElement>) => {
     const newReview = getReview();
+    if (!newReview) {
+      console.log('could not get review to change');
+      return false;
+    }
     if (newReview !== savedReview) {
       setReview(newReview);
-      let response = await UpdateBook(id, { review: newReview });
+      let response = await UpdateBook(_bookId, { review: newReview });
       setAddingReview(false);
       if (!response) {
         // A message to the user may be warranted here
@@ -144,8 +158,12 @@ function Book({ bookId = null, preview = false }) {
     }
   };
 
-  const blurReview = async (e) => {
+  const blurReview = async (event: React.FocusEvent<HTMLDivElement>) => {
     const el = document.getElementById("review");
+    if (!el) {
+      console.log('could not find `review` div');
+      return false;
+    }
     const newReview = getReview();
     if (!newReview || newReview === savedReview) {
       el.setAttribute("placeholder", reviewPlaceholder);
@@ -154,8 +172,12 @@ function Book({ bookId = null, preview = false }) {
   };
 
   const getReview = () => {
-    const el = document.getElementById("review");
-    let newReview = el.innerHTML;
+    const element = document.getElementById("review");
+    if (!element) {
+      console.log('could not find `review` div');
+      return false;
+    }
+    let newReview = element.innerHTML;
     // innerHtml will get <div> and <br> elements added by contentenditable <div>
     // swap these for newlines
     return newReview
@@ -174,6 +196,11 @@ function Book({ bookId = null, preview = false }) {
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+
+  if (!_bookId || _bookId === 0) {
+    console.log('could not find book ID');
+    return <></>
   }
 
   return (
@@ -224,7 +251,7 @@ function Book({ bookId = null, preview = false }) {
       )}
       <Row>
         <Col xs={3}>
-          <NavLink className="nav-link" to={"/books/" + id}>
+          <NavLink className="nav-link" to={"/books/" + _bookId}>
             <img
               src={coverUri}
               className="img-fluid"
@@ -235,7 +262,7 @@ function Book({ bookId = null, preview = false }) {
         </Col>
         <Col xs={olids && olids.length > 0 ? 5 : 9}>
           {preview && (
-            <NavLink className="nav-link" to={"/books/" + id}>
+            <NavLink className="nav-link" to={"/books/" + _bookId}>
               <div>
                 <span>
                   <strong>{title}</strong>
@@ -265,49 +292,49 @@ function Book({ bookId = null, preview = false }) {
             >
               <input
                 type="radio"
-                id={`star5-${id}`}
-                name={`rating-${id}`}
+                id={`star5-${_bookId}`}
+                name={`rating-${_bookId}`}
                 value="5"
                 onClick={changeRating}
                 checked={rating === 5}
               />
-              <label htmlFor={`star5-${id}`}>5 stars</label>
+              <label htmlFor={`star5-${_bookId}`}>5 stars</label>
               <input
                 type="radio"
-                id={`star4-${id}`}
-                name={`rating-${id}`}
+                id={`star4-${_bookId}`}
+                name={`rating-${_bookId}`}
                 value="4"
                 onClick={changeRating}
                 checked={rating === 4}
               />
-              <label htmlFor={`star4-${id}`}>4 stars</label>
+              <label htmlFor={`star4-${_bookId}`}>4 stars</label>
               <input
                 type="radio"
-                id={`star3-${id}`}
-                name={`rating-${id}`}
+                id={`star3-${_bookId}`}
+                name={`rating-${_bookId}`}
                 value="3"
                 onClick={changeRating}
                 checked={rating === 3}
               />
-              <label htmlFor={`star3-${id}`}>3 stars</label>
+              <label htmlFor={`star3-${_bookId}`}>3 stars</label>
               <input
                 type="radio"
-                id={`star2-${id}`}
-                name={`rating-${id}`}
+                id={`star2-${_bookId}`}
+                name={`rating-${_bookId}`}
                 value="2"
                 onClick={changeRating}
                 checked={rating === 2}
               />
-              <label htmlFor={`star2-${id}`}>2 stars</label>
+              <label htmlFor={`star2-${_bookId}`}>2 stars</label>
               <input
                 type="radio"
-                id={`star1-${id}`}
-                name={`rating-${id}`}
+                id={`star1-${_bookId}`}
+                name={`rating-${_bookId}`}
                 value="1"
                 onClick={changeRating}
                 checked={rating === 1}
               />
-              <label htmlFor={`star1-${id}`}>1 star</label>
+              <label htmlFor={`star1-${_bookId}`}>1 star</label>
             </fieldset>
           </Row>
           {!preview && (
@@ -316,10 +343,9 @@ function Book({ bookId = null, preview = false }) {
                 <div
                   contentEditable="true"
                   id="review"
-                  name="review"
                   onClick={editReview}
                   onBlur={blurReview}
-                  placeholder={reviewPlaceholder}
+                  data-placeholder={reviewPlaceholder}
                   className="text-secondary book-review"
                   style={{
                     minHeight: "200px",

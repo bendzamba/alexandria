@@ -12,11 +12,20 @@ function UpdateBookshelf() {
   const navigate = useNavigate();
 
   // get ID from path using react-router
-  const bookshelfId = useParams().id;
+  const { id } = useParams();
 
+  let bookshelfId = id;
+  let _bookshelfId = 0;
+  if (bookshelfId) {
+    _bookshelfId = parseInt(bookshelfId);
+  }
+  
   useEffect(() => {
     const fetchBookshelf = async () => {
-      const bookshelf = await GetBookshelfService(bookshelfId);
+      if (!bookshelfId) {
+        return;
+      }
+      const bookshelf = await GetBookshelfService(_bookshelfId);
       if (!bookshelf) {
         // A message to the user may be warranted here
         return false;
@@ -27,11 +36,11 @@ function UpdateBookshelf() {
     };
 
     fetchBookshelf();
-  }, [bookshelfId]);
+  }, [_bookshelfId]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    let response = await UpdateBookshelfService(bookshelfId, {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    let response = await UpdateBookshelfService(_bookshelfId, {
       title,
       description,
     });
@@ -42,14 +51,14 @@ function UpdateBookshelf() {
     // not sure if I need this
     setTitle("");
     setDescription("");
-    navigate(`/bookshelves/` + bookshelfId);
+    navigate(`/bookshelves/` + _bookshelfId);
   };
 
-  const handleCancel = async (e) => {
-    e.preventDefault();
+  const handleCancel = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
     setTitle("");
     setDescription("");
-    navigate(`/bookshelves/` + bookshelfId);
+    navigate(`/bookshelves/` + _bookshelfId);
   };
 
   if (loading) {
