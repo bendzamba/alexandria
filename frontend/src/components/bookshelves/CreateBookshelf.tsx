@@ -1,15 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CreateBookshelf as CreateBookshelfService } from "../../services/bookshelves";
+import { CreateOrUpdateBookshelfInterface } from "../../interfaces/book_and_bookshelf";
 
 function CreateBookshelf() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    let response = await CreateBookshelfService({ title, description });
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const bookshelfData: CreateOrUpdateBookshelfInterface = {
+      title,
+      description
+    }
+    let response = await CreateBookshelfService(bookshelfData);
     if (!response) {
       // A message to the user may be warranted here
       // Especially if we are going to prevent navigation

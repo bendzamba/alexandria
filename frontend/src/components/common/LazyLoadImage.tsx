@@ -1,19 +1,26 @@
 import { useEffect, useRef } from "react";
 
-const LazyImage = ({ src, alt, elementClass, style, rootElement }) => {
-  const imgRef = useRef();
-
-  console.log("root element", rootElement);
+const LazyImage = ({ src, alt, elementClass, style, rootElement }: {
+  src: string;
+  alt: string;
+  elementClass?: string;
+  style: React.CSSProperties;
+  rootElement: HTMLElement|null;
+}) => {
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    if (!rootElement) return;
 
     const currentImgRef = imgRef.current;
+
+    if (!currentImgRef) {
+      return;
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && imgRef.current) {
             imgRef.current.src = src;
             observer.unobserve(entry.target);
           }
@@ -31,6 +38,11 @@ const LazyImage = ({ src, alt, elementClass, style, rootElement }) => {
     }
   }, [src, rootElement]);
 
+  if (!rootElement) {
+    console.log("Could not find root element");
+    return <></>;
+  }
+  
   return (
     <img
       ref={imgRef}

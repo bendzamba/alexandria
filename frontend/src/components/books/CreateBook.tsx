@@ -8,35 +8,37 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import styles from "./css/CreateBook.module.css";
+import { WorkInterface } from "../../interfaces/work";
+import { CreateOrUpdateBookInterface } from "../../interfaces/book_and_bookshelf";
 
 function CreateBook() {
-  const [searchTitle, setSearchTitle] = useState("");
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [year, setYear] = useState("");
-  const [olid, setOlid] = useState("");
+  const [searchTitle, setSearchTitle] = useState<string>("");
+  const [title, setTitle] = useState<string | null>(null);
+  const [author, setAuthor] = useState<string | null>(null);
+  const [year, setYear] = useState<number | null>(null);
+  const [olid, setOlid] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState(false);
   const [noResults, setNoResults] = useState(false);
-  const [olids, setOlids] = useState([]);
-  const [coverUrl, setCoverUrl] = useState("");
-  const [booksToChooseFrom, setBooksToChooseFrom] = useState([]);
-  const [selectedBook, setSelectedBook] = useState("");
+  const [olids, setOlids] = useState<string[]>([]);;
+  const [coverUrl, setCoverUrl] = useState<string>("");
+  const [booksToChooseFrom, setBooksToChooseFrom] = useState<WorkInterface[]>([]);;
+  const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setSearching(true);
     setSearchResults(false);
     setNoResults(false);
-    setAuthor("");
-    setYear("");
+    setAuthor(null);
+    setYear(null);
     setOlids([]);
     setCoverUrl("");
-    setOlid("");
-    setTitle("");
+    setOlid(null);
+    setTitle(null);
 
-    let response = await SearchBookByTitle(searchTitle);
+    let response: WorkInterface[] = await SearchBookByTitle(searchTitle);
 
     setSearching(false);
 
@@ -62,9 +64,9 @@ function CreateBook() {
     }
   };
 
-  const handleSelectBook = async (e, index) => {
-    e.preventDefault();
-    setSelectedBook(parseInt(index));
+  const handleSelectBook = async (event: React.MouseEvent<HTMLElement>, index: number) => {
+    event.preventDefault();
+    setSelectedBook(index);
     setSearchResults(true);
     setTitle(booksToChooseFrom[index].title);
     setAuthor(booksToChooseFrom[index].author_name);
@@ -73,42 +75,43 @@ function CreateBook() {
     setCoverUrl("/assets/cover_images/Select_A_Book_Cover.png");
   };
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
+  const handleCreate = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
     const json_olids = JSON.stringify(olids);
-    let response = await CreateBookService({
-      title,
-      author,
-      year,
-      olid,
-      olids: json_olids,
-    });
+    const filteredBookData: Partial<CreateOrUpdateBookInterface> = {};
+    if (title != null) filteredBookData.title = title;
+    if (author != null) filteredBookData.author = author;
+    if (year != null) filteredBookData.year = year;
+    if (olid != null) filteredBookData.olid = olid;
+    if (json_olids != null) filteredBookData.olids = json_olids;
+
+    let response = await CreateBookService(filteredBookData);
     if (!response) {
       // A message to the user may be warranted here
       return false;
     }
-    setTitle("");
+    setTitle(null);
     setSearchTitle("");
-    setAuthor("");
-    setYear("");
-    setOlid("");
+    setAuthor(null);
+    setYear(null);
+    setOlid(null);
     setOlids([]);
     navigate(`/books/`);
   };
 
-  const handleCancel = async (e) => {
-    e.preventDefault();
-    setTitle("");
+  const handleCancel = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    setTitle(null);
     setSearchTitle("");
-    setAuthor("");
-    setYear("");
-    setOlid("");
+    setAuthor(null);
+    setYear(null);
+    setOlid(null);
     setOlids([]);
     navigate(`/books/`);
   };
 
-  const imageOnload = async (event, olid) => {
-    const img = event.target;
+  const imageOnload = async (event: React.SyntheticEvent<HTMLImageElement>, olid: string) => {
+    const img = event.currentTarget;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
     if (img.naturalWidth === 1 || img.naturalHeight === 1) {
       setOlids((prevOlids) => {
@@ -125,8 +128,8 @@ function CreateBook() {
     }
   }, [olids]);
 
-  const toggleBookCoverSelection = async (e, olidToToggle) => {
-    e.preventDefault();
+  const toggleBookCoverSelection = async (event: React.MouseEvent<HTMLImageElement>, olidToToggle: string) => {
+    event.preventDefault();
     const localOlid = olid === olidToToggle ? "" : olidToToggle;
     setOlid(localOlid);
     if (olid === olidToToggle) {

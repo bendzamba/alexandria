@@ -12,7 +12,7 @@ function Header() {
         <Col xs={9}>
           <Navbar.Brand href="/">
             <Link className="navbar-brand" to="/">
-              <h1 class="display-2">Welcome to your Book Case</h1>
+              <h1 className="display-2">Welcome to your Book Case</h1>
             </Link>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
