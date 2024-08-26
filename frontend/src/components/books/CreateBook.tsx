@@ -85,7 +85,7 @@ function CreateBook() {
     if (olid != null) filteredBookData.olid = olid;
     if (json_olids != null) filteredBookData.olids = json_olids;
 
-    const response = await CreateBookService(filteredBookData);
+    const response: boolean = await CreateBookService(filteredBookData);
     if (!response) {
       // A message to the user may be warranted here
       return false;
