@@ -26,7 +26,7 @@ function Books() {
       }
     };
 
-    fetchData();
+    void fetchData();
   }, []);
 
   if (loading) {
