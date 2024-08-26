@@ -75,7 +75,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     // );
     const result = true;
     if (result) {
-      const response = await DeleteBookshelf(_bookshelfId);
+      const response: boolean = await DeleteBookshelf(_bookshelfId);
       if (!response) {
         // A message to the user may be warranted here
         // Especially if we are going to prevent navigation
@@ -95,7 +95,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
 
   const handleSaveChanges = async () => {
     if (booksToAdd.length) {
-      const response = await AddBooksToBookshelf(_bookshelfId, booksToAdd);
+      const response: boolean = await AddBooksToBookshelf(_bookshelfId, booksToAdd);
       setShowModal(false);
       if (!response) {
         // A message to the user may be warranted here
@@ -114,7 +114,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     // );
     const result = true;
     if (result) {
-      const response = await DeleteBookFromBookshelf(_bookshelfId, bookToDelete);
+      const response: boolean = await DeleteBookFromBookshelf(_bookshelfId, bookToDelete);
       if (!response) {
         // A message to the user may be warranted here
         return false;
