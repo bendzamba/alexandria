@@ -4,7 +4,6 @@ import Col from "react-bootstrap/Col";
 import { useParams, useNavigate, NavLink } from "react-router-dom";
 import { GetBook, DeleteBook, UpdateBook } from "../../services/books";
 import Container from "react-bootstrap/esm/Container";
-import { confirm } from "react-bootstrap-confirmation";
 import styles from "./css/Book.module.css";
 
 interface BookProps {
@@ -88,7 +87,8 @@ function Book({ bookId, preview }: BookProps) {
 
   const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    const result = await confirm("Are you sure you want to delete this book?");
+    // const result = await confirm("Are you sure you want to delete this book?");
+    let result = true;
     if (result) {
       let response = await DeleteBook(_bookId);
       if (!response) {

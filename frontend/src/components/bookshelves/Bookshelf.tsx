@@ -12,7 +12,6 @@ import {
   AddBooksToBookshelf,
   DeleteBookFromBookshelf,
 } from "../../services/bookshelves";
-import { confirm } from "react-bootstrap-confirmation";
 import LazyImage from "../common/LazyLoadImage";
 import { BookInterface, BookshelfWithBooksInterface } from "../../interfaces/book_and_bookshelf";
 
@@ -71,9 +70,10 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
 
   const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    const result = await confirm(
-      "Are you sure you want to delete this bookshelf?",
-    );
+    // const result = await confirm(
+    //   "Are you sure you want to delete this bookshelf?",
+    // );
+    let result = true;
     if (result) {
       let response = await DeleteBookshelf(_bookshelfId);
       if (!response) {
@@ -109,9 +109,10 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
 
   const handleDeleteBookFromBookshelf = async (event: React.MouseEvent<HTMLButtonElement>, bookToDelete: number) => {
     event.preventDefault();
-    const result = await confirm(
-      "Are you sure you want to remove this book from this bookshelf?",
-    );
+    // const result = await confirm(
+    //   "Are you sure you want to remove this book from this bookshelf?",
+    // );
+    let result = true;
     if (result) {
       let response = await DeleteBookFromBookshelf(_bookshelfId, bookToDelete);
       if (!response) {
