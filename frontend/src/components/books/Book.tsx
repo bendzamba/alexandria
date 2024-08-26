@@ -4,8 +4,8 @@ import Col from "react-bootstrap/Col";
 import { useParams, useNavigate, NavLink } from "react-router-dom";
 import { GetBook, DeleteBook, UpdateBook } from "../../services/books";
 import Container from "react-bootstrap/esm/Container";
-import { confirm } from "react-bootstrap-confirmation";
 import styles from "./css/Book.module.css";
+import { BookWithBookshelvesInterface } from "../../interfaces/book_and_bookshelf";
 
 interface BookProps {
   bookId?: number;
@@ -32,7 +32,7 @@ function Book({ bookId, preview }: BookProps) {
   const [loading, setLoading] = useState(true);
   const [olid, setOlid] = useState("");
   const [savedOlid, setSavedOlid] = useState("");
-  const [olids, setOlids] = useState([]);
+  const [olids, setOlids] = useState<string[]>([]);
   const [selectingNewCover, setSelectingNewCover] = useState(false);
 
   const navigate = useNavigate();
@@ -41,8 +41,9 @@ function Book({ bookId, preview }: BookProps) {
 
   const fetchBook = useCallback(async () => {
     try {
-      const data = await GetBook(_bookId);
-      if (!data) {
+      const data: BookWithBookshelvesInterface | boolean =
+        await GetBook(_bookId);
+      if (typeof data == "boolean") {
         // A message to the user may be warranted here
         return false;
       }
@@ -53,7 +54,7 @@ function Book({ bookId, preview }: BookProps) {
       setSavedOlid(data.olid);
       // olids should come back as a JSON encoded array or null
       try {
-        let allBookOlids = JSON.parse(data.olids);
+        const allBookOlids: string[] = JSON.parse(data.olids) as string[];
         if (allBookOlids === undefined) {
           setOlids([]);
         } else {
@@ -73,24 +74,34 @@ function Book({ bookId, preview }: BookProps) {
     } finally {
       setLoading(false);
     }
-  }, [bookId]);
+  }, [_bookId]);
 
-  const handleChangeCover = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleChangeCover = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setSelectingNewCover(true);
   };
 
-  const handleUpdate = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    await UpdateBook(_bookId, { olid });
-    setSelectingNewCover(false);
+  const handleUpdate = async () => {
+    try {
+      await UpdateBook(_bookId, { olid });
+      setSelectingNewCover(false);
+      // Other logic
+    } catch (error) {
+      console.error("Error updating:", error);
+      // Handle the error (e.g., show an error message)
+    }
   };
 
-  const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleUpdateClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    const result = await confirm("Are you sure you want to delete this book?");
+    void handleUpdate(); // Call the async function but don't return its Promise
+  };
+
+  const handleDelete = async () => {
+    // const result = await confirm("Are you sure you want to delete this book?");
+    const result = true;
     if (result) {
-      let response = await DeleteBook(_bookId);
+      const response: boolean = await DeleteBook(_bookId);
       if (!response) {
         // A message to the user may be warranted here
         // Especially if we are going to prevent navigation
@@ -100,7 +111,15 @@ function Book({ bookId, preview }: BookProps) {
     }
   };
 
-  const imageOnload = async (event: React.SyntheticEvent<HTMLImageElement>, olid: string) => {
+  const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    void handleDelete(); // Call the async function but don't return its Promise
+  };
+
+  const imageOnload = (
+    event: React.SyntheticEvent<HTMLImageElement>,
+    olid: string,
+  ) => {
     const img = event.currentTarget;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
     if (img.naturalWidth === 1 || img.naturalHeight === 1) {
@@ -112,7 +131,10 @@ function Book({ bookId, preview }: BookProps) {
     }
   };
 
-  const toggleBookCoverSelection = async (event: React.MouseEvent<HTMLImageElement>, olidToToggle: string) => {
+  const toggleBookCoverSelection = (
+    event: React.MouseEvent<HTMLImageElement>,
+    olidToToggle: string,
+  ) => {
     event.preventDefault();
     const localOlid = olid === olidToToggle ? savedOlid : olidToToggle;
     setOlid(localOlid);
@@ -125,15 +147,23 @@ function Book({ bookId, preview }: BookProps) {
     }
   };
 
-  const changeRating = async (event: React.MouseEvent<HTMLInputElement>) => {
-    const newRating = parseInt(event.currentTarget.value);
+  const changeRating = async (newRating: number) => {
     if (rating !== newRating) {
       setRating(newRating);
       await UpdateBook(_bookId, { rating: newRating });
     }
   };
 
-  const editReview = async (event: React.MouseEvent<HTMLDivElement>) => {
+  const changeRatingClick = (event: React.MouseEvent<HTMLInputElement>) => {
+    const newRating = parseInt(event.currentTarget.value);
+    void changeRating(newRating);
+  };
+
+  const editReview = (
+    event:
+      | React.MouseEvent<HTMLDivElement>
+      | React.KeyboardEvent<HTMLDivElement>,
+  ) => {
     const el = event.currentTarget;
     if (addingReview === false) {
       el.setAttribute("placeholder", "");
@@ -141,15 +171,17 @@ function Book({ bookId, preview }: BookProps) {
     }
   };
 
-  const changeReview = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const changeReview = async () => {
     const newReview = getReview();
     if (!newReview) {
-      console.log('could not get review to change');
+      console.log("could not get review to change");
       return false;
     }
     if (newReview !== savedReview) {
       setReview(newReview);
-      let response = await UpdateBook(_bookId, { review: newReview });
+      const response: boolean = await UpdateBook(_bookId, {
+        review: newReview,
+      });
       setAddingReview(false);
       if (!response) {
         // A message to the user may be warranted here
@@ -158,10 +190,14 @@ function Book({ bookId, preview }: BookProps) {
     }
   };
 
-  const blurReview = async (event: React.FocusEvent<HTMLDivElement>) => {
+  const changeReviewClick = () => {
+    void changeReview();
+  };
+
+  const blurReview = () => {
     const el = document.getElementById("review");
     if (!el) {
-      console.log('could not find `review` div');
+      console.log("could not find `review` div");
       return false;
     }
     const newReview = getReview();
@@ -174,10 +210,10 @@ function Book({ bookId, preview }: BookProps) {
   const getReview = () => {
     const element = document.getElementById("review");
     if (!element) {
-      console.log('could not find `review` div');
+      console.log("could not find `review` div");
       return false;
     }
-    let newReview = element.innerHTML;
+    const newReview = element.innerHTML;
     // innerHtml will get <div> and <br> elements added by contentenditable <div>
     // swap these for newlines
     return newReview
@@ -187,7 +223,10 @@ function Book({ bookId, preview }: BookProps) {
   };
 
   useEffect(() => {
-    fetchBook();
+    const fetchData = async () => {
+      await fetchBook();
+    };
+    void fetchData();
   }, [fetchBook]);
 
   useEffect(() => {
@@ -199,8 +238,8 @@ function Book({ bookId, preview }: BookProps) {
   }
 
   if (!_bookId || _bookId === 0) {
-    console.log('could not find book ID');
-    return <></>
+    console.log("could not find book ID");
+    return <></>;
   }
 
   return (
@@ -234,7 +273,7 @@ function Book({ bookId, preview }: BookProps) {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={handleUpdate}
+                onClick={handleUpdateClick}
               >
                 Update
               </button>
@@ -242,7 +281,7 @@ function Book({ bookId, preview }: BookProps) {
             <button
               type="button"
               className="btn btn-danger ms-1"
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
             >
               Delete
             </button>
@@ -251,7 +290,7 @@ function Book({ bookId, preview }: BookProps) {
       )}
       <Row>
         <Col xs={3}>
-          <NavLink className="nav-link" to={"/books/" + _bookId}>
+          <NavLink className="nav-link" to={"/books/" + _bookId.toString()}>
             <img
               src={coverUri}
               className="img-fluid"
@@ -262,7 +301,7 @@ function Book({ bookId, preview }: BookProps) {
         </Col>
         <Col xs={olids && olids.length > 0 ? 5 : 9}>
           {preview && (
-            <NavLink className="nav-link" to={"/books/" + _bookId}>
+            <NavLink className="nav-link" to={"/books/" + _bookId.toString()}>
               <div>
                 <span>
                   <strong>{title}</strong>
@@ -295,7 +334,7 @@ function Book({ bookId, preview }: BookProps) {
                 id={`star5-${_bookId}`}
                 name={`rating-${_bookId}`}
                 value="5"
-                onClick={changeRating}
+                onClick={changeRatingClick}
                 checked={rating === 5}
               />
               <label htmlFor={`star5-${_bookId}`}>5 stars</label>
@@ -304,7 +343,7 @@ function Book({ bookId, preview }: BookProps) {
                 id={`star4-${_bookId}`}
                 name={`rating-${_bookId}`}
                 value="4"
-                onClick={changeRating}
+                onClick={changeRatingClick}
                 checked={rating === 4}
               />
               <label htmlFor={`star4-${_bookId}`}>4 stars</label>
@@ -313,7 +352,7 @@ function Book({ bookId, preview }: BookProps) {
                 id={`star3-${_bookId}`}
                 name={`rating-${_bookId}`}
                 value="3"
-                onClick={changeRating}
+                onClick={changeRatingClick}
                 checked={rating === 3}
               />
               <label htmlFor={`star3-${_bookId}`}>3 stars</label>
@@ -322,7 +361,7 @@ function Book({ bookId, preview }: BookProps) {
                 id={`star2-${_bookId}`}
                 name={`rating-${_bookId}`}
                 value="2"
-                onClick={changeRating}
+                onClick={changeRatingClick}
                 checked={rating === 2}
               />
               <label htmlFor={`star2-${_bookId}`}>2 stars</label>
@@ -331,7 +370,7 @@ function Book({ bookId, preview }: BookProps) {
                 id={`star1-${_bookId}`}
                 name={`rating-${_bookId}`}
                 value="1"
-                onClick={changeRating}
+                onClick={changeRatingClick}
                 checked={rating === 1}
               />
               <label htmlFor={`star1-${_bookId}`}>1 star</label>
@@ -345,6 +384,14 @@ function Book({ bookId, preview }: BookProps) {
                   id="review"
                   onClick={editReview}
                   onBlur={blurReview}
+                  onKeyDown={(e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                      e.preventDefault(); // Prevent inserting a newline
+                      editReview(e); // Trigger the click event or any other logic
+                    }
+                  }}
+                  tabIndex={0}
+                  role="textbox"
                   data-placeholder={reviewPlaceholder}
                   className="text-secondary book-review"
                   style={{
@@ -367,7 +414,7 @@ function Book({ bookId, preview }: BookProps) {
                 <button
                   type="button"
                   className="btn btn-sm btn-primary"
-                  onClick={changeReview}
+                  onClick={changeReviewClick}
                 >
                   Update Review
                 </button>
@@ -387,7 +434,7 @@ function Book({ bookId, preview }: BookProps) {
                     borderRadius: ".375em",
                   }}
                 >
-                  {olids.map((map_olid) => (
+                  {olids.map((map_olid: string) => (
                     <Col key={map_olid} className="m-1">
                       <img
                         src={
@@ -407,6 +454,15 @@ function Book({ bookId, preview }: BookProps) {
                         className={`border border-2 ${olid === map_olid ? "border-primary" : "border-light"}`}
                         alt="Book Cover"
                         loading="lazy"
+                        onKeyDown={(event) => {
+                          if (
+                            (event.ctrlKey || event.metaKey) &&
+                            event.key === "Enter"
+                          ) {
+                            editReview(event); // Trigger the click event or any other logic
+                          }
+                        }}
+                        role="presentation"
                       />
                     </Col>
                   ))}

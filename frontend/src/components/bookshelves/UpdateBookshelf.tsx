@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { BookshelfWithBooksInterface } from "../../interfaces/book_and_bookshelf";
 import {
   GetBookshelf as GetBookshelfService,
   UpdateBookshelf as UpdateBookshelfService,
@@ -14,19 +15,20 @@ function UpdateBookshelf() {
   // get ID from path using react-router
   const { id } = useParams();
 
-  let bookshelfId = id;
+  const bookshelfId = id;
   let _bookshelfId = 0;
   if (bookshelfId) {
     _bookshelfId = parseInt(bookshelfId);
   }
-  
+
   useEffect(() => {
     const fetchBookshelf = async () => {
-      if (!bookshelfId) {
+      if (!_bookshelfId) {
         return;
       }
-      const bookshelf = await GetBookshelfService(_bookshelfId);
-      if (!bookshelf) {
+      const bookshelf: BookshelfWithBooksInterface | boolean =
+        await GetBookshelfService(_bookshelfId);
+      if (typeof bookshelf == "boolean") {
         // A message to the user may be warranted here
         return false;
       }
@@ -35,12 +37,11 @@ function UpdateBookshelf() {
       setLoading(false);
     };
 
-    fetchBookshelf();
+    void fetchBookshelf();
   }, [_bookshelfId]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    let response = await UpdateBookshelfService(_bookshelfId, {
+  const handleSubmit = async () => {
+    const response: boolean = await UpdateBookshelfService(_bookshelfId, {
       title,
       description,
     });
@@ -51,14 +52,19 @@ function UpdateBookshelf() {
     // not sure if I need this
     setTitle("");
     setDescription("");
-    navigate(`/bookshelves/` + _bookshelfId);
+    navigate(`/bookshelves/` + _bookshelfId.toString());
   };
 
-  const handleCancel = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSubmitClick = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleSubmit();
+  };
+
+  const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setTitle("");
     setDescription("");
-    navigate(`/bookshelves/` + _bookshelfId);
+    navigate(`/bookshelves/` + _bookshelfId.toString());
   };
 
   if (loading) {
@@ -68,7 +74,7 @@ function UpdateBookshelf() {
   return (
     <div className="container mt-4">
       <h2>Update Bookshelf</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmitClick}>
         <div className="mb-3">
           <label htmlFor="title" className="form-label">
             Title

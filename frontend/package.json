@@ -9,7 +9,6 @@
     "bootstrap": "^5.3.3",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.4",
-    "react-bootstrap-confirmation": "^1.0.4",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0",
     "react-scripts": "5.0.1",
@@ -19,7 +18,10 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint 'src/**/*.{js,jsx,ts,tsx}' --fix",
+    "format": "prettier --write src/",
+    "tsc": "tsc --project tsconfig.json"
   },
   "eslintConfig": {
     "extends": [
@@ -46,7 +48,21 @@
     "@types/react": "^18.3.4",
     "@types/react-bootstrap-confirmation": "^1.0.3",
     "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsx-a11y": "^6.9.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.35.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
     "prettier": "3.3.3",
     "typescript": "^5.5.4"
+  },
+  "overrides": {
+    "react-scripts": {
+      "typescript": "^5.4"
+    }
   }
 }

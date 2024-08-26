@@ -12,8 +12,10 @@ function Bookshelves() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data: BookshelfInterface[] = await GetBookshelves();
-        console.log('data', data);
+        const data: BookshelfInterface[] | boolean = await GetBookshelves();
+        if (typeof data == "boolean") {
+          return false;
+        }
         setBookshelves(data);
       } catch (error) {
         console.error("Error fetching bookshelves:", error);
@@ -22,7 +24,7 @@ function Bookshelves() {
       }
     };
 
-    fetchData();
+    void fetchData();
   }, []);
 
   if (loading) {
@@ -34,7 +36,7 @@ function Bookshelves() {
       {bookshelves.map((bookshelf) => (
         <Row
           className="mt-3 mb-3"
-          style={{ "minHeight": "250px" }}
+          style={{ minHeight: "250px" }}
           key={bookshelf.id}
         >
           <Bookshelf bookshelfId={bookshelf.id} preview={true} />

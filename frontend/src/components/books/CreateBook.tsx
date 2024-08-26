@@ -20,14 +20,15 @@ function CreateBook() {
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState(false);
   const [noResults, setNoResults] = useState(false);
-  const [olids, setOlids] = useState<string[]>([]);;
+  const [olids, setOlids] = useState<string[]>([]);
   const [coverUrl, setCoverUrl] = useState<string>("");
-  const [booksToChooseFrom, setBooksToChooseFrom] = useState<WorkInterface[]>([]);;
+  const [booksToChooseFrom, setBooksToChooseFrom] = useState<WorkInterface[]>(
+    [],
+  );
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSearch = async () => {
     setSearching(true);
     setSearchResults(false);
     setNoResults(false);
@@ -38,11 +39,12 @@ function CreateBook() {
     setOlid(null);
     setTitle(null);
 
-    let response: WorkInterface[] = await SearchBookByTitle(searchTitle);
+    const response: WorkInterface[] | boolean =
+      await SearchBookByTitle(searchTitle);
 
     setSearching(false);
 
-    if (!response) {
+    if (typeof response == "boolean") {
       // A message to the user may be warranted here
       return false;
     }
@@ -64,7 +66,15 @@ function CreateBook() {
     }
   };
 
-  const handleSelectBook = async (event: React.MouseEvent<HTMLElement>, index: number) => {
+  const handleSearchClick = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleSearch();
+  };
+
+  const handleSelectBook = (
+    event: React.MouseEvent<HTMLElement>,
+    index: number,
+  ) => {
     event.preventDefault();
     setSelectedBook(index);
     setSearchResults(true);
@@ -75,8 +85,7 @@ function CreateBook() {
     setCoverUrl("/assets/cover_images/Select_A_Book_Cover.png");
   };
 
-  const handleCreate = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
+  const handleCreate = async () => {
     const json_olids = JSON.stringify(olids);
     const filteredBookData: Partial<CreateOrUpdateBookInterface> = {};
     if (title != null) filteredBookData.title = title;
@@ -85,7 +94,7 @@ function CreateBook() {
     if (olid != null) filteredBookData.olid = olid;
     if (json_olids != null) filteredBookData.olids = json_olids;
 
-    let response = await CreateBookService(filteredBookData);
+    const response: boolean = await CreateBookService(filteredBookData);
     if (!response) {
       // A message to the user may be warranted here
       return false;
@@ -99,7 +108,12 @@ function CreateBook() {
     navigate(`/books/`);
   };
 
-  const handleCancel = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleCreateClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    void handleCreate();
+  };
+
+  const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setTitle(null);
     setSearchTitle("");
@@ -110,7 +124,10 @@ function CreateBook() {
     navigate(`/books/`);
   };
 
-  const imageOnload = async (event: React.SyntheticEvent<HTMLImageElement>, olid: string) => {
+  const imageOnload = (
+    event: React.SyntheticEvent<HTMLImageElement>,
+    olid: string,
+  ) => {
     const img = event.currentTarget;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
     if (img.naturalWidth === 1 || img.naturalHeight === 1) {
@@ -128,7 +145,12 @@ function CreateBook() {
     }
   }, [olids]);
 
-  const toggleBookCoverSelection = async (event: React.MouseEvent<HTMLImageElement>, olidToToggle: string) => {
+  const toggleBookCoverSelection = (
+    event:
+      | React.MouseEvent<HTMLImageElement>
+      | React.KeyboardEvent<HTMLImageElement>,
+    olidToToggle: string,
+  ) => {
     event.preventDefault();
     const localOlid = olid === olidToToggle ? "" : olidToToggle;
     setOlid(localOlid);
@@ -143,7 +165,7 @@ function CreateBook() {
 
   return (
     <Container className="mt-4">
-      <form onSubmit={handleSearch}>
+      <form onSubmit={handleSearchClick}>
         <div className="mb-3">
           <input
             type="text"
@@ -198,7 +220,7 @@ function CreateBook() {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={handleCreate}
+                onClick={handleCreateClick}
               >
                 Create
               </button>
@@ -255,6 +277,12 @@ function CreateBook() {
                           className={`border border-2 ${olid === map_olid ? "border-primary" : "border-light"}`}
                           alt="Book Cover"
                           loading="lazy"
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              toggleBookCoverSelection(event, map_olid); // Trigger the click handler
+                            }
+                          }}
+                          role="presentation"
                         />
                       </Col>
                     ))}
