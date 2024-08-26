@@ -64,7 +64,7 @@ function CreateBook() {
     }
   };
 
-  const handleSelectBook = async (event: React.MouseEvent<HTMLElement>, index: number) => {
+  const handleSelectBook = (event: React.MouseEvent<HTMLElement>, index: number) => {
     event.preventDefault();
     setSelectedBook(index);
     setSearchResults(true);
@@ -99,7 +99,7 @@ function CreateBook() {
     navigate(`/books/`);
   };
 
-  const handleCancel = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setTitle(null);
     setSearchTitle("");
@@ -110,7 +110,7 @@ function CreateBook() {
     navigate(`/books/`);
   };
 
-  const imageOnload = async (event: React.SyntheticEvent<HTMLImageElement>, olid: string) => {
+  const imageOnload = (event: React.SyntheticEvent<HTMLImageElement>, olid: string) => {
     const img = event.currentTarget;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
     if (img.naturalWidth === 1 || img.naturalHeight === 1) {
@@ -128,7 +128,7 @@ function CreateBook() {
     }
   }, [olids]);
 
-  const toggleBookCoverSelection = async (event: React.MouseEvent<HTMLImageElement>, olidToToggle: string) => {
+  const toggleBookCoverSelection = (event: React.MouseEvent<HTMLImageElement>, olidToToggle: string) => {
     event.preventDefault();
     const localOlid = olid === olidToToggle ? "" : olidToToggle;
     setOlid(localOlid);
