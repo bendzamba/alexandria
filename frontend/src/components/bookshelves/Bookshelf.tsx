@@ -13,7 +13,10 @@ import {
   DeleteBookFromBookshelf,
 } from "../../services/bookshelves";
 import LazyImage from "../common/LazyLoadImage";
-import { BookInterface, BookshelfWithBooksInterface } from "../../interfaces/book_and_bookshelf";
+import {
+  BookInterface,
+  BookshelfWithBooksInterface,
+} from "../../interfaces/book_and_bookshelf";
 
 interface BookshelfProps {
   bookshelfId?: number;
@@ -28,17 +31,21 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   if (id) {
     _bookshelfId = parseInt(id);
   }
-  
-  const [bookshelf, setBookshelf] = useState<BookshelfWithBooksInterface | null>(null);
+
+  const [bookshelf, setBookshelf] =
+    useState<BookshelfWithBooksInterface | null>(null);
   const [booksToAdd, setBooksToAdd] = useState<number[]>([]);
-  const [booksThatCanBeAdded, setBooksThatCanBeAdded] = useState<BookInterface[]>([]);
+  const [booksThatCanBeAdded, setBooksThatCanBeAdded] = useState<
+    BookInterface[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
   const fetchBookshelf = useCallback(async () => {
     try {
-      const response: BookshelfWithBooksInterface | boolean = await GetBookshelf(_bookshelfId);
+      const response: BookshelfWithBooksInterface | boolean =
+        await GetBookshelf(_bookshelfId);
       if (typeof response == "boolean") {
         // A message to the user may be warranted here
         return false;
@@ -90,7 +97,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     void handleDelete();
-  }
+  };
 
   const handleShowModal = () => {
     setShowModal(true);
@@ -102,7 +109,10 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
 
   const handleSaveChanges = async () => {
     if (booksToAdd.length) {
-      const response: boolean = await AddBooksToBookshelf(_bookshelfId, booksToAdd);
+      const response: boolean = await AddBooksToBookshelf(
+        _bookshelfId,
+        booksToAdd,
+      );
       setShowModal(false);
       if (!response) {
         // A message to the user may be warranted here
@@ -124,7 +134,10 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     // );
     const result = true;
     if (result) {
-      const response: boolean = await DeleteBookFromBookshelf(_bookshelfId, bookToDelete);
+      const response: boolean = await DeleteBookFromBookshelf(
+        _bookshelfId,
+        bookToDelete,
+      );
       if (!response) {
         // A message to the user may be warranted here
         return false;
@@ -135,7 +148,10 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     }
   };
 
-  const handleDeleteBookFromBookshelfClick = (event: React.MouseEvent<HTMLButtonElement>, bookToDelete: number) => {
+  const handleDeleteBookFromBookshelfClick = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    bookToDelete: number,
+  ) => {
     event.preventDefault();
     void handleDeleteBookFromBookshelf(bookToDelete);
   };
@@ -145,7 +161,8 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   };
 
   const fetchBooksThatCanBeAdded = async () => {
-    const booksThatCanBeAdded: BookInterface[] | boolean = await GetBooksNotOnBookshelf(_bookshelfId);
+    const booksThatCanBeAdded: BookInterface[] | boolean =
+      await GetBooksNotOnBookshelf(_bookshelfId);
     if (typeof booksThatCanBeAdded == "boolean") {
       return false;
     }
@@ -156,7 +173,10 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     void fetchBooksThatCanBeAdded();
   };
 
-  const toggleBookSelection = (event: React.MouseEvent<HTMLElement>, bookToToggle: number) => {
+  const toggleBookSelection = (
+    event: React.MouseEvent<HTMLElement>,
+    bookToToggle: number,
+  ) => {
     event.preventDefault();
     event.currentTarget.classList.toggle("border-light");
     event.currentTarget.classList.toggle("border-primary");
@@ -175,8 +195,8 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   };
 
   if (!_bookshelfId || _bookshelfId === 0) {
-    console.log('could not find bookshelf ID');
-    return <></>
+    console.log("could not find bookshelf ID");
+    return <></>;
   }
 
   return (
@@ -187,11 +207,16 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
       >
         <Col xs={9}>
           {preview && bookshelf && (
-            <NavLink className="nav-link" to={"/bookshelves/" + _bookshelfId.toString()}>
+            <NavLink
+              className="nav-link"
+              to={"/bookshelves/" + _bookshelfId.toString()}
+            >
               <h1 className="display-6 pull-left">{bookshelf.title}</h1>
             </NavLink>
           )}
-          {!preview && bookshelf && <h1 className="display-5 pull-left">{bookshelf.title}</h1>}
+          {!preview && bookshelf && (
+            <h1 className="display-5 pull-left">{bookshelf.title}</h1>
+          )}
         </Col>
         {!preview && (
           <Col
@@ -222,10 +247,12 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
           {preview && bookshelf && (
             <span className="text-secondary">{bookshelf.description}</span>
           )}
-          {!preview && bookshelf && <h5 className="text-secondary">{bookshelf.description}</h5>}
+          {!preview && bookshelf && (
+            <h5 className="text-secondary">{bookshelf.description}</h5>
+          )}
         </Col>
       </Row>
-      <Row className="mt-2" style={{ "minHeight": "150px" }}>
+      <Row className="mt-2" style={{ minHeight: "150px" }}>
         {!preview && (
           <Col md="auto" className="mt-3">
             <button
@@ -238,40 +265,42 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
             </button>
           </Col>
         )}
-        {bookshelf && bookshelf.books.map((book: BookInterface) => (
-          <Col
-            md="auto"
-            className="mt-3"
-            style={{ "minHeight": "150px", "minWidth": "80px" }}
-          >
-            <div
-              className="bookshelf-book-image-wrapper"
-              style={{ "minHeight": "150px", "minWidth": "80px" }}
+        {bookshelf &&
+          bookshelf.books.map((book: BookInterface) => (
+            <Col
+              md="auto"
+              className="mt-3"
+              style={{ minHeight: "150px", minWidth: "80px" }}
+              key={`bookshelf-book-${book.id}`}
             >
-              <img
-                height="150px"
-                src={book.cover_uri}
-                alt="Book Cover"
-                loading="lazy"
-                style={{
-                  height: "150px",
-                  "minHeight": "150px",
-                  "minWidth": "80px",
-                }}
-              />
-              {!preview && (
-                <div className="remove-book-from-bookshelf-button">
-                  <button
-                    className="btn btn-close"
-                    onClick={(event) => {
-                      handleDeleteBookFromBookshelfClick(event, book.id);
-                    }}
-                  ></button>
-                </div>
-              )}
-            </div>
-          </Col>
-        ))}
+              <div
+                className="bookshelf-book-image-wrapper"
+                style={{ minHeight: "150px", minWidth: "80px" }}
+              >
+                <img
+                  height="150px"
+                  src={book.cover_uri}
+                  alt="Book Cover"
+                  loading="lazy"
+                  style={{
+                    height: "150px",
+                    minHeight: "150px",
+                    minWidth: "80px",
+                  }}
+                />
+                {!preview && (
+                  <div className="remove-book-from-bookshelf-button">
+                    <button
+                      className="btn btn-close"
+                      onClick={(event) => {
+                        handleDeleteBookFromBookshelfClick(event, book.id);
+                      }}
+                    ></button>
+                  </div>
+                )}
+              </div>
+            </Col>
+          ))}
       </Row>
       <Modal
         size="lg"
@@ -294,15 +323,16 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                   onClick={(event) => toggleBookSelection(event, book.id)}
                   style={{
                     height: "175px",
-                    "minWidth": "100px",
+                    minWidth: "100px",
                     padding: "2px",
                     boxSizing: "border-box",
                   }}
+                  key={`book-that-can-be-added-${book.id}`}
                 >
                   <LazyImage
                     src={book.cover_uri}
                     alt="Book Cover"
-                    style={{ "maxWidth": "100%", "maxHeight": "100%" }}
+                    style={{ maxWidth: "100%", maxHeight: "100%" }}
                     rootElement={document.querySelector(".modal-content")}
                   ></LazyImage>
                 </Col>

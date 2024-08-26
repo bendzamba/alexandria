@@ -11,8 +11,8 @@ function CreateBookshelf() {
   const handleSubmit = async () => {
     const bookshelfData: CreateOrUpdateBookshelfInterface = {
       title,
-      description
-    }
+      description,
+    };
     const response: boolean = await CreateBookshelfService(bookshelfData);
     if (!response) {
       // A message to the user may be warranted here

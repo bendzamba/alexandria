@@ -1,16 +1,21 @@
 import { useEffect, useRef } from "react";
 
-const LazyImage = ({ src, alt, elementClass, style, rootElement }: {
+const LazyImage = ({
+  src,
+  alt,
+  elementClass,
+  style,
+  rootElement,
+}: {
   src: string;
   alt: string;
   elementClass?: string;
   style: React.CSSProperties;
-  rootElement: HTMLElement|null;
+  rootElement: HTMLElement | null;
 }) => {
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-
     const currentImgRef = imgRef.current;
 
     if (!currentImgRef) {
@@ -42,7 +47,7 @@ const LazyImage = ({ src, alt, elementClass, style, rootElement }: {
     console.log("Could not find root element");
     return <></>;
   }
-  
+
   return (
     <img
       ref={imgRef}

@@ -1,4 +1,7 @@
-export const Base = async <T> (url: string, options: RequestInit = {}): Promise<T | boolean> => {
+export const Base = async <T>(
+  url: string,
+  options: RequestInit = {},
+): Promise<T | boolean> => {
   try {
     const response = await fetch(url, options);
 
@@ -20,7 +23,7 @@ export const Base = async <T> (url: string, options: RequestInit = {}): Promise<
     }
 
     // Assuming the response is JSON
-    const data: T =  await response.json() as T;
+    const data: T = (await response.json()) as T;
     return data;
   } catch (error) {
     // Currently only logging error, not displaying anything to user

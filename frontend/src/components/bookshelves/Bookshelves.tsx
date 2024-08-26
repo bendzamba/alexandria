@@ -36,7 +36,7 @@ function Bookshelves() {
       {bookshelves.map((bookshelf) => (
         <Row
           className="mt-3 mb-3"
-          style={{ "minHeight": "250px" }}
+          style={{ minHeight: "250px" }}
           key={bookshelf.id}
         >
           <Bookshelf bookshelfId={bookshelf.id} preview={true} />

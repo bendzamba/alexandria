@@ -20,13 +20,14 @@ function UpdateBookshelf() {
   if (bookshelfId) {
     _bookshelfId = parseInt(bookshelfId);
   }
-  
+
   useEffect(() => {
     const fetchBookshelf = async () => {
       if (!_bookshelfId) {
         return;
       }
-      const bookshelf: BookshelfWithBooksInterface | boolean = await GetBookshelfService(_bookshelfId);
+      const bookshelf: BookshelfWithBooksInterface | boolean =
+        await GetBookshelfService(_bookshelfId);
       if (typeof bookshelf == "boolean") {
         // A message to the user may be warranted here
         return false;

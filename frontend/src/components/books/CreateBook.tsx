@@ -22,7 +22,9 @@ function CreateBook() {
   const [noResults, setNoResults] = useState(false);
   const [olids, setOlids] = useState<string[]>([]);
   const [coverUrl, setCoverUrl] = useState<string>("");
-  const [booksToChooseFrom, setBooksToChooseFrom] = useState<WorkInterface[]>([]);
+  const [booksToChooseFrom, setBooksToChooseFrom] = useState<WorkInterface[]>(
+    [],
+  );
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const navigate = useNavigate();
 
@@ -37,7 +39,8 @@ function CreateBook() {
     setOlid(null);
     setTitle(null);
 
-    const response: WorkInterface[] | boolean = await SearchBookByTitle(searchTitle);
+    const response: WorkInterface[] | boolean =
+      await SearchBookByTitle(searchTitle);
 
     setSearching(false);
 
@@ -68,7 +71,10 @@ function CreateBook() {
     void handleSearch();
   };
 
-  const handleSelectBook = (event: React.MouseEvent<HTMLElement>, index: number) => {
+  const handleSelectBook = (
+    event: React.MouseEvent<HTMLElement>,
+    index: number,
+  ) => {
     event.preventDefault();
     setSelectedBook(index);
     setSearchResults(true);
@@ -105,7 +111,7 @@ function CreateBook() {
   const handleCreateClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     void handleCreate();
-  }
+  };
 
   const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -118,7 +124,10 @@ function CreateBook() {
     navigate(`/books/`);
   };
 
-  const imageOnload = (event: React.SyntheticEvent<HTMLImageElement>, olid: string) => {
+  const imageOnload = (
+    event: React.SyntheticEvent<HTMLImageElement>,
+    olid: string,
+  ) => {
     const img = event.currentTarget;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
     if (img.naturalWidth === 1 || img.naturalHeight === 1) {
@@ -136,7 +145,12 @@ function CreateBook() {
     }
   }, [olids]);
 
-  const toggleBookCoverSelection = (event: React.MouseEvent<HTMLImageElement>, olidToToggle: string) => {
+  const toggleBookCoverSelection = (
+    event:
+      | React.MouseEvent<HTMLImageElement>
+      | React.KeyboardEvent<HTMLImageElement>,
+    olidToToggle: string,
+  ) => {
     event.preventDefault();
     const localOlid = olid === olidToToggle ? "" : olidToToggle;
     setOlid(localOlid);
@@ -263,6 +277,12 @@ function CreateBook() {
                           className={`border border-2 ${olid === map_olid ? "border-primary" : "border-light"}`}
                           alt="Book Cover"
                           loading="lazy"
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              toggleBookCoverSelection(event, map_olid); // Trigger the click handler
+                            }
+                          }}
+                          role="presentation"
                         />
                       </Col>
                     ))}

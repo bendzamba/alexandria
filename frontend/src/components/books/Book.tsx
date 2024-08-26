@@ -41,7 +41,8 @@ function Book({ bookId, preview }: BookProps) {
 
   const fetchBook = useCallback(async () => {
     try {
-      const data: BookWithBookshelvesInterface | boolean = await GetBook(_bookId);
+      const data: BookWithBookshelvesInterface | boolean =
+        await GetBook(_bookId);
       if (typeof data == "boolean") {
         // A message to the user may be warranted here
         return false;
@@ -86,11 +87,11 @@ function Book({ bookId, preview }: BookProps) {
       setSelectingNewCover(false);
       // Other logic
     } catch (error) {
-      console.error('Error updating:', error);
+      console.error("Error updating:", error);
       // Handle the error (e.g., show an error message)
     }
   };
-  
+
   const handleUpdateClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     void handleUpdate(); // Call the async function but don't return its Promise
@@ -115,7 +116,10 @@ function Book({ bookId, preview }: BookProps) {
     void handleDelete(); // Call the async function but don't return its Promise
   };
 
-  const imageOnload = (event: React.SyntheticEvent<HTMLImageElement>, olid: string) => {
+  const imageOnload = (
+    event: React.SyntheticEvent<HTMLImageElement>,
+    olid: string,
+  ) => {
     const img = event.currentTarget;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
     if (img.naturalWidth === 1 || img.naturalHeight === 1) {
@@ -127,7 +131,10 @@ function Book({ bookId, preview }: BookProps) {
     }
   };
 
-  const toggleBookCoverSelection = (event: React.MouseEvent<HTMLImageElement>, olidToToggle: string) => {
+  const toggleBookCoverSelection = (
+    event: React.MouseEvent<HTMLImageElement>,
+    olidToToggle: string,
+  ) => {
     event.preventDefault();
     const localOlid = olid === olidToToggle ? savedOlid : olidToToggle;
     setOlid(localOlid);
@@ -152,7 +159,11 @@ function Book({ bookId, preview }: BookProps) {
     void changeRating(newRating);
   };
 
-  const editReview = (event: React.MouseEvent<HTMLDivElement>) => {
+  const editReview = (
+    event:
+      | React.MouseEvent<HTMLDivElement>
+      | React.KeyboardEvent<HTMLDivElement>,
+  ) => {
     const el = event.currentTarget;
     if (addingReview === false) {
       el.setAttribute("placeholder", "");
@@ -163,12 +174,14 @@ function Book({ bookId, preview }: BookProps) {
   const changeReview = async () => {
     const newReview = getReview();
     if (!newReview) {
-      console.log('could not get review to change');
+      console.log("could not get review to change");
       return false;
     }
     if (newReview !== savedReview) {
       setReview(newReview);
-      const response: boolean = await UpdateBook(_bookId, { review: newReview });
+      const response: boolean = await UpdateBook(_bookId, {
+        review: newReview,
+      });
       setAddingReview(false);
       if (!response) {
         // A message to the user may be warranted here
@@ -177,14 +190,14 @@ function Book({ bookId, preview }: BookProps) {
     }
   };
 
-  const changeReviewClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const changeReviewClick = () => {
     void changeReview();
   };
 
   const blurReview = () => {
     const el = document.getElementById("review");
     if (!el) {
-      console.log('could not find `review` div');
+      console.log("could not find `review` div");
       return false;
     }
     const newReview = getReview();
@@ -197,7 +210,7 @@ function Book({ bookId, preview }: BookProps) {
   const getReview = () => {
     const element = document.getElementById("review");
     if (!element) {
-      console.log('could not find `review` div');
+      console.log("could not find `review` div");
       return false;
     }
     const newReview = element.innerHTML;
@@ -225,8 +238,8 @@ function Book({ bookId, preview }: BookProps) {
   }
 
   if (!_bookId || _bookId === 0) {
-    console.log('could not find book ID');
-    return <></>
+    console.log("could not find book ID");
+    return <></>;
   }
 
   return (
@@ -371,6 +384,14 @@ function Book({ bookId, preview }: BookProps) {
                   id="review"
                   onClick={editReview}
                   onBlur={blurReview}
+                  onKeyDown={(e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                      e.preventDefault(); // Prevent inserting a newline
+                      editReview(e); // Trigger the click event or any other logic
+                    }
+                  }}
+                  tabIndex={0}
+                  role="textbox"
                   data-placeholder={reviewPlaceholder}
                   className="text-secondary book-review"
                   style={{
@@ -433,6 +454,15 @@ function Book({ bookId, preview }: BookProps) {
                         className={`border border-2 ${olid === map_olid ? "border-primary" : "border-light"}`}
                         alt="Book Cover"
                         loading="lazy"
+                        onKeyDown={(event) => {
+                          if (
+                            (event.ctrlKey || event.metaKey) &&
+                            event.key === "Enter"
+                          ) {
+                            editReview(event); // Trigger the click event or any other logic
+                          }
+                        }}
+                        role="presentation"
                       />
                     </Col>
                   ))}
