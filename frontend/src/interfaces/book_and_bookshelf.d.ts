@@ -11,7 +11,7 @@ export interface BookInterface {
 }
 
 export interface BookWithBookshelvesInterface extends BookInterface {
-  bookshelves: Bookshelf[];
+  bookshelves: BookshelfInterface[];
 }
 
 export interface CreateOrUpdateBookInterface {
@@ -32,7 +32,7 @@ export interface BookshelfInterface {
 }
 
 export interface BookshelfWithBooksInterface extends BookshelfInterface {
-  books: Book[];
+  books: BookInterface[];
 }
 
 export interface CreateOrUpdateBookshelfInterface {
