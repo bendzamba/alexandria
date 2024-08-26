@@ -37,11 +37,11 @@ function CreateBook() {
     setOlid(null);
     setTitle(null);
 
-    const response: WorkInterface[] = await SearchBookByTitle(searchTitle);
+    const response: WorkInterface[] | boolean = await SearchBookByTitle(searchTitle);
 
     setSearching(false);
 
-    if (!response) {
+    if (typeof response == "boolean") {
       // A message to the user may be warranted here
       return false;
     }

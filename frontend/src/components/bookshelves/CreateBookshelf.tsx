@@ -8,8 +8,7 @@ function CreateBookshelf() {
   const [description, setDescription] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async () => {
     const bookshelfData: CreateOrUpdateBookshelfInterface = {
       title,
       description
@@ -25,10 +24,15 @@ function CreateBookshelf() {
     navigate(`/`);
   };
 
+  const handleSubmitClick = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleSubmit();
+  };
+
   return (
     <div className="container mt-4">
       <h2>Create Bookshelf</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmitClick}>
         <div className="mb-3">
           <label htmlFor="title" className="form-label">
             Title

@@ -13,8 +13,8 @@ function Books() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data: BookInterface[] = await GetBooks();
-        if (!data) {
+        const data: BookInterface[] | boolean = await GetBooks();
+        if (typeof data == "boolean") {
           // A message to the user may be warranted here
           return false;
         }

@@ -38,8 +38,8 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
 
   const fetchBookshelf = useCallback(async () => {
     try {
-      const response: BookshelfWithBooksInterface = await GetBookshelf(_bookshelfId);
-      if (!response) {
+      const response: BookshelfWithBooksInterface | boolean = await GetBookshelf(_bookshelfId);
+      if (typeof response == "boolean") {
         // A message to the user may be warranted here
         return false;
       }
@@ -52,7 +52,10 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   }, [_bookshelfId]);
 
   useEffect(() => {
-    fetchBookshelf();
+    const fetchData = async () => {
+      await fetchBookshelf();
+    };
+    void fetchData();
   }, [_bookshelfId, fetchBookshelf]);
 
   useEffect(() => {
@@ -63,13 +66,12 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     return <div>Loading...</div>;
   }
 
-  const handleUpdate = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleUpdate = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    navigate(`/bookshelves/update/` + id);
+    navigate(`/bookshelves/update/` + _bookshelfId.toString());
   };
 
-  const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
+  const handleDelete = async () => {
     // const result = await confirm(
     //   "Are you sure you want to delete this bookshelf?",
     // );
@@ -85,11 +87,16 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     }
   };
 
-  const handleShowModal = async () => {
+  const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    void handleDelete();
+  }
+
+  const handleShowModal = () => {
     setShowModal(true);
   };
 
-  const handleCloseModal = async () => {
+  const handleCloseModal = () => {
     setShowModal(false);
   };
 
@@ -104,11 +111,14 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     }
 
     // No sense fetching our bookshelf again if the update failed
-    fetchBookshelf();
+    void fetchBookshelf();
   };
 
-  const handleDeleteBookFromBookshelf = async (event: React.MouseEvent<HTMLButtonElement>, bookToDelete: number) => {
-    event.preventDefault();
+  const handleSaveChangeClick = () => {
+    void handleSaveChanges();
+  };
+
+  const handleDeleteBookFromBookshelf = async (bookToDelete: number) => {
     // const result = await confirm(
     //   "Are you sure you want to remove this book from this bookshelf?",
     // );
@@ -121,20 +131,32 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
       }
 
       // No sense fetching our bookshelf again if the deletion failed
-      fetchBookshelf();
+      void fetchBookshelf();
     }
   };
 
-  const handleResetBooksToAdd = async () => {
+  const handleDeleteBookFromBookshelfClick = (event: React.MouseEvent<HTMLButtonElement>, bookToDelete: number) => {
+    event.preventDefault();
+    void handleDeleteBookFromBookshelf(bookToDelete);
+  };
+
+  const handleResetBooksToAdd = () => {
     setBooksToAdd([]);
   };
 
   const fetchBooksThatCanBeAdded = async () => {
-    const booksThatCanBeAdded: BookInterface[] = await GetBooksNotOnBookshelf(_bookshelfId);
+    const booksThatCanBeAdded: BookInterface[] | boolean = await GetBooksNotOnBookshelf(_bookshelfId);
+    if (typeof booksThatCanBeAdded == "boolean") {
+      return false;
+    }
     setBooksThatCanBeAdded(booksThatCanBeAdded);
   };
 
-  const toggleBookSelection = async (event: React.MouseEvent<HTMLElement>, bookToToggle: number) => {
+  const handleFetchBooksThatCanBeAddedShow = () => {
+    void fetchBooksThatCanBeAdded();
+  };
+
+  const toggleBookSelection = (event: React.MouseEvent<HTMLElement>, bookToToggle: number) => {
     event.preventDefault();
     event.currentTarget.classList.toggle("border-light");
     event.currentTarget.classList.toggle("border-primary");
@@ -165,7 +187,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
       >
         <Col xs={9}>
           {preview && bookshelf && (
-            <NavLink className="nav-link" to={"/bookshelves/" + _bookshelfId}>
+            <NavLink className="nav-link" to={"/bookshelves/" + _bookshelfId.toString()}>
               <h1 className="display-6 pull-left">{bookshelf.title}</h1>
             </NavLink>
           )}
@@ -188,7 +210,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
             <button
               type="button"
               className="btn btn-danger ms-1"
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
             >
               Delete
             </button>
@@ -216,7 +238,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
             </button>
           </Col>
         )}
-        {bookshelf && bookshelf.books.map((book) => (
+        {bookshelf && bookshelf.books.map((book: BookInterface) => (
           <Col
             md="auto"
             className="mt-3"
@@ -242,7 +264,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                   <button
                     className="btn btn-close"
                     onClick={(event) => {
-                      handleDeleteBookFromBookshelf(event, book.id);
+                      handleDeleteBookFromBookshelfClick(event, book.id);
                     }}
                   ></button>
                 </div>
@@ -255,7 +277,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
         size="lg"
         contentClassName="add-books-to-bookshelf-modal"
         show={showModal}
-        onShow={fetchBooksThatCanBeAdded}
+        onShow={handleFetchBooksThatCanBeAddedShow}
         onHide={handleCloseModal}
         onExit={handleResetBooksToAdd}
         centered
@@ -292,7 +314,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
           <Button variant="secondary" onClick={handleCloseModal}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleSaveChanges}>
+          <Button variant="primary" onClick={handleSaveChangeClick}>
             Save Changes
           </Button>
         </Modal.Footer>

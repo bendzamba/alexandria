@@ -12,8 +12,10 @@ function Bookshelves() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data: BookshelfInterface[] = await GetBookshelves();
-        console.log('data', data);
+        const data: BookshelfInterface[] | boolean = await GetBookshelves();
+        if (typeof data == "boolean") {
+          return false;
+        }
         setBookshelves(data);
       } catch (error) {
         console.error("Error fetching bookshelves:", error);
@@ -22,7 +24,7 @@ function Bookshelves() {
       }
     };
 
-    fetchData();
+    void fetchData();
   }, []);
 
   if (loading) {

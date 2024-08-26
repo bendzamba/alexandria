@@ -23,11 +23,11 @@ function UpdateBookshelf() {
   
   useEffect(() => {
     const fetchBookshelf = async () => {
-      if (!bookshelfId) {
+      if (!_bookshelfId) {
         return;
       }
-      const bookshelf: BookshelfWithBooksInterface = await GetBookshelfService(_bookshelfId);
-      if (!bookshelf) {
+      const bookshelf: BookshelfWithBooksInterface | boolean = await GetBookshelfService(_bookshelfId);
+      if (typeof bookshelf == "boolean") {
         // A message to the user may be warranted here
         return false;
       }
@@ -36,11 +36,10 @@ function UpdateBookshelf() {
       setLoading(false);
     };
 
-    fetchBookshelf();
+    void fetchBookshelf();
   }, [_bookshelfId]);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async () => {
     const response: boolean = await UpdateBookshelfService(_bookshelfId, {
       title,
       description,
@@ -52,14 +51,19 @@ function UpdateBookshelf() {
     // not sure if I need this
     setTitle("");
     setDescription("");
-    navigate(`/bookshelves/` + _bookshelfId);
+    navigate(`/bookshelves/` + _bookshelfId.toString());
   };
 
-  const handleCancel = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSubmitClick = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleSubmit();
+  };
+
+  const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setTitle("");
     setDescription("");
-    navigate(`/bookshelves/` + _bookshelfId);
+    navigate(`/bookshelves/` + _bookshelfId.toString());
   };
 
   if (loading) {
@@ -69,7 +73,7 @@ function UpdateBookshelf() {
   return (
     <div className="container mt-4">
       <h2>Update Bookshelf</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmitClick}>
         <div className="mb-3">
           <label htmlFor="title" className="form-label">
             Title

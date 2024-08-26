@@ -41,8 +41,8 @@ function Book({ bookId, preview }: BookProps) {
 
   const fetchBook = useCallback(async () => {
     try {
-      const data: BookWithBookshelvesInterface = await GetBook(_bookId);
-      if (!data) {
+      const data: BookWithBookshelvesInterface | boolean = await GetBook(_bookId);
+      if (typeof data == "boolean") {
         // A message to the user may be warranted here
         return false;
       }
