@@ -26,8 +26,7 @@ function CreateBook() {
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const handleSearch = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSearch = async () => {
     setSearching(true);
     setSearchResults(false);
     setNoResults(false);
@@ -64,6 +63,11 @@ function CreateBook() {
     }
   };
 
+  const handleSearchClick = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleSearch();
+  };
+
   const handleSelectBook = (event: React.MouseEvent<HTMLElement>, index: number) => {
     event.preventDefault();
     setSelectedBook(index);
@@ -75,8 +79,7 @@ function CreateBook() {
     setCoverUrl("/assets/cover_images/Select_A_Book_Cover.png");
   };
 
-  const handleCreate = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
+  const handleCreate = async () => {
     const json_olids = JSON.stringify(olids);
     const filteredBookData: Partial<CreateOrUpdateBookInterface> = {};
     if (title != null) filteredBookData.title = title;
@@ -98,6 +101,11 @@ function CreateBook() {
     setOlids([]);
     navigate(`/books/`);
   };
+
+  const handleCreateClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    void handleCreate();
+  }
 
   const handleCancel = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -143,7 +151,7 @@ function CreateBook() {
 
   return (
     <Container className="mt-4">
-      <form onSubmit={handleSearch}>
+      <form onSubmit={handleSearchClick}>
         <div className="mb-3">
           <input
             type="text"
@@ -198,7 +206,7 @@ function CreateBook() {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={handleCreate}
+                onClick={handleCreateClick}
               >
                 Create
               </button>
