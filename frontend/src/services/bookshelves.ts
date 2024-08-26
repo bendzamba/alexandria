@@ -3,7 +3,7 @@ import { BookInterface, CreateOrUpdateBookshelfInterface } from "../interfaces/b
 import { BookshelfInterface, BookshelfWithBooksInterface } from "../interfaces/book_and_bookshelf";
 const API_BASE_URL = "http://127.0.0.1:8000";
 
-export const GetBookshelves = async (): Promise<BookshelfInterface[]> => {
+export const GetBookshelves = async (): Promise<BookshelfInterface[] | boolean> => {
   return await Base(`${API_BASE_URL}/bookshelves/`);
 };
 
@@ -17,7 +17,7 @@ export const CreateBookshelf = async (data: CreateOrUpdateBookshelfInterface): P
   });
 };
 
-export const GetBookshelf = async (id: number): Promise<BookshelfWithBooksInterface> => {
+export const GetBookshelf = async (id: number): Promise<BookshelfWithBooksInterface | boolean> => {
   return await Base(`${API_BASE_URL}/bookshelves/${id}`);
 };
 
@@ -37,7 +37,7 @@ export const DeleteBookshelf = async (id: number): Promise<boolean> => {
   });
 };
 
-export const GetBooksNotOnBookshelf = async (id: number): Promise<BookInterface[]> => {
+export const GetBooksNotOnBookshelf = async (id: number): Promise<BookInterface[] | boolean> => {
   return await Base(`${API_BASE_URL}/bookshelves/${id}/books/exclude/`);
 };
 

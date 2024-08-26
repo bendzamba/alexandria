@@ -3,7 +3,7 @@ import { BookInterface, BookWithBookshelvesInterface, CreateOrUpdateBookInterfac
 import { WorkInterface } from "../interfaces/work";
 const API_BASE_URL = "http://127.0.0.1:8000";
 
-export const GetBooks = async (): Promise<BookInterface[]> => {
+export const GetBooks = async (): Promise<BookInterface[] | boolean> => {
   return await Base(`${API_BASE_URL}/books/`);
 };
 
@@ -17,7 +17,7 @@ export const CreateBook = async (data: Partial<CreateOrUpdateBookInterface>): Pr
   });
 };
 
-export const GetBook = async (id: number): Promise<BookWithBookshelvesInterface> => {
+export const GetBook = async (id: number): Promise<BookWithBookshelvesInterface | boolean> => {
   return await Base(`${API_BASE_URL}/books/${id}`);
 };
 
@@ -37,6 +37,6 @@ export const DeleteBook = async (id: number): Promise<boolean> => {
   });
 };
 
-export const SearchBookByTitle = async (title: string): Promise<WorkInterface[]> => {
+export const SearchBookByTitle = async (title: string): Promise<WorkInterface[] | boolean> => {
   return await Base(`${API_BASE_URL}/books/search/${title}`);
 };
