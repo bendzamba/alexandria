@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { BookshelfWithBooksInterface } from "../../interfaces/book_and_bookshelf";
 import {
   GetBookshelf as GetBookshelfService,
   UpdateBookshelf as UpdateBookshelfService,
@@ -25,7 +26,7 @@ function UpdateBookshelf() {
       if (!bookshelfId) {
         return;
       }
-      const bookshelf = await GetBookshelfService(_bookshelfId);
+      const bookshelf: BookshelfWithBooksInterface = await GetBookshelfService(_bookshelfId);
       if (!bookshelf) {
         // A message to the user may be warranted here
         return false;
@@ -40,7 +41,7 @@ function UpdateBookshelf() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const response = await UpdateBookshelfService(_bookshelfId, {
+    const response: boolean = await UpdateBookshelfService(_bookshelfId, {
       title,
       description,
     });
