@@ -14,7 +14,7 @@ function UpdateBookshelf() {
   // get ID from path using react-router
   const { id } = useParams();
 
-  let bookshelfId = id;
+  const bookshelfId = id;
   let _bookshelfId = 0;
   if (bookshelfId) {
     _bookshelfId = parseInt(bookshelfId);
@@ -40,7 +40,7 @@ function UpdateBookshelf() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    let response = await UpdateBookshelfService(_bookshelfId, {
+    const response = await UpdateBookshelfService(_bookshelfId, {
       title,
       description,
     });

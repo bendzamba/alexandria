@@ -20,9 +20,9 @@ function CreateBook() {
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState(false);
   const [noResults, setNoResults] = useState(false);
-  const [olids, setOlids] = useState<string[]>([]);;
+  const [olids, setOlids] = useState<string[]>([]);
   const [coverUrl, setCoverUrl] = useState<string>("");
-  const [booksToChooseFrom, setBooksToChooseFrom] = useState<WorkInterface[]>([]);;
+  const [booksToChooseFrom, setBooksToChooseFrom] = useState<WorkInterface[]>([]);
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const navigate = useNavigate();
 
@@ -38,7 +38,7 @@ function CreateBook() {
     setOlid(null);
     setTitle(null);
 
-    let response: WorkInterface[] = await SearchBookByTitle(searchTitle);
+    const response: WorkInterface[] = await SearchBookByTitle(searchTitle);
 
     setSearching(false);
 
@@ -85,7 +85,7 @@ function CreateBook() {
     if (olid != null) filteredBookData.olid = olid;
     if (json_olids != null) filteredBookData.olids = json_olids;
 
-    let response = await CreateBookService(filteredBookData);
+    const response = await CreateBookService(filteredBookData);
     if (!response) {
       // A message to the user may be warranted here
       return false;

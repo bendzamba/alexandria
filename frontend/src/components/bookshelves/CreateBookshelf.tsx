@@ -14,7 +14,7 @@ function CreateBookshelf() {
       title,
       description
     }
-    let response = await CreateBookshelfService(bookshelfData);
+    const response = await CreateBookshelfService(bookshelfData);
     if (!response) {
       // A message to the user may be warranted here
       // Especially if we are going to prevent navigation

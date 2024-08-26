@@ -52,7 +52,7 @@ function Book({ bookId, preview }: BookProps) {
       setSavedOlid(data.olid);
       // olids should come back as a JSON encoded array or null
       try {
-        let allBookOlids = JSON.parse(data.olids);
+        const allBookOlids = JSON.parse(data.olids);
         if (allBookOlids === undefined) {
           setOlids([]);
         } else {
@@ -88,9 +88,9 @@ function Book({ bookId, preview }: BookProps) {
   const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     // const result = await confirm("Are you sure you want to delete this book?");
-    let result = true;
+    const result = true;
     if (result) {
-      let response = await DeleteBook(_bookId);
+      const response = await DeleteBook(_bookId);
       if (!response) {
         // A message to the user may be warranted here
         // Especially if we are going to prevent navigation
@@ -149,7 +149,7 @@ function Book({ bookId, preview }: BookProps) {
     }
     if (newReview !== savedReview) {
       setReview(newReview);
-      let response = await UpdateBook(_bookId, { review: newReview });
+      const response = await UpdateBook(_bookId, { review: newReview });
       setAddingReview(false);
       if (!response) {
         // A message to the user may be warranted here
@@ -177,7 +177,7 @@ function Book({ bookId, preview }: BookProps) {
       console.log('could not find `review` div');
       return false;
     }
-    let newReview = element.innerHTML;
+    const newReview = element.innerHTML;
     // innerHtml will get <div> and <br> elements added by contentenditable <div>
     // swap these for newlines
     return newReview
