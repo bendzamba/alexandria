@@ -16,7 +16,7 @@ export const GetBookshelves = async (): Promise<
 };
 
 export const CreateBookshelf = async (
-  data: CreateOrUpdateBookshelfInterface,
+  data: CreateOrUpdateBookshelfInterface
 ): Promise<boolean> => {
   return await Base(`${API_BASE_URL}/bookshelves/`, {
     method: "POST",
@@ -28,14 +28,14 @@ export const CreateBookshelf = async (
 };
 
 export const GetBookshelf = async (
-  id: number,
+  id: number
 ): Promise<BookshelfWithBooksInterface | boolean> => {
   return await Base(`${API_BASE_URL}/bookshelves/${id}`);
 };
 
 export const UpdateBookshelf = async (
   id: number,
-  data: CreateOrUpdateBookshelfInterface,
+  data: CreateOrUpdateBookshelfInterface
 ): Promise<boolean> => {
   return await Base(`${API_BASE_URL}/bookshelves/${id}`, {
     method: "PATCH",
@@ -53,14 +53,14 @@ export const DeleteBookshelf = async (id: number): Promise<boolean> => {
 };
 
 export const GetBooksNotOnBookshelf = async (
-  id: number,
+  id: number
 ): Promise<BookInterface[] | boolean> => {
   return await Base(`${API_BASE_URL}/bookshelves/${id}/books/exclude/`);
 };
 
 export const AddBooksToBookshelf = async (
   bookshelfId: number,
-  bookIds: number[],
+  bookIds: number[]
 ): Promise<boolean> => {
   return await Base(`${API_BASE_URL}/bookshelves/${bookshelfId}/books/`, {
     method: "POST",
@@ -73,12 +73,12 @@ export const AddBooksToBookshelf = async (
 
 export const DeleteBookFromBookshelf = async (
   bookshelfId: number,
-  bookId: number,
+  bookId: number
 ): Promise<boolean> => {
   return await Base(
     `${API_BASE_URL}/bookshelves/${bookshelfId}/books/${bookId}`,
     {
       method: "DELETE",
-    },
+    }
   );
 };

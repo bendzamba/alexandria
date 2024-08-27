@@ -118,7 +118,7 @@ function Book({ bookId, preview }: BookProps) {
 
   const imageOnload = (
     event: React.SyntheticEvent<HTMLImageElement>,
-    olid: string,
+    olid: string
   ) => {
     const img = event.currentTarget;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
@@ -133,7 +133,7 @@ function Book({ bookId, preview }: BookProps) {
 
   const toggleBookCoverSelection = (
     event: React.MouseEvent<HTMLImageElement>,
-    olidToToggle: string,
+    olidToToggle: string
   ) => {
     event.preventDefault();
     const localOlid = olid === olidToToggle ? savedOlid : olidToToggle;
@@ -142,7 +142,7 @@ function Book({ bookId, preview }: BookProps) {
       setCoverUri(savedCoverUri);
     } else {
       setCoverUri(
-        "https://covers.openlibrary.org/b/olid/" + olidToToggle + "-L.jpg",
+        "https://covers.openlibrary.org/b/olid/" + olidToToggle + "-L.jpg"
       );
     }
   };
@@ -162,7 +162,7 @@ function Book({ bookId, preview }: BookProps) {
   const editReview = (
     event:
       | React.MouseEvent<HTMLDivElement>
-      | React.KeyboardEvent<HTMLDivElement>,
+      | React.KeyboardEvent<HTMLDivElement>
   ) => {
     const el = event.currentTarget;
     if (addingReview === false) {

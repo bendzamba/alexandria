@@ -23,7 +23,7 @@ function CreateBook() {
   const [olids, setOlids] = useState<string[]>([]);
   const [coverUrl, setCoverUrl] = useState<string>("");
   const [booksToChooseFrom, setBooksToChooseFrom] = useState<WorkInterface[]>(
-    [],
+    []
   );
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const navigate = useNavigate();
@@ -73,7 +73,7 @@ function CreateBook() {
 
   const handleSelectBook = (
     event: React.MouseEvent<HTMLElement>,
-    index: number,
+    index: number
   ) => {
     event.preventDefault();
     setSelectedBook(index);
@@ -126,7 +126,7 @@ function CreateBook() {
 
   const imageOnload = (
     event: React.SyntheticEvent<HTMLImageElement>,
-    olid: string,
+    olid: string
   ) => {
     const img = event.currentTarget;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
@@ -149,7 +149,7 @@ function CreateBook() {
     event:
       | React.MouseEvent<HTMLImageElement>
       | React.KeyboardEvent<HTMLImageElement>,
-    olidToToggle: string,
+    olidToToggle: string
   ) => {
     event.preventDefault();
     const localOlid = olid === olidToToggle ? "" : olidToToggle;
@@ -158,7 +158,7 @@ function CreateBook() {
       setCoverUrl("/assets/cover_images/Select_A_Book_Cover.png");
     } else {
       setCoverUrl(
-        "https://covers.openlibrary.org/b/olid/" + olidToToggle + "-L.jpg",
+        "https://covers.openlibrary.org/b/olid/" + olidToToggle + "-L.jpg"
       );
     }
   };
