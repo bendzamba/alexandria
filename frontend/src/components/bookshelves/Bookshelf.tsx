@@ -269,36 +269,31 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
           bookshelf.books.map((book: BookInterface) => (
             <Col
               md="auto"
-              className="mt-3"
+              className="mt-3 bookshelf-book-image-wrapper"
               style={{ minHeight: "150px", minWidth: "80px" }}
               key={`bookshelf-book-${book.id}`}
             >
-              <div
-                className="bookshelf-book-image-wrapper"
-                style={{ minHeight: "150px", minWidth: "80px" }}
-              >
-                <img
-                  height="150px"
-                  src={book.cover_uri}
-                  alt="Book Cover"
-                  loading="lazy"
-                  style={{
-                    height: "150px",
-                    minHeight: "150px",
-                    minWidth: "80px",
-                  }}
-                />
-                {!preview && (
-                  <div className="remove-book-from-bookshelf-button">
-                    <button
-                      className="btn btn-close"
-                      onClick={(event) => {
-                        handleDeleteBookFromBookshelfClick(event, book.id);
-                      }}
-                    ></button>
-                  </div>
-                )}
-              </div>
+              <img
+                height="150px"
+                src={book.cover_uri}
+                alt="Book Cover"
+                loading="lazy"
+                style={{
+                  height: "150px",
+                  minHeight: "150px",
+                  minWidth: "80px",
+                }}
+              />
+              {!preview && (
+                <div className="remove-book-from-bookshelf-button">
+                  <button
+                    className="btn btn-close"
+                    onClick={(event) => {
+                      handleDeleteBookFromBookshelfClick(event, book.id);
+                    }}
+                  ></button>
+                </div>
+              )}
             </Col>
           ))}
       </Row>

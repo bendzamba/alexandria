@@ -190,13 +190,17 @@ function CreateBook() {
 
       {searching && (
         <Row>
-          <h4>Searching...</h4>
+          <Col>
+            <h4>Searching...</h4>
+          </Col>
         </Row>
       )}
 
       {noResults && (
         <Row className="mt-4">
-          <h4>No Results Found. Please Try Another Search.</h4>
+          <Col>
+            <h4>No Results Found. Please Try Another Search.</h4>
+          </Col>
         </Row>
       )}
 
@@ -207,9 +211,7 @@ function CreateBook() {
             style={{ borderBottom: "3px solid black" }}
           >
             <Col x3={9}>
-              <div>
-                <h1 className="display-5 pull-left">Search Results</h1>
-              </div>
+              <h1 className="display-5 pull-left">Search Results</h1>
             </Col>
             <Col
               xs={3}
@@ -236,15 +238,9 @@ function CreateBook() {
               />
             </Col>
             <Col xs={3}>
-              <div>
-                <h2>{title}</h2>
-              </div>
-              <div>
-                <h4>{author}</h4>
-              </div>
-              <div>
-                <h6>{year}</h6>
-              </div>
+              <h2>{title}</h2>
+              <h4>{author}</h4>
+              <h6>{year}</h6>
             </Col>
             {olids && olids.length > 0 && (
               <>

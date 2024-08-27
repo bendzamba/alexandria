@@ -5,6 +5,9 @@ import {
   GetBookshelf as GetBookshelfService,
   UpdateBookshelf as UpdateBookshelfService,
 } from "../../services/bookshelves";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
 
 function UpdateBookshelf() {
   const [title, setTitle] = useState("");
@@ -72,8 +75,12 @@ function UpdateBookshelf() {
   }
 
   return (
-    <div className="container mt-4">
-      <h2>Update Bookshelf</h2>
+    <Container className="mt-4">
+      <Row>
+        <Col>
+          <h2>Update Bookshelf</h2>
+        </Col>
+      </Row>
       <form onSubmit={handleSubmitClick}>
         <div className="mb-3">
           <label htmlFor="title" className="form-label">
@@ -110,7 +117,7 @@ function UpdateBookshelf() {
           Cancel
         </button>
       </form>
-    </div>
+    </Container>
   );
 }
 

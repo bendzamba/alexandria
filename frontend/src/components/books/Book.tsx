@@ -250,9 +250,7 @@ function Book({ bookId, preview }: BookProps) {
           style={{ borderBottom: "3px solid black" }}
         >
           <Col xs={9}>
-            <div>
-              <h1 className="display-5 pull-left">{title}</h1>
-            </div>
+            <h1 className="display-5 pull-left">{title}</h1>
           </Col>
           <Col
             xs={3}
