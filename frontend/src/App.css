@@ -69,6 +69,11 @@ div.remove-book-from-bookshelf-button .btn-close {
   overflow: scroll;
 }
 
-#responsive-navbar-nav {
-  justify-content: flex-end !important;
+#responsive-navbar-nav .dropdown-menu[data-bs-popper] {
+  right: 0 !important;
+  left: unset;
+}
+
+#responsive-navbar-nav a {
+  text-align: right !important;
 }

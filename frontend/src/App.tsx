@@ -13,22 +13,17 @@ import Header from "./components/common/Header";
 function App() {
   return (
     <Router>
-      <Container>
-        <Header />
-        <div className="container mt-4">
-          <Routes>
-            <Route path="/" element={<Bookshelves />} />
-            <Route path="/bookshelves/:id" element={<Bookshelf />} />
-            <Route path="/bookshelves/create" element={<CreateBookshelf />} />
-            <Route
-              path="/bookshelves/update/:id"
-              element={<UpdateBookshelf />}
-            />
-            <Route path="/books/" element={<Books />} />
-            <Route path="/books/:id" element={<Book />} />
-            <Route path="/books/create" element={<CreateBook />} />
-          </Routes>
-        </div>
+      <Header />
+      <Container className="mt-4">
+        <Routes>
+          <Route path="/" element={<Bookshelves />} />
+          <Route path="/bookshelves/:id" element={<Bookshelf />} />
+          <Route path="/bookshelves/create" element={<CreateBookshelf />} />
+          <Route path="/bookshelves/update/:id" element={<UpdateBookshelf />} />
+          <Route path="/books/" element={<Books />} />
+          <Route path="/books/:id" element={<Book />} />
+          <Route path="/books/create" element={<CreateBook />} />
+        </Routes>
       </Container>
     </Router>
   );
