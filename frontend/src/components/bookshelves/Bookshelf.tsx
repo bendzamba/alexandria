@@ -268,7 +268,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
         {bookshelf &&
           bookshelf.books.map((book: BookInterface) => (
             <Col
-              md="auto"
+              xs="auto"
               className="mt-3 bookshelf-book-image-wrapper"
               style={{ minHeight: "150px", minWidth: "80px" }}
               key={`bookshelf-book-${book.id}`}
