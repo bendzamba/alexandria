@@ -1,0 +1,32 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: Ruff
+        entry: ruff check
+        language: python
+        types: [python]
+        args: ['.', '--fix']
+        pass_filenames: true
+        verbose: true
+        always_run: true
+
+      - id: prettier
+        name: Prettier
+        entry: npx --prefix ./frontend prettier
+        args: ['--write', '--config', './frontend/.prettierrc', './frontend/src/']
+        language: node
+        types: [ts, tsx]
+        pass_filenames: true
+        verbose: true
+        always_run: true
+
+      - id: eslint
+        name: ESLint
+        entry: npx --prefix ./frontend eslint
+        language: node
+        types: [javascript, jsx, ts, tsx]
+        args: ['--fix', '--config', './frontend/.eslintrc.json', './frontend/src/**/*.{js,jsx,ts,tsx}']
+        pass_filenames: true
+        verbose: true
+        always_run: true
