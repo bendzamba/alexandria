@@ -229,7 +229,7 @@ function CreateBook() {
             </Col>
           </Row>
           <Row>
-            <Col xs={3}>
+            <Col xs={3} className="mb-3">
               <img
                 src={coverUrl}
                 className="img-fluid"
@@ -237,14 +237,14 @@ function CreateBook() {
                 height="300px"
               />
             </Col>
-            <Col xs={3}>
+            <Col xs={9} lg={4}>
               <h2>{title}</h2>
               <h4>{author}</h4>
               <h6>{year}</h6>
             </Col>
             {olids && olids.length > 0 && (
               <>
-                <Col xs={6}>
+                <Col xs={12} lg={5}>
                   <Row
                     style={{
                       maxHeight: "500px",
@@ -301,8 +301,9 @@ function CreateBook() {
             {booksToChooseFrom.map((book, index) => (
               <Col
                 xs={6}
-                sm={4}
-                md={2}
+                md={4}
+                lg={3}
+                xl={2}
                 className={`mt-4 ${styles["search-result-book"]} ${index === selectedBook ? styles["search-result-book-selected"] : ""}`}
                 key={`col-booktochoosefrom-${index}`}
                 onClick={(event) => handleSelectBook(event, index)}
