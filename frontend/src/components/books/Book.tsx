@@ -249,11 +249,11 @@ function Book({ bookId, preview }: BookProps) {
           className="mt-4 mb-4 align-items-center"
           style={{ borderBottom: "3px solid black" }}
         >
-          <Col xs={9}>
+          <Col xs={8}>
             <h1 className="display-5 pull-left">{title}</h1>
           </Col>
           <Col
-            xs={3}
+            xs={4}
             style={{
               textAlign: "right",
             }}
@@ -261,16 +261,16 @@ function Book({ bookId, preview }: BookProps) {
             {!selectingNewCover && (
               <button
                 type="button"
-                className="btn btn-primary"
+                className="btn btn-primary btn-sm"
                 onClick={handleChangeCover}
               >
-                Change Cover
+                Cover
               </button>
             )}
             {selectingNewCover && (
               <button
                 type="button"
-                className="btn btn-primary"
+                className="btn btn-primary btn-sm"
                 onClick={handleUpdateClick}
               >
                 Update
@@ -278,7 +278,7 @@ function Book({ bookId, preview }: BookProps) {
             )}
             <button
               type="button"
-              className="btn btn-danger ms-1"
+              className="btn btn-danger btn-sm ms-1"
               onClick={handleDeleteClick}
             >
               Delete
@@ -287,7 +287,7 @@ function Book({ bookId, preview }: BookProps) {
         </Row>
       )}
       <Row>
-        <Col xs={3}>
+        <Col xs={4} lg={3}>
           <NavLink className="nav-link" to={"/books/" + _bookId.toString()}>
             <img
               src={coverUri}
@@ -297,7 +297,7 @@ function Book({ bookId, preview }: BookProps) {
             />
           </NavLink>
         </Col>
-        <Col xs={olids && olids.length > 0 ? 5 : 9}>
+        <Col xs={8} lg={selectingNewCover ? 5 : 9} className="mb-4">
           {preview && (
             <NavLink className="nav-link" to={"/books/" + _bookId.toString()}>
               <div>
@@ -423,7 +423,7 @@ function Book({ bookId, preview }: BookProps) {
         {selectingNewCover && (
           <>
             {olids && olids.length > 0 && (
-              <Col xs={4}>
+              <Col xs={12} lg={4}>
                 <Row
                   style={{
                     maxHeight: "500px",
