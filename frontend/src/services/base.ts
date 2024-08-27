@@ -1,6 +1,6 @@
 export const Base = async <T>(
   url: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): Promise<T | boolean> => {
   try {
     const response = await fetch(url, options);

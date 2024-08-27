@@ -12,7 +12,7 @@ export const GetBooks = async (): Promise<BookInterface[] | boolean> => {
 };
 
 export const CreateBook = async (
-  data: Partial<CreateOrUpdateBookInterface>,
+  data: Partial<CreateOrUpdateBookInterface>
 ): Promise<boolean> => {
   return await Base(`${API_BASE_URL}/books/`, {
     method: "POST",
@@ -24,14 +24,14 @@ export const CreateBook = async (
 };
 
 export const GetBook = async (
-  id: number,
+  id: number
 ): Promise<BookWithBookshelvesInterface | boolean> => {
   return await Base(`${API_BASE_URL}/books/${id}`);
 };
 
 export const UpdateBook = async (
   id: number,
-  data: Partial<CreateOrUpdateBookInterface>,
+  data: Partial<CreateOrUpdateBookInterface>
 ): Promise<boolean> => {
   return await Base(`${API_BASE_URL}/books/${id}`, {
     method: "PATCH",
@@ -49,7 +49,7 @@ export const DeleteBook = async (id: number): Promise<boolean> => {
 };
 
 export const SearchBookByTitle = async (
-  title: string,
+  title: string
 ): Promise<WorkInterface[] | boolean> => {
   return await Base(`${API_BASE_URL}/books/search/${title}`);
 };
