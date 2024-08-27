@@ -111,7 +111,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     if (booksToAdd.length) {
       const response: boolean = await AddBooksToBookshelf(
         _bookshelfId,
-        booksToAdd,
+        booksToAdd
       );
       setShowModal(false);
       if (!response) {
@@ -136,7 +136,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     if (result) {
       const response: boolean = await DeleteBookFromBookshelf(
         _bookshelfId,
-        bookToDelete,
+        bookToDelete
       );
       if (!response) {
         // A message to the user may be warranted here
@@ -150,7 +150,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
 
   const handleDeleteBookFromBookshelfClick = (
     event: React.MouseEvent<HTMLButtonElement>,
-    bookToDelete: number,
+    bookToDelete: number
   ) => {
     event.preventDefault();
     void handleDeleteBookFromBookshelf(bookToDelete);
@@ -175,7 +175,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
 
   const toggleBookSelection = (
     event: React.MouseEvent<HTMLElement>,
-    bookToToggle: number,
+    bookToToggle: number
   ) => {
     event.preventDefault();
     event.currentTarget.classList.toggle("border-light");
