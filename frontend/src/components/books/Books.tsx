@@ -37,7 +37,13 @@ function Books() {
     <Container>
       <Row>
         {books.map((book: BookInterface) => (
-          <Col xs={4} className="mt-3 mb-3" key={`col-${book.id}`}>
+          <Col
+            xs={12}
+            md={6}
+            xl={4}
+            className="mt-3 mb-3"
+            key={`col-${book.id}`}
+          >
             <Book bookId={book.id} preview={true} key={book.id} />
           </Col>
         ))}
