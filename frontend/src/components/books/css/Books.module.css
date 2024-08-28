@@ -1,0 +1,28 @@
+.custom-form-floating > :global(.form-control),
+.custom-form-floating > :global(.form-select) {
+  height: calc(2.5rem + calc(var(--bs-border-width) * 2)) !important;
+  min-height: calc(2.5rem + calc(var(--bs-border-width) * 2)) !important;
+}
+
+.custom-form-floating > :global(label) {
+  padding: 0.5rem 1rem !important;
+  height: 90% !important;
+}
+
+.custom-form-floating > :global(.form-control):focus ~ :global(label),
+.custom-form-floating
+  > :global(.form-control):not(:placeholder-shown)
+  ~ :global(label),
+.custom-form-floating > :global(.form-select) ~ :global(label) {
+  transform: scale(0.65) translateY(-0.5rem) translateX(0.15rem) !important;
+}
+
+.custom-form-floating > :global(.form-select) {
+  padding-top: 1rem !important;
+  padding-bottom: 0.5rem !important;
+  font-size: 0.75rem !important;
+}
+
+.custom-sort-button {
+  padding: 0.5rem 0.7rem !important;
+}
