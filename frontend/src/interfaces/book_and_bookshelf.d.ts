@@ -29,6 +29,8 @@ export interface BookshelfInterface {
   id: number;
   title: string;
   description: string;
+  sort_key: string;
+  sort_direction: string;
 }
 
 export interface BookshelfWithBooksInterface extends BookshelfInterface {
@@ -38,4 +40,6 @@ export interface BookshelfWithBooksInterface extends BookshelfInterface {
 export interface CreateOrUpdateBookshelfInterface {
   title: string;
   description: string;
+  sort_key: string;
+  sort_direction: string;
 }
