@@ -3,6 +3,7 @@ bookshelf.db
 venv
 .env
 backend/.vscode
+.DS_Store
 # TS -> JS files
 frontend/dist
 
