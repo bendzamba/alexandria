@@ -9,12 +9,16 @@ import Container from "react-bootstrap/Container";
 function CreateBookshelf() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const sort_key = "id";
+  const sort_direction = "ascending";
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
     const bookshelfData: CreateOrUpdateBookshelfInterface = {
       title,
       description,
+      sort_key,
+      sort_direction,
     };
     const response: boolean = await CreateBookshelfService(bookshelfData);
     if (!response) {
