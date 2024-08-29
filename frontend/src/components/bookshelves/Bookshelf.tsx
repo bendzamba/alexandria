@@ -11,12 +11,14 @@ import {
   GetBooksNotOnBookshelf,
   AddBooksToBookshelf,
   DeleteBookFromBookshelf,
+  UpdateBookshelf,
 } from "../../services/bookshelves";
 import LazyImage from "../common/LazyLoadImage";
 import {
   BookInterface,
   BookshelfWithBooksInterface,
 } from "../../interfaces/book_and_bookshelf";
+import styles from "../css/Common.module.css";
 
 interface BookshelfProps {
   bookshelfId?: number;
@@ -40,6 +42,8 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   >([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [sortKey, setSortKey] = useState("");
+  const [sortDirection, setSortDirection] = useState("");
   const navigate = useNavigate();
 
   const fetchBookshelf = useCallback(async () => {
@@ -51,6 +55,8 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
         return false;
       }
       setBookshelf(response);
+      setSortKey(response.sort_key);
+      setSortDirection(response.sort_direction);
     } catch (error) {
       console.error("Error fetching bookshelf:", error);
     } finally {
@@ -73,7 +79,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     return <div>Loading...</div>;
   }
 
-  const handleUpdate = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleUpdateClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     navigate(`/bookshelves/update/` + _bookshelfId.toString());
   };
@@ -194,6 +200,32 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     });
   };
 
+  const handleSort = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSortKey = event.currentTarget.value;
+    setSortKey(newSortKey);
+    handleUpdate("sort_key", newSortKey);
+  };
+
+  const handleSortDirection = () => {
+    const newSortDirection =
+      sortDirection === "ascending" ? "descending" : "ascending";
+    setSortDirection(newSortDirection);
+    handleUpdate("sort_direction", newSortDirection);
+  };
+
+  const handleUpdate = async (
+    field: "sort_key" | "sort_direction",
+    value: string
+  ) => {
+    const response: boolean = await UpdateBookshelf(_bookshelfId, {
+      [field]: value,
+    });
+    if (!response) {
+      // A message to the user may be warranted here
+      return false;
+    }
+  };
+
   if (!_bookshelfId || _bookshelfId === 0) {
     console.log("could not find bookshelf ID");
     return <></>;
@@ -202,10 +234,10 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   return (
     <Container>
       <Row
-        className="mt-4 align-items-center"
+        className="mt-4 mb-2 pb-2 align-items-center"
         style={{ borderBottom: "3px solid black" }}
       >
-        <Col xs={9}>
+        <Col xs={12} lg={preview ? 12 : 6} xl={preview ? 12 : 7}>
           {preview && bookshelf && (
             <NavLink
               className="nav-link"
@@ -219,26 +251,90 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
           )}
         </Col>
         {!preview && (
-          <Col
-            xs={3}
-            style={{
-              textAlign: "right",
-            }}
-          >
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleUpdate}
-            >
-              Update
-            </button>
-            <button
-              type="button"
-              className="btn btn-danger ms-1"
-              onClick={handleDeleteClick}
-            >
-              Delete
-            </button>
+          <Col xs={12} lg={6} xl={5}>
+            <Container>
+              <Row>
+                <Col
+                  xs={5}
+                  style={{
+                    textAlign: "right",
+                  }}
+                  className="g-0"
+                >
+                  <div
+                    className={`form-floating ${styles["custom-form-floating"]}`}
+                  >
+                    <select
+                      className="form-select"
+                      id="floatingSelect"
+                      aria-label="Floating label select example"
+                      onChange={handleSort}
+                      value={sortKey}
+                    >
+                      <option value="id" selected>
+                        Date Added
+                      </option>
+                      <option value="title">Title</option>
+                      <option value="author">Author</option>
+                      <option value="year">Year</option>
+                      <option value="rating">Rating</option>
+                    </select>
+                    <label htmlFor="floatingSelect">Sort by</label>
+                  </div>
+                </Col>
+                <Col
+                  xs={7}
+                  style={{
+                    textAlign: "right",
+                  }}
+                >
+                  <button
+                    type="button"
+                    className={`btn btn-outline-secondary me-2 ${styles["custom-sort-button"]}`}
+                    onClick={handleSortDirection}
+                  >
+                    {sortDirection === "ascending" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        className="bi bi-sort-up"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M3.5 12.5a.5.5 0 0 1-1 0V3.707L1.354 4.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.5.5 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 3.707zm3.5-9a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z" />
+                      </svg>
+                    )}
+                    {sortDirection === "descending" && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        fill="currentColor"
+                        className="bi bi-sort-down"
+                        viewBox="0 0 16 16"
+                      >
+                        <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z" />
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleUpdateClick}
+                  >
+                    Update
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger ms-1"
+                    onClick={handleDeleteClick}
+                  >
+                    Delete
+                  </button>
+                </Col>
+              </Row>
+            </Container>
           </Col>
         )}
       </Row>
@@ -254,7 +350,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
       </Row>
       <Row className="mt-2" style={{ minHeight: "150px" }}>
         {!preview && (
-          <Col md="auto" className="mt-3">
+          <Col xs="auto" className="mt-3">
             <button
               type="button"
               className="btn btn-outline-primary"
@@ -266,36 +362,48 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
           </Col>
         )}
         {bookshelf &&
-          bookshelf.books.map((book: BookInterface) => (
-            <Col
-              xs="auto"
-              className="mt-3 bookshelf-book-image-wrapper"
-              style={{ minHeight: "150px", minWidth: "80px" }}
-              key={`bookshelf-book-${book.id}`}
-            >
-              <img
-                height="150px"
-                src={book.cover_uri}
-                alt="Book Cover"
-                loading="lazy"
-                style={{
-                  height: "150px",
-                  minHeight: "150px",
-                  minWidth: "80px",
-                }}
-              />
-              {!preview && (
-                <div className="remove-book-from-bookshelf-button">
-                  <button
-                    className="btn btn-close"
-                    onClick={(event) => {
-                      handleDeleteBookFromBookshelfClick(event, book.id);
-                    }}
-                  ></button>
-                </div>
-              )}
-            </Col>
-          ))}
+          bookshelf.books
+            .sort((bookA: BookInterface, bookB: BookInterface) => {
+              const localSortKey = sortKey as keyof BookInterface;
+              const directionModifier = sortDirection === "ascending" ? 1 : -1;
+              if (bookA[localSortKey] < bookB[localSortKey]) {
+                return -1 * directionModifier;
+              } else if (bookA[localSortKey] > bookB[localSortKey]) {
+                return 1 * directionModifier;
+              }
+              // a must be equal to b
+              return 0;
+            })
+            .map((book: BookInterface) => (
+              <Col
+                xs="auto"
+                className="mt-3 bookshelf-book-image-wrapper"
+                style={{ minHeight: "150px", minWidth: "80px" }}
+                key={`bookshelf-book-${book.id}`}
+              >
+                <img
+                  height="150px"
+                  src={book.cover_uri}
+                  alt="Book Cover"
+                  loading="lazy"
+                  style={{
+                    height: "150px",
+                    minHeight: "150px",
+                    minWidth: "80px",
+                  }}
+                />
+                {!preview && (
+                  <div className="remove-book-from-bookshelf-button">
+                    <button
+                      className="btn btn-close"
+                      onClick={(event) => {
+                        handleDeleteBookFromBookshelfClick(event, book.id);
+                      }}
+                    ></button>
+                  </div>
+                )}
+              </Col>
+            ))}
       </Row>
       <Modal
         size="lg"
