@@ -5,7 +5,7 @@ import Container from "react-bootstrap/Container";
 import Book from "./Book";
 import { GetBooks } from "../../services/books";
 import { BookInterface } from "../../interfaces/book_and_bookshelf";
-import styles from "./css/Books.module.css";
+import styles from "../css/Common.module.css";
 
 function Books() {
   const [books, setBooks] = useState<BookInterface[]>([]);
