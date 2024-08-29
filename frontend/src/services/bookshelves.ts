@@ -35,7 +35,7 @@ export const GetBookshelf = async (
 
 export const UpdateBookshelf = async (
   id: number,
-  data: CreateOrUpdateBookshelfInterface
+  data: Partial<CreateOrUpdateBookshelfInterface>
 ): Promise<boolean> => {
   return await Base(`${API_BASE_URL}/bookshelves/${id}`, {
     method: "PATCH",
