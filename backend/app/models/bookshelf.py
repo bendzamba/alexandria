@@ -48,6 +48,8 @@ class BookshelfPublic(BookshelfBase):
 class BookshelfUpdate(SQLModel):
     title: Optional[str] = None
     description: Optional[str] = None
+    sort_key: Optional[SortKey] = None
+    sort_direction: Optional[SortDirection] = None
 
 
 class BookshelfPublicWithBooks(BookshelfPublic):
