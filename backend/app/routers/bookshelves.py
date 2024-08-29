@@ -6,6 +6,7 @@ from app.models.bookshelf import (
     BookshelfUpdate,
     BookshelfPublic,
     BookshelfPublicWithBooks,
+    SortKey
 )
 from app.models.book import BookIds, Book
 from app.models.book_bookshelf import BookBookshelfLink
@@ -20,6 +21,11 @@ def get_bookshelves(db=Depends(get_db)):
     with Session(db.get_engine()) as session:
         bookshelves = session.exec(select(Bookshelf)).all()
         return bookshelves
+
+
+@router.get("/sort_keys", status_code=status.HTTP_200_OK, response_model=list[str])
+def get_bookshelf_sort_keys():
+    return [key.value for key in SortKey]
 
 
 @router.get(
