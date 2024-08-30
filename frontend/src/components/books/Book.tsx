@@ -332,13 +332,7 @@ function Book({ bookId, preview }: BookProps) {
           <Col xs={12} lg={6}>
             <h1 className="display-5 pull-left">{title}</h1>
           </Col>
-          <Col
-            xs={12}
-            lg={6}
-            style={{
-              textAlign: "right",
-            }}
-          >
+          <Col xs={12} lg={6} className={styles["book-component-controls"]}>
             <div className={`form-floating ${styles["custom-form-floating"]}`}>
               <select
                 className="form-select"

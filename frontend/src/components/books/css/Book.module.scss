@@ -68,3 +68,13 @@
   width: 1.2rem !important;
   line-height: 1.2rem !important;
 }
+@media only screen and (min-width: 600px) {
+  .book-component-controls {
+    text-align: left;
+  }
+}
+@media only screen and (min-width: 992px) {
+  .book-component-controls {
+    text-align: right;
+  }
+}
