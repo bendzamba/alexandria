@@ -8,6 +8,9 @@ export interface BookInterface {
   olids: string;
   rating: number;
   review: string;
+  read_status: string;
+  read_start_date: string;
+  read_end_date: string;
 }
 
 export interface BookWithBookshelvesInterface extends BookInterface {
@@ -23,6 +26,9 @@ export interface CreateOrUpdateBookInterface {
   olids: string;
   rating: number;
   review: string;
+  read_status: string;
+  read_start_date: string | null;
+  read_end_date: string | null;
 }
 
 export interface BookshelfInterface {
