@@ -28,7 +28,7 @@ function Book({ bookId, preview }: BookProps) {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [year, setYear] = useState(0);
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState<number | null>(null);
   const [review, setReview] = useState("");
   const [savedReview, setSavedReview] = useState("");
   const [loading, setLoading] = useState(true);
@@ -161,10 +161,12 @@ function Book({ bookId, preview }: BookProps) {
   };
 
   const changeRating = async (newRating: number) => {
-    if (rating !== newRating) {
-      setRating(newRating);
-      await UpdateBook(_bookId, { rating: newRating });
+    let ratingToPropagate: number | null = newRating;
+    if (newRating === rating) {
+      ratingToPropagate = null;
     }
+    setRating(ratingToPropagate);
+    await UpdateBook(_bookId, { rating: ratingToPropagate });
   };
 
   const changeRatingClick = (event: React.MouseEvent<HTMLInputElement>) => {

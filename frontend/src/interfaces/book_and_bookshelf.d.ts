@@ -24,7 +24,7 @@ export interface CreateOrUpdateBookInterface {
   olid: string;
   cover_uri: string;
   olids: string;
-  rating: number;
+  rating: number | null;
   review: string;
   read_status: string;
   read_start_date: string | null;
