@@ -18,7 +18,7 @@ import {
   BookInterface,
   BookshelfWithBooksInterface,
 } from "../../interfaces/book_and_bookshelf";
-import styles from "../css/Common.module.css";
+import styles from "../css/Common.module.scss";
 
 interface BookshelfProps {
   bookshelfId?: number;

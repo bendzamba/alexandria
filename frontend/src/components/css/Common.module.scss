@@ -1,0 +1,58 @@
+@mixin customFormFloating($custom_form_floating_display) {
+  .custom-form-floating {
+    display: $custom_form_floating_display;
+    margin-right: 0.3rem;
+  }
+}
+
+@mixin customFormFloatingSelect(
+  $custom_form_floating_form_select_height:
+    $custom_form_floating_form_select_height,
+  $custom_form_floating_form_select_min_height:
+    $custom_form_floating_form_select_min_height,
+  $custom_form_floating_form_select_padding_top:
+    $custom_form_floating_form_select_padding_top,
+  $custom_form_floating_form_select_padding_bottom:
+    $custom_form_floating_form_select_padding_bottom,
+  $custom_form_floating_form_select_font_size:
+    $custom_form_floating_form_select_font_size
+) {
+  .custom-form-floating > :global(.form-control),
+  .custom-form-floating > :global(.form-select) {
+    height: calc(
+      $custom_form_floating_form_select_height +
+        calc(var(--bs-border-width) * 2)
+    ) !important;
+    min-height: calc(
+      $custom_form_floating_form_select_min_height +
+        calc(var(--bs-border-width) * 2)
+    ) !important;
+  }
+  .custom-form-floating > :global(.form-select) {
+    padding-top: $custom_form_floating_form_select_padding_top !important;
+    padding-bottom: $custom_form_floating_form_select_padding_bottom !important;
+    font-size: $custom_form_floating_form_select_font_size !important;
+  }
+}
+
+@mixin customFormFloatingLabel(
+  $custom_form_floating_label_padding: $custom_form_floating_label_padding,
+  $custom_form_floating_label_scale: $custom_form_floating_label_scale
+) {
+  .custom-form-floating > :global(label) {
+    padding: $custom_form_floating_label_padding !important;
+    height: 90% !important;
+  }
+  .custom-form-floating > :global(.form-control):focus ~ :global(label),
+  .custom-form-floating
+    > :global(.form-control):not(:placeholder-shown)
+    ~ :global(label),
+  .custom-form-floating > :global(.form-select) ~ :global(label) {
+    transform: scale($custom_form_floating_label_scale) translateY(-0.5rem)
+      translateX(0.15rem) !important;
+  }
+}
+
+.custom-sort-button {
+  padding: 0.5rem 0.7rem !important;
+}

@@ -1,3 +1,10 @@
+@import "../../css/_variables";
+@import "../../css/Common.module.scss";
+
+@include customFormFloating(inline-block);
+@include customFormFloatingSelect(2rem, 2rem, 0.5rem, 0);
+@include customFormFloatingLabel(0.5rem 0.5rem 0.5rem 1.1rem, 0.6);
+
 .rating {
   float: left;
   border: none;
@@ -45,4 +52,29 @@
   content: attr(data-placeholder);
   pointer-events: none;
   display: block; /* For Firefox */
+}
+:global(div.react-datepicker__input-container button) {
+  max-width: 14rem !important;
+  font-size: 0.8rem !important;
+  margin-bottom: 0.5rem !important;
+  padding: 0.3rem 0.75rem !important;
+}
+:global(div.react-datepicker__tab-loop) {
+  display: inline-block !important;
+}
+:global(.react-datepicker__day-name),
+:global(.react-datepicker__day),
+:global(.react-datepicker__time-name) {
+  width: 1.2rem !important;
+  line-height: 1.2rem !important;
+}
+@media only screen and (min-width: 600px) {
+  .book-component-controls {
+    text-align: left;
+  }
+}
+@media only screen and (min-width: 992px) {
+  .book-component-controls {
+    text-align: right;
+  }
 }

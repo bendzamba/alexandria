@@ -1,9 +1,15 @@
 from app.models.book_bookshelf import BookBookshelfLink
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, TYPE_CHECKING, List
+from enum import Enum
 
 if TYPE_CHECKING:
     from app.models.bookshelf import Bookshelf  # Only imported when type checking
+
+class ReadStatus(str,Enum):
+    not_read = "not_read"
+    read = "read"
+    reading = "reading"
 
 
 class BookBase(SQLModel):
@@ -16,6 +22,9 @@ class BookBase(SQLModel):
     olids: Optional[str] = None
     rating: Optional[int] = None
     review: Optional[str] = None
+    read_status: ReadStatus
+    read_start_date: Optional[str] = None
+    read_end_date: Optional[str] = None
 
 
 class Book(BookBase, table=True):
@@ -44,6 +53,9 @@ class BookUpdate(SQLModel):
     olid: Optional[str] = None
     rating: Optional[int] = None
     review: Optional[str] = None
+    read_status: Optional[ReadStatus] = None
+    read_start_date: Optional[str] = None
+    read_end_date: Optional[str] = None
 
 
 class BookPublicWithBookshelves(BookPublic):

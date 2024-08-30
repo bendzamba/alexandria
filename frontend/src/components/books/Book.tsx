@@ -4,8 +4,10 @@ import Col from "react-bootstrap/Col";
 import { useParams, useNavigate, NavLink } from "react-router-dom";
 import { GetBook, DeleteBook, UpdateBook } from "../../services/books";
 import Container from "react-bootstrap/esm/Container";
-import styles from "./css/Book.module.css";
+import styles from "./css/Book.module.scss";
 import { BookWithBookshelvesInterface } from "../../interfaces/book_and_bookshelf";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface BookProps {
   bookId?: number;
@@ -34,10 +36,12 @@ function Book({ bookId, preview }: BookProps) {
   const [savedOlid, setSavedOlid] = useState("");
   const [olids, setOlids] = useState<string[]>([]);
   const [selectingNewCover, setSelectingNewCover] = useState(false);
-
-  const navigate = useNavigate();
+  const [readStatus, setReadStatus] = useState<string>("not_read");
+  const [readStartDate, setReadStartDate] = useState<Date | null>(null);
+  const [readEndDate, setReadEndDate] = useState<Date | null>(null);
   const [addingReview, setAddingReview] = useState(false);
   const reviewPlaceholder = "Share your thoughts on this book ...";
+  const navigate = useNavigate();
 
   const fetchBook = useCallback(async () => {
     try {
@@ -69,6 +73,13 @@ function Book({ bookId, preview }: BookProps) {
       setRating(data.rating);
       setReview(data.review);
       setSavedReview(data.review);
+      setReadStatus(data.read_status);
+      if (data.read_start_date) {
+        setReadStartDate(new Date(data.read_start_date));
+      }
+      if (data.read_end_date) {
+        setReadEndDate(new Date(data.read_end_date));
+      }
     } catch (error) {
       console.error("Error fetching book:", error);
     } finally {
@@ -132,7 +143,9 @@ function Book({ bookId, preview }: BookProps) {
   };
 
   const toggleBookCoverSelection = (
-    event: React.MouseEvent<HTMLImageElement>,
+    event:
+      | React.MouseEvent<HTMLImageElement>
+      | React.KeyboardEvent<HTMLImageElement>,
     olidToToggle: string
   ) => {
     event.preventDefault();
@@ -194,6 +207,10 @@ function Book({ bookId, preview }: BookProps) {
     void changeReview();
   };
 
+  const changeReviewReturn = () => {
+    void changeReview();
+  };
+
   const blurReview = () => {
     const el = document.getElementById("review");
     if (!el) {
@@ -220,6 +237,65 @@ function Book({ bookId, preview }: BookProps) {
       .replace(/<br\s*\/?>/gi, "\n")
       .replace(/<\/div>|<\/p>/gi, "\n")
       .replace(/<div>|<p>/gi, "");
+  };
+
+  const handleReadStatusUpdate = async (
+    read_status: string,
+    read_start_date = null,
+    read_end_date = null
+  ) => {
+    const updateBody = {
+      read_status: read_status,
+      ...(read_start_date !== undefined && {
+        read_start_date: read_start_date,
+      }),
+      ...(read_end_date !== undefined && {
+        read_end_date: read_end_date,
+      }),
+    };
+    const response: boolean = await UpdateBook(_bookId, updateBody);
+    if (!response) {
+      // A message to the user may be warranted here
+      return false;
+    }
+  };
+
+  const handleReadStatusChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newReadStatus = event.currentTarget.value;
+    setReadStatus(newReadStatus);
+    if (newReadStatus === "not_read") {
+      setReadStartDate(null);
+      setReadEndDate(null);
+      handleReadStatusUpdate(newReadStatus, null, null);
+    } else {
+      handleReadStatusUpdate(newReadStatus);
+    }
+  };
+
+  const handleReadDatesUpdate = async (
+    read_start_date: string | null,
+    read_end_date: string | null
+  ) => {
+    const response: boolean = await UpdateBook(_bookId, {
+      read_start_date: read_start_date,
+      read_end_date: read_end_date,
+    });
+    if (!response) {
+      // A message to the user may be warranted here
+      return false;
+    }
+  };
+
+  const handleReadDatesChange = (dates: [Date | null, Date | null]) => {
+    const [start, end] = dates;
+    setReadStartDate(start);
+    setReadEndDate(end);
+    handleReadDatesUpdate(
+      start ? start.toISOString() : null,
+      end ? end.toISOString() : null
+    );
   };
 
   useEffect(() => {
@@ -249,19 +325,57 @@ function Book({ bookId, preview }: BookProps) {
           className="mt-4 mb-4 align-items-center"
           style={{ borderBottom: "3px solid black" }}
         >
-          <Col xs={8}>
+          <Col xs={12} lg={6}>
             <h1 className="display-5 pull-left">{title}</h1>
           </Col>
-          <Col
-            xs={4}
-            style={{
-              textAlign: "right",
-            }}
-          >
+          <Col xs={12} lg={6} className={styles["book-component-controls"]}>
+            <div className={`form-floating ${styles["custom-form-floating"]}`}>
+              <select
+                className="form-select"
+                id="floatingSelect"
+                aria-label="Floating label select example"
+                onChange={handleReadStatusChange}
+                value={readStatus}
+              >
+                <option value="not_read">Not read</option>
+                <option value="read">Read</option>
+                <option value="reading">Reading</option>
+              </select>
+              <label htmlFor="floatingSelect">Status</label>
+            </div>
+            {readStatus !== "not_read" && (
+              <DatePicker
+                selected={readStartDate}
+                onChange={(date) => handleReadDatesChange(date)}
+                startDate={readStartDate ? readStartDate : undefined}
+                endDate={readEndDate ? readEndDate : undefined}
+                selectsRange
+                className="me-1"
+                customInput={
+                  <button className="btn btn-sm btn-primary">
+                    {readStartDate &&
+                      `${readStartDate?.toLocaleDateString("en-us", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                      - `}
+                    {readEndDate &&
+                      `${readEndDate?.toLocaleDateString("en-us", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}`}
+                    {!readStartDate && "Reading dates"}
+                  </button>
+                }
+              />
+            )}
             {!selectingNewCover && (
               <button
                 type="button"
                 className="btn btn-primary btn-sm"
+                style={{ marginBottom: "0.5rem" }}
                 onClick={handleChangeCover}
               >
                 Cover
@@ -271,6 +385,7 @@ function Book({ bookId, preview }: BookProps) {
               <button
                 type="button"
                 className="btn btn-primary btn-sm"
+                style={{ marginBottom: "0.5rem" }}
                 onClick={handleUpdateClick}
               >
                 Update
@@ -279,6 +394,7 @@ function Book({ bookId, preview }: BookProps) {
             <button
               type="button"
               className="btn btn-danger btn-sm ms-1"
+              style={{ marginBottom: "0.5rem" }}
               onClick={handleDeleteClick}
             >
               Delete
@@ -385,7 +501,7 @@ function Book({ bookId, preview }: BookProps) {
                   onKeyDown={(e) => {
                     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
                       e.preventDefault(); // Prevent inserting a newline
-                      editReview(e); // Trigger the click event or any other logic
+                      changeReviewReturn(); // Trigger the click event or any other logic
                     }
                   }}
                   tabIndex={0}
@@ -457,7 +573,7 @@ function Book({ bookId, preview }: BookProps) {
                             (event.ctrlKey || event.metaKey) &&
                             event.key === "Enter"
                           ) {
-                            editReview(event); // Trigger the click event or any other logic
+                            toggleBookCoverSelection(event, map_olid); // Trigger the click event or any other logic
                           }
                         }}
                         role="presentation"
