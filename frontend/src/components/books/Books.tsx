@@ -5,7 +5,7 @@ import Container from "react-bootstrap/Container";
 import Book from "./Book";
 import { GetBooks } from "../../services/books";
 import { BookInterface } from "../../interfaces/book_and_bookshelf";
-import styles from "../css/Common.module.css";
+import styles from "./css/Books.module.scss";
 
 function Books() {
   const [books, setBooks] = useState<BookInterface[]>([]);
@@ -64,7 +64,7 @@ function Books() {
               className="form-control form-control-sm"
               onChange={handleSearch}
             />
-            <label htmlFor="floatingInputValue">Search...</label>
+            <label htmlFor="search">Search...</label>
           </form>
         </Col>
         <Col xs={5} lg={3}>
