@@ -246,17 +246,13 @@ function Book({ bookId, preview }: BookProps) {
   ) => {
     const updateBody = {
       read_status: read_status,
+      ...(read_start_date !== undefined && {
+        read_start_date: read_start_date,
+      }),
+      ...(read_end_date !== undefined && {
+        read_end_date: read_end_date,
+      }),
     };
-    if (read_start_date !== undefined) {
-      Object.defineProperty(updateBody, "read_start_date", {
-        value: read_start_date,
-      });
-    }
-    if (read_end_date !== undefined) {
-      Object.defineProperty(updateBody, "read_end_date", {
-        value: read_end_date,
-      });
-    }
     const response: boolean = await UpdateBook(_bookId, updateBody);
     if (!response) {
       // A message to the user may be warranted here
