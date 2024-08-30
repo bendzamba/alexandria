@@ -78,3 +78,13 @@
     text-align: right;
   }
 }
+:global(div#book-review-content-editable) {
+  min-height: 200px;
+  font-style: italic;
+}
+:global(div[contenteditable="true"]) {
+  border: none;
+  outline: none;
+  text-wrap: wrap;
+  white-space: pre-wrap;
+}

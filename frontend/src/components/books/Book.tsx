@@ -203,6 +203,61 @@ function Book({ bookId, preview }: BookProps) {
     }
   };
 
+  const changeAuthor = async () => {
+    const newAuthor = getAuthor();
+    if (!newAuthor) {
+      console.log("could not get author to change");
+      return false;
+    }
+    if (newAuthor !== author) {
+      setAuthor(newAuthor);
+      const response: boolean = await UpdateBook(_bookId, {
+        author: newAuthor,
+      });
+      if (!response) {
+        // A message to the user may be warranted here
+        return false;
+      }
+    }
+  };
+
+  const changeYear = async () => {
+    const newYear = getYear();
+    if (!newYear) {
+      console.log("could not get year to change");
+      return false;
+    }
+    const numericNewYear = parseInt(newYear);
+    if (numericNewYear !== year) {
+      setYear(numericNewYear);
+      const response: boolean = await UpdateBook(_bookId, {
+        year: numericNewYear,
+      });
+      if (!response) {
+        // A message to the user may be warranted here
+        return false;
+      }
+    }
+  };
+
+  const changeTitle = async () => {
+    const newTitle = getTitle();
+    if (!newTitle) {
+      console.log("could not get title to change");
+      return false;
+    }
+    if (newTitle !== title) {
+      setTitle(newTitle);
+      const response: boolean = await UpdateBook(_bookId, {
+        title: newTitle,
+      });
+      if (!response) {
+        // A message to the user may be warranted here
+        return false;
+      }
+    }
+  };
+
   const changeReviewClick = () => {
     void changeReview();
   };
@@ -211,8 +266,20 @@ function Book({ bookId, preview }: BookProps) {
     void changeReview();
   };
 
+  const changeAuthorHandler = () => {
+    void changeAuthor();
+  };
+
+  const changeYearHandler = () => {
+    void changeYear();
+  };
+
+  const changeTitleHandler = () => {
+    void changeTitle();
+  };
+
   const blurReview = () => {
-    const el = document.getElementById("review");
+    const el = document.getElementById("book-review-content-editable");
     if (!el) {
       console.log("could not find `review` div");
       return false;
@@ -225,7 +292,7 @@ function Book({ bookId, preview }: BookProps) {
   };
 
   const getReview = () => {
-    const element = document.getElementById("review");
+    const element = document.getElementById("book-review-content-editable");
     if (!element) {
       console.log("could not find `review` div");
       return false;
@@ -237,6 +304,33 @@ function Book({ bookId, preview }: BookProps) {
       .replace(/<br\s*\/?>/gi, "\n")
       .replace(/<\/div>|<\/p>/gi, "\n")
       .replace(/<div>|<p>/gi, "");
+  };
+
+  const getAuthor = () => {
+    const element = document.getElementById("book-author");
+    if (!element) {
+      console.log("could not find author");
+      return false;
+    }
+    return element.textContent;
+  };
+
+  const getYear = () => {
+    const element = document.getElementById("book-year");
+    if (!element) {
+      console.log("could not find year");
+      return false;
+    }
+    return element.textContent;
+  };
+
+  const getTitle = () => {
+    const element = document.getElementById("book-title");
+    if (!element) {
+      console.log("could not find title");
+      return false;
+    }
+    return element.textContent;
   };
 
   const handleReadStatusUpdate = async (
@@ -326,7 +420,25 @@ function Book({ bookId, preview }: BookProps) {
           style={{ borderBottom: "3px solid black" }}
         >
           <Col xs={12} lg={6}>
-            <h1 className="display-5 pull-left">{title}</h1>
+            <div
+              contentEditable="true"
+              spellCheck={false}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault(); // Prevent inserting a newline
+                  e.currentTarget.blur();
+                }
+              }}
+              onBlur={() => {
+                changeTitleHandler();
+              }}
+              tabIndex={0}
+              role="textbox"
+            >
+              <h1 className="display-5" id="book-title">
+                {title}
+              </h1>
+            </div>
           </Col>
           <Col xs={12} lg={6} className={styles["book-component-controls"]}>
             <div className={`form-floating ${styles["custom-form-floating"]}`}>
@@ -429,7 +541,25 @@ function Book({ bookId, preview }: BookProps) {
                 <small>{author}</small>
               </span>
             )}
-            {!preview && <h3>{author}</h3>}
+            {!preview && (
+              <div
+                contentEditable="true"
+                spellCheck={false}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault(); // Prevent inserting a newline
+                    e.currentTarget.blur();
+                  }
+                }}
+                onBlur={() => {
+                  changeAuthorHandler();
+                }}
+                tabIndex={0}
+                role="textbox"
+              >
+                <h3 id="book-author">{author}</h3>
+              </div>
+            )}
           </Row>
           <Row>
             {preview && (
@@ -437,7 +567,25 @@ function Book({ bookId, preview }: BookProps) {
                 <small>{year}</small>
               </span>
             )}
-            {!preview && <h5>{year}</h5>}
+            {!preview && (
+              <div
+                contentEditable="true"
+                spellCheck={false}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault(); // Prevent inserting a newline
+                    e.currentTarget.blur();
+                  }
+                }}
+                onBlur={() => {
+                  changeYearHandler();
+                }}
+                tabIndex={0}
+                role="textbox"
+              >
+                <h5 id="book-year">{year}</h5>
+              </div>
+            )}
           </Row>
           <Row className="ms-auto">
             <fieldset
@@ -495,7 +643,7 @@ function Book({ bookId, preview }: BookProps) {
               <Col>
                 <div
                   contentEditable="true"
-                  id="review"
+                  id="book-review-content-editable"
                   onClick={editReview}
                   onBlur={blurReview}
                   onKeyDown={(e) => {
@@ -507,15 +655,7 @@ function Book({ bookId, preview }: BookProps) {
                   tabIndex={0}
                   role="textbox"
                   data-placeholder={reviewPlaceholder}
-                  className="text-secondary book-review"
-                  style={{
-                    minHeight: "200px",
-                    border: "none",
-                    fontStyle: "italic",
-                    outline: "none",
-                    textWrap: "wrap",
-                    whiteSpace: "pre-wrap",
-                  }}
+                  className="text-secondary"
                 >
                   {review}
                 </div>

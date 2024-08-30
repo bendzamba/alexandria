@@ -87,7 +87,9 @@ function CreateBook() {
 
   const handleCreate = async () => {
     const json_olids = JSON.stringify(olids);
-    const filteredBookData: Partial<CreateOrUpdateBookInterface> = {};
+    const filteredBookData: Partial<CreateOrUpdateBookInterface> = {
+      read_status: "not_read",
+    };
     if (title != null) filteredBookData.title = title;
     if (author != null) filteredBookData.author = author;
     if (year != null) filteredBookData.year = year;
