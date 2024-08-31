@@ -44,6 +44,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   const [showModal, setShowModal] = useState(false);
   const [sortKey, setSortKey] = useState("");
   const [sortDirection, setSortDirection] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const navigate = useNavigate();
 
   const fetchBookshelf = useCallback(async () => {
@@ -85,24 +86,18 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   };
 
   const handleDelete = async () => {
-    // const result = await confirm(
-    //   "Are you sure you want to delete this bookshelf?",
-    // );
-    const result = true;
-    if (result) {
-      const response: boolean = await DeleteBookshelf(_bookshelfId);
-      if (!response) {
-        // A message to the user may be warranted here
-        // Especially if we are going to prevent navigation
-        return false;
-      }
-      navigate(`/`);
+    const response: boolean = await DeleteBookshelf(_bookshelfId);
+    if (!response) {
+      // A message to the user may be warranted here
+      // Especially if we are going to prevent navigation
+      return false;
     }
+    navigate(`/`);
   };
 
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    void handleDelete();
+    setShowDeleteModal(true);
   };
 
   const handleShowModal = () => {
@@ -224,6 +219,10 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
       // A message to the user may be warranted here
       return false;
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
   };
 
   if (!_bookshelfId || _bookshelfId === 0) {
@@ -449,6 +448,20 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
           </Button>
           <Button variant="primary" onClick={handleSaveChangeClick}>
             Save Changes
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Warning</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to delete this bookshelf?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDeleteModal}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleDelete}>
+            Delete
           </Button>
         </Modal.Footer>
       </Modal>

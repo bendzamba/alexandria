@@ -3,6 +3,8 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { useParams, useNavigate, NavLink } from "react-router-dom";
 import { GetBook, DeleteBook, UpdateBook } from "../../services/books";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/esm/Container";
 import styles from "./css/Book.module.scss";
 import { BookWithBookshelvesInterface } from "../../interfaces/book_and_bookshelf";
@@ -40,6 +42,7 @@ function Book({ bookId, preview }: BookProps) {
   const [readStartDate, setReadStartDate] = useState<Date | null>(null);
   const [readEndDate, setReadEndDate] = useState<Date | null>(null);
   const [addingReview, setAddingReview] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const reviewPlaceholder = "Share your thoughts on this book ...";
   const navigate = useNavigate();
 
@@ -109,22 +112,18 @@ function Book({ bookId, preview }: BookProps) {
   };
 
   const handleDelete = async () => {
-    // const result = await confirm("Are you sure you want to delete this book?");
-    const result = true;
-    if (result) {
-      const response: boolean = await DeleteBook(_bookId);
-      if (!response) {
-        // A message to the user may be warranted here
-        // Especially if we are going to prevent navigation
-        return false;
-      }
-      navigate(`/books/`);
+    const response: boolean = await DeleteBook(_bookId);
+    if (!response) {
+      // A message to the user may be warranted here
+      // Especially if we are going to prevent navigation
+      return false;
     }
+    navigate(`/books/`);
   };
 
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    void handleDelete(); // Call the async function but don't return its Promise
+    setShowDeleteModal(true);
   };
 
   const imageOnload = (
@@ -392,6 +391,10 @@ function Book({ bookId, preview }: BookProps) {
       start ? start.toISOString() : null,
       end ? end.toISOString() : null
     );
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
   };
 
   useEffect(() => {
@@ -742,6 +745,20 @@ function Book({ bookId, preview }: BookProps) {
           </>
         )}
       </Row>
+      <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Warning</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to delete this book?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDeleteModal}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleDelete}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 }
