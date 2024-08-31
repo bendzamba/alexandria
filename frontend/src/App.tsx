@@ -9,6 +9,8 @@ import Books from "./components/books/Books";
 import Book from "./components/books/Book";
 import CreateBook from "./components/books/CreateBook";
 import Header from "./components/common/Header";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
@@ -25,6 +27,7 @@ function App() {
           <Route path="/books/create" element={<CreateBook />} />
         </Routes>
       </Container>
+      <ToastContainer />
     </Router>
   );
 }

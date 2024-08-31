@@ -1,3 +1,5 @@
+import { toast } from "react-toastify";
+
 export const Base = async <T>(
   url: string,
   options: RequestInit = {}
@@ -7,12 +9,13 @@ export const Base = async <T>(
 
     // Check if the response status is not OK
     if (!response.ok) {
-      // Handle specific HTTP status codes as needed
-      if (response.status === 500) {
-        throw new Error("Server error: " + response.statusText);
-      } else {
-        // This would catch 4xx
-        throw new Error("HTTP error: " + response.statusText);
+      const response_json = await response.json();
+      let response_message = "An unknown error has occurred";
+      if ("detail" in response_json) {
+        response_message = response_json["detail"];
+      }
+      if (response.status >= 400 && response.status <= 599) {
+        throw new Error(response_message);
       }
     }
 
@@ -25,9 +28,18 @@ export const Base = async <T>(
     // Assuming the response is JSON
     const data: T = (await response.json()) as T;
     return data;
-  } catch (error) {
-    // Currently only logging error, not displaying anything to user
-    console.error("Fetch error:", error);
+  } catch (e: unknown) {
+    let error_message = "";
+    if (typeof e === "string") {
+      error_message = e.toUpperCase();
+    } else if (e instanceof Error) {
+      error_message = e.message;
+    }
+    console.error("Fetch error:", error_message);
+    toast.error(error_message, {
+      position: "bottom-right",
+      theme: "colored",
+    });
     return false;
   }
 };
