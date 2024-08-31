@@ -8,6 +8,7 @@ from app.models.book import (
     BookPublicWithBookshelves,
 )
 from app.models.openlibrary import Works
+from app.models.exception import ExceptionHandler
 from app.services.openlibrary import OpenLibrary
 from app.db.sqlite import DB
 from app.utils.image import Image
@@ -97,9 +98,9 @@ def delete_bookshelf(
 async def search_by_title(
     title: Annotated[str, Path(title="The title we are searching for")],
 ):
-    search_results: Works = await openlibrary.search_by_title(title=title)
+    results: Works | ExceptionHandler = await openlibrary.search_by_title(title=title)
 
-    if not search_results:
-        return {}
+    if isinstance(results, ExceptionHandler):
+        raise HTTPException(status_code=results.status_code, detail=results.message)
 
-    return search_results.model_dump()
+    return results.model_dump()

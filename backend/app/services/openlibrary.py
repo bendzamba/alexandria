@@ -1,6 +1,7 @@
 import httpx
 from typing import Any, Dict
 from app.models.openlibrary import Work, Works
+from app.models.exception import ExceptionHandler
 from pydantic import ValidationError
 from app.utils.image import Image
 import os
@@ -10,6 +11,7 @@ import urllib.parse
 class OpenLibrary:
     def __init__(self):
         self.search_title_url = "https://openlibrary.org/search.json?title={title}&"
+        self.search_timeout = 10 # seconds
 
         # We don't currently need all fields returned
         # We only include title so we have a nice response format to unpack without dealing with the supplied title
@@ -25,22 +27,23 @@ class OpenLibrary:
         self.image = Image()
         self.cover_uri = ""
 
-    async def search_by_title(self, title: str) -> Dict[str, Any]:
+    async def search_by_title(self, title: str) -> Works | ExceptionHandler:
         async with httpx.AsyncClient() as client:
             try:
                 url = self.build_search_url(title=title)
-                print(url)
-                response = await client.get(url, timeout=10.0)
+                response = await client.get(url, timeout=self.search_timeout)
                 response.raise_for_status()
+            except httpx.TimeoutException:
+                return ExceptionHandler(status_code=ExceptionHandler.get_timeout_status_code(), message=f"Open Library's API has timed out after {self.search_timeout} seconds.")
             except Exception as e:
-                print("Exception occurred", e)
-                return None
+                return ExceptionHandler(status_code=ExceptionHandler.get_timeout_status_code(), message=str(e))
 
             try:
                 response_json = response.json()
 
                 if "docs" not in response_json or len(response_json["docs"]) == 0:
-                    return False
+
+                    return ExceptionHandler(status_code=ExceptionHandler.get_no_results_status_code(), message="No results found. Please try a different search.")
 
                 works = []
                 for doc in response_json["docs"]:
@@ -52,9 +55,8 @@ class OpenLibrary:
 
                 return Works(**{"works": works})
 
-            except ValidationError as e:
-                print("Validation error occurred:", e)
-                return None
+            except Exception as e:
+                return ExceptionHandler(status_code=ExceptionHandler.get_no_results_status_code(), message=str(e))
 
     def build_search_url(self, title) -> str:
         params = {
