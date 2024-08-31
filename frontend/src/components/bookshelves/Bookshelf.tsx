@@ -18,7 +18,7 @@ import {
   BookInterface,
   BookshelfWithBooksInterface,
 } from "../../interfaces/book_and_bookshelf";
-import styles from "../css/Common.module.scss";
+import styles from "./css/Bookshelf.module.scss";
 
 interface BookshelfProps {
   bookshelfId?: number;
@@ -233,7 +233,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   return (
     <Container>
       <Row
-        className="mt-4 mb-2 pb-2 align-items-center"
+        className="mt-4 align-items-center"
         style={{ borderBottom: "3px solid black" }}
       >
         <Col xs={12} lg={preview ? 12 : 6} xl={preview ? 12 : 7}>
@@ -250,90 +250,76 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
           )}
         </Col>
         {!preview && (
-          <Col xs={12} lg={6} xl={5}>
-            <Container>
-              <Row>
-                <Col
-                  xs={5}
-                  style={{
-                    textAlign: "right",
-                  }}
-                  className="g-0"
+          <Col
+            xs={12}
+            lg={6}
+            xl={5}
+            className={styles["bookshelf-component-controls"]}
+          >
+            <div className={`form-floating ${styles["custom-form-floating"]}`}>
+              <select
+                className="form-select"
+                id="floatingSelect"
+                aria-label="Floating label select example"
+                onChange={handleSort}
+                value={sortKey}
+              >
+                <option value="id" selected>
+                  Date Added
+                </option>
+                <option value="title">Title</option>
+                <option value="author">Author</option>
+                <option value="year">Year</option>
+                <option value="rating">Rating</option>
+              </select>
+              <label htmlFor="floatingSelect">Sort by</label>
+            </div>
+            <button
+              type="button"
+              className={`btn btn-outline-secondary me-1 mb-2 ${styles["bookshelf-sort-button"]}`}
+              onClick={handleSortDirection}
+            >
+              {sortDirection === "ascending" && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  className="bi bi-sort-up"
+                  viewBox="0 0 16 16"
                 >
-                  <div
-                    className={`form-floating ${styles["custom-form-floating"]}`}
-                  >
-                    <select
-                      className="form-select"
-                      id="floatingSelect"
-                      aria-label="Floating label select example"
-                      onChange={handleSort}
-                      value={sortKey}
-                    >
-                      <option value="id" selected>
-                        Date Added
-                      </option>
-                      <option value="title">Title</option>
-                      <option value="author">Author</option>
-                      <option value="year">Year</option>
-                      <option value="rating">Rating</option>
-                    </select>
-                    <label htmlFor="floatingSelect">Sort by</label>
-                  </div>
-                </Col>
-                <Col
-                  xs={7}
-                  style={{
-                    textAlign: "right",
-                  }}
+                  <path d="M3.5 12.5a.5.5 0 0 1-1 0V3.707L1.354 4.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.5.5 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 3.707zm3.5-9a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z" />
+                </svg>
+              )}
+              {sortDirection === "descending" && (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="currentColor"
+                  className="bi bi-sort-down"
+                  viewBox="0 0 16 16"
                 >
-                  <button
-                    type="button"
-                    className={`btn btn-outline-secondary me-2 ${styles["custom-sort-button"]}`}
-                    onClick={handleSortDirection}
-                  >
-                    {sortDirection === "ascending" && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        className="bi bi-sort-up"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M3.5 12.5a.5.5 0 0 1-1 0V3.707L1.354 4.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.5.5 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 3.707zm3.5-9a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z" />
-                      </svg>
-                    )}
-                    {sortDirection === "descending" && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        fill="currentColor"
-                        className="bi bi-sort-down"
-                        viewBox="0 0 16 16"
-                      >
-                        <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z" />
-                      </svg>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={handleUpdateClick}
-                  >
-                    Update
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-danger ms-1"
-                    onClick={handleDeleteClick}
-                  >
-                    Delete
-                  </button>
-                </Col>
-              </Row>
-            </Container>
+                  <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z" />
+                </svg>
+              )}
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={handleUpdateClick}
+              style={{ marginBottom: "0.5rem" }}
+            >
+              Update
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger btn-sm ms-1"
+              onClick={handleDeleteClick}
+              style={{ marginBottom: "0.5rem" }}
+            >
+              Delete
+            </button>
           </Col>
         )}
       </Row>
