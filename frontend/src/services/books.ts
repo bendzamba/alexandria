@@ -1,13 +1,14 @@
 import { Base } from "./base";
 import {
-  BookInterface,
   BookWithBookshelvesInterface,
   CreateOrUpdateBookInterface,
 } from "../interfaces/book_and_bookshelf";
 import { WorkInterface } from "../interfaces/work";
 const API_BASE_URL = "http://127.0.0.1:8000";
 
-export const GetBooks = async (): Promise<BookInterface[] | boolean> => {
+export const GetBooks = async (): Promise<
+  BookWithBookshelvesInterface[] | boolean
+> => {
   return await Base(`${API_BASE_URL}/books/`);
 };
 
