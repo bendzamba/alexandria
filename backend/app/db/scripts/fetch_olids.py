@@ -6,7 +6,7 @@ import json
 
 # From root directory `backend`, run python3 -m app.db.scripts.fetch_olids
 
-sqlite_file_name = "bookshelf.db"
+sqlite_file_name = "alexandria.db"
 sqlite_url = f"sqlite:///app/{sqlite_file_name}"
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, echo=True, connect_args=connect_args)

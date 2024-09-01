@@ -2,7 +2,7 @@ import sqlite3
 
 
 def rename_cover_image_to_cover_uri_in_books_table():
-    connection = sqlite3.connect("backend/app/bookshelf.db", check_same_thread=False)
+    connection = sqlite3.connect("backend/app/alexandria.db", check_same_thread=False)
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
     cursor.execute("ALTER TABLE books RENAME cover_image TO cover_uri;")
@@ -10,7 +10,7 @@ def rename_cover_image_to_cover_uri_in_books_table():
 
 
 def add_cover_olid_to_books_table():
-    connection = sqlite3.connect("backend/app/bookshelf.db", check_same_thread=False)
+    connection = sqlite3.connect("backend/app/alexandria.db", check_same_thread=False)
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
     cursor.execute(
@@ -23,7 +23,7 @@ def add_cover_olid_to_books_table():
 
 
 def remove_column_from_table(column: str, table: str):
-    connection = sqlite3.connect("backend/app/bookshelf.db", check_same_thread=False)
+    connection = sqlite3.connect("backend/app/alexandria.db", check_same_thread=False)
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
     cursor.execute(
@@ -36,7 +36,7 @@ def remove_column_from_table(column: str, table: str):
 
 
 def show_table_schema(table: str):
-    connection = sqlite3.connect("backend/app/bookshelf.db", check_same_thread=False)
+    connection = sqlite3.connect("backend/app/alexandria.db", check_same_thread=False)
     cursor = connection.cursor()
     cursor.execute(
         f"""
@@ -48,7 +48,7 @@ def show_table_schema(table: str):
 
 
 def rename_cover_olid_to_olid_in_books_table():
-    connection = sqlite3.connect("backend/app/bookshelf.db", check_same_thread=False)
+    connection = sqlite3.connect("backend/app/alexandria.db", check_same_thread=False)
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
     cursor.execute("ALTER TABLE books RENAME cover_olid TO olid;")
@@ -56,7 +56,7 @@ def rename_cover_olid_to_olid_in_books_table():
 
 
 def add_rating_and_review_to_books_table():
-    connection = sqlite3.connect("backend/app/bookshelf.db", check_same_thread=False)
+    connection = sqlite3.connect("backend/app/alexandria.db", check_same_thread=False)
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
     cursor.execute(
@@ -75,7 +75,7 @@ def add_rating_and_review_to_books_table():
 
 
 def remove_category_column_from_book_table():
-    connection = sqlite3.connect("backend/app/bookshelf.db", check_same_thread=False)
+    connection = sqlite3.connect("backend/app/alexandria.db", check_same_thread=False)
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
     cursor.execute(
@@ -88,7 +88,7 @@ def remove_category_column_from_book_table():
 
 
 def drop_tables_book_and_bookshelf():
-    connection = sqlite3.connect("backend/app/bookshelf.db", check_same_thread=False)
+    connection = sqlite3.connect("backend/app/alexandria.db", check_same_thread=False)
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
     cursor.execute(
