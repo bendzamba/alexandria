@@ -4,11 +4,11 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Book from "./Book";
 import { GetBooks } from "../../services/books";
-import { BookInterface } from "../../interfaces/book_and_bookshelf";
+import { BookWithBookshelvesInterface } from "../../interfaces/book_and_bookshelf";
 import styles from "./css/Books.module.scss";
 
 function Books() {
-  const [books, setBooks] = useState<BookInterface[]>([]);
+  const [books, setBooks] = useState<BookWithBookshelvesInterface[]>([]);
   const [search, setSearch] = useState<string | null>(null);
   const [sort, setSort] = useState<string>("id");
   const [sortDirection, setSortDirection] = useState<string>("ascending");
@@ -17,7 +17,7 @@ function Books() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data: BookInterface[] | boolean = await GetBooks();
+        const data: BookWithBookshelvesInterface[] | boolean = await GetBooks();
         if (typeof data == "boolean") {
           // A message to the user may be warranted here
           return false;
@@ -121,23 +121,44 @@ function Books() {
       </Row>
       <Row>
         {books
-          .filter((book: BookInterface) => {
+          .filter((book: BookWithBookshelvesInterface) => {
             return search && search !== ""
               ? book.title.toLowerCase().includes(search.toLowerCase())
               : true;
           })
-          .sort((bookA: BookInterface, bookB: BookInterface) => {
-            const sortKey = sort as keyof BookInterface;
-            const directionModifier = sortDirection === "ascending" ? 1 : -1;
-            if (bookA[sortKey] < bookB[sortKey]) {
-              return -1 * directionModifier;
-            } else if (bookA[sortKey] > bookB[sortKey]) {
-              return 1 * directionModifier;
+          .sort(
+            (
+              bookA: BookWithBookshelvesInterface,
+              bookB: BookWithBookshelvesInterface
+            ) => {
+              const sortKey = sort as keyof BookWithBookshelvesInterface;
+              const directionModifier = sortDirection === "ascending" ? 1 : -1;
+              if (
+                !bookA ||
+                !bookB ||
+                bookA[sortKey] === undefined ||
+                bookB[sortKey] === undefined
+              ) {
+                return 0;
+              }
+              let nullPosition = Infinity;
+              if (directionModifier === -1) {
+                nullPosition = 0;
+              }
+              const bookAComparison =
+                bookA[sortKey] !== null ? bookA[sortKey] : nullPosition;
+              const bookBComparison =
+                bookB[sortKey] !== null ? bookB[sortKey] : nullPosition;
+              if (bookAComparison < bookBComparison) {
+                return -1 * directionModifier;
+              } else if (bookAComparison > bookBComparison) {
+                return 1 * directionModifier;
+              }
+              // a must be equal to b
+              return 0;
             }
-            // a must be equal to b
-            return 0;
-          })
-          .map((book: BookInterface) => (
+          )
+          .map((book: BookWithBookshelvesInterface) => (
             <Col
               xs={12}
               md={6}
@@ -145,7 +166,7 @@ function Books() {
               className="mt-3 mb-3"
               key={`col-${book.id}`}
             >
-              <Book bookId={book.id} preview={true} key={book.id} />
+              <Book book={book} preview={true} key={book.id} />
             </Col>
           ))}
       </Row>

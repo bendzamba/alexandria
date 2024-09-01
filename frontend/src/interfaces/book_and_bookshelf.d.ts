@@ -6,7 +6,7 @@ export interface BookInterface {
   olid: string;
   cover_uri: string;
   olids: string;
-  rating: number;
+  rating: number | null;
   review: string;
   read_status: string;
   read_start_date: string;
@@ -14,7 +14,7 @@ export interface BookInterface {
 }
 
 export interface BookWithBookshelvesInterface extends BookInterface {
-  bookshelves: BookshelfInterface[];
+  bookshelves?: BookshelfInterface[];
 }
 
 export interface CreateOrUpdateBookInterface {

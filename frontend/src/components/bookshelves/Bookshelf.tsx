@@ -130,6 +130,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   };
 
   const handleDeleteBookFromBookshelf = async (bookToDelete: number) => {
+    // TODO this needs to be replaced with our delete confirmation modal
     // const result = await confirm(
     //   "Are you sure you want to remove this book from this bookshelf?",
     // );
@@ -351,9 +352,21 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
             .sort((bookA: BookInterface, bookB: BookInterface) => {
               const localSortKey = sortKey as keyof BookInterface;
               const directionModifier = sortDirection === "ascending" ? 1 : -1;
-              if (bookA[localSortKey] < bookB[localSortKey]) {
+              let nullPosition = Infinity;
+              if (directionModifier === -1) {
+                nullPosition = 0;
+              }
+              const bookAComparison =
+                bookA[localSortKey] !== null
+                  ? bookA[localSortKey]
+                  : nullPosition;
+              const bookBComparison =
+                bookB[localSortKey] !== null
+                  ? bookB[localSortKey]
+                  : nullPosition;
+              if (bookAComparison < bookBComparison) {
                 return -1 * directionModifier;
-              } else if (bookA[localSortKey] > bookB[localSortKey]) {
+              } else if (bookAComparison > bookBComparison) {
                 return 1 * directionModifier;
               }
               // a must be equal to b
