@@ -130,24 +130,17 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   };
 
   const handleDeleteBookFromBookshelf = async (bookToDelete: number) => {
-    // TODO this needs to be replaced with our delete confirmation modal
-    // const result = await confirm(
-    //   "Are you sure you want to remove this book from this bookshelf?",
-    // );
-    const result = true;
-    if (result) {
-      const response: boolean = await DeleteBookFromBookshelf(
-        _bookshelfId,
-        bookToDelete
-      );
-      if (!response) {
-        // A message to the user may be warranted here
-        return false;
-      }
-
-      // No sense fetching our bookshelf again if the deletion failed
-      void fetchBookshelf();
+    const response: boolean = await DeleteBookFromBookshelf(
+      _bookshelfId,
+      bookToDelete
+    );
+    if (!response) {
+      // A message to the user may be warranted here
+      return false;
     }
+
+    // No sense fetching our bookshelf again if the deletion failed
+    void fetchBookshelf();
   };
 
   const handleDeleteBookFromBookshelfClick = (
