@@ -12,83 +12,84 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface BookProps {
-  bookId?: number;
+  book?: BookWithBookshelvesInterface;
   preview?: boolean;
 }
 
-function Book({ bookId, preview }: BookProps) {
-  const { id } = useParams();
-
-  let _bookId = bookId || 0;
-
-  if (id) {
-    _bookId = parseInt(id);
-  }
-
-  const [coverUri, setCoverUri] = useState("");
+function Book({ book, preview }: BookProps) {
+  const [bookIdNumeric, setBookIdNumeric] = useState<number>(0);
+  const [bookIdString, setBookIdString] = useState<string>("");
+  const [bookProp] = useState<BookWithBookshelvesInterface | undefined>(book);
+  const [currentBook, setCurrentBook] =
+    useState<BookWithBookshelvesInterface>();
   const [savedCoverUri, setSavedCoverUri] = useState("");
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
-  const [year, setYear] = useState(0);
-  const [rating, setRating] = useState<number | null>(null);
-  const [review, setReview] = useState("");
   const [savedReview, setSavedReview] = useState("");
   const [loading, setLoading] = useState(true);
-  const [olid, setOlid] = useState("");
+  const [availableOlids, setAvailableOlids] = useState<string[]>([]);
   const [savedOlid, setSavedOlid] = useState("");
-  const [olids, setOlids] = useState<string[]>([]);
   const [selectingNewCover, setSelectingNewCover] = useState(false);
-  const [readStatus, setReadStatus] = useState<string>("not_read");
-  const [readStartDate, setReadStartDate] = useState<Date | null>(null);
-  const [readEndDate, setReadEndDate] = useState<Date | null>(null);
   const [addingReview, setAddingReview] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [readStartDate, setReadStartDate] = useState<Date | null>(null);
+  const [readEndDate, setReadEndDate] = useState<Date | null>(null);
   const reviewPlaceholder = "Share your thoughts on this book ...";
   const navigate = useNavigate();
 
-  const fetchBook = useCallback(async () => {
+  // From /books/{id}
+  const { id } = useParams();
+
+  const initialize = useCallback(async () => {
     try {
-      const data: BookWithBookshelvesInterface | boolean =
-        await GetBook(_bookId);
-      if (typeof data == "boolean") {
-        // A message to the user may be warranted here
+      if (bookProp) {
+        setCurrentBook(bookProp);
+        setBookIdNumeric(bookProp.id);
+        setBookIdString(bookProp.id.toString());
+      }
+      if (!currentBook && id) {
+        setBookIdNumeric(parseInt(id));
+        setBookIdString(id);
+        const book_fetched_from_api: BookWithBookshelvesInterface | boolean =
+          await GetBook(parseInt(id));
+        if (typeof book_fetched_from_api == "boolean") {
+          // A message to the user may be warranted here
+          return false;
+        }
+        setCurrentBook(book_fetched_from_api);
+      }
+
+      if (!currentBook) {
+        console.log("Something went wrong and we have no book!");
         return false;
       }
-      setTitle(data.title);
-      setAuthor(data.author);
-      setYear(data.year);
-      setOlid(data.olid);
-      setSavedOlid(data.olid);
+
+      setSavedOlid(currentBook.olid);
       // olids should come back as a JSON encoded array or null
       try {
-        const allBookOlids: string[] = JSON.parse(data.olids) as string[];
-        if (allBookOlids === undefined) {
-          setOlids([]);
-        } else {
-          setOlids(allBookOlids);
+        if (availableOlids.length === 0) {
+          const allBookOlids: string[] = JSON.parse(
+            currentBook.olids
+          ) as string[];
+          if (allBookOlids !== undefined) {
+            setAvailableOlids(allBookOlids);
+          }
         }
       } catch (e) {
-        console.log(e);
-        setOlids([]);
+        console.log("Could not set available olids", e);
       }
-      setCoverUri(data.cover_uri);
-      setSavedCoverUri(data.cover_uri);
-      setRating(data.rating);
-      setReview(data.review);
-      setSavedReview(data.review);
-      setReadStatus(data.read_status);
-      if (data.read_start_date) {
-        setReadStartDate(new Date(data.read_start_date));
+      setSavedCoverUri(currentBook.cover_uri);
+      setSavedReview(currentBook.review);
+      if (currentBook.read_start_date) {
+        setReadStartDate(new Date(currentBook.read_start_date));
       }
-      if (data.read_end_date) {
-        setReadEndDate(new Date(data.read_end_date));
+      if (currentBook.read_end_date) {
+        setReadEndDate(new Date(currentBook.read_end_date));
       }
     } catch (error) {
       console.error("Error fetching book:", error);
     } finally {
       setLoading(false);
     }
-  }, [_bookId]);
+  }, [id, bookProp, currentBook, availableOlids]);
 
   const handleChangeCover = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
@@ -96,8 +97,12 @@ function Book({ bookId, preview }: BookProps) {
   };
 
   const handleUpdate = async () => {
+    if (!currentBook) {
+      console.log("We can not update a book we do not have.");
+      return false;
+    }
     try {
-      await UpdateBook(_bookId, { olid });
+      await UpdateBook(bookIdNumeric, { olid: currentBook.olid });
       setSelectingNewCover(false);
       // Other logic
     } catch (error) {
@@ -112,7 +117,7 @@ function Book({ bookId, preview }: BookProps) {
   };
 
   const handleDelete = async () => {
-    const response: boolean = await DeleteBook(_bookId);
+    const response: boolean = await DeleteBook(bookIdNumeric);
     if (!response) {
       // A message to the user may be warranted here
       // Especially if we are going to prevent navigation
@@ -133,12 +138,22 @@ function Book({ bookId, preview }: BookProps) {
     const img = event.currentTarget;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
     if (img.naturalWidth === 1 || img.naturalHeight === 1) {
-      setOlids((prevOlids) => {
-        return prevOlids.filter((prevOlid) => {
-          return prevOlid !== olid;
+      setAvailableOlids((previousAvailableOlids) => {
+        return previousAvailableOlids.filter((previousAvailableOlid) => {
+          return previousAvailableOlid !== olid;
         });
       });
     }
+  };
+
+  const updateCurrentBook = (
+    updates: Partial<BookWithBookshelvesInterface>
+  ) => {
+    setCurrentBook((previousCurrentBook) => ({
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      ...previousCurrentBook!,
+      ...updates,
+    }));
   };
 
   const toggleBookCoverSelection = (
@@ -148,24 +163,30 @@ function Book({ bookId, preview }: BookProps) {
     olidToToggle: string
   ) => {
     event.preventDefault();
-    const localOlid = olid === olidToToggle ? savedOlid : olidToToggle;
-    setOlid(localOlid);
-    if (olid === olidToToggle) {
-      setCoverUri(savedCoverUri);
+    const localOlid =
+      currentBook?.olid === olidToToggle ? savedOlid : olidToToggle;
+    let newCoverUri = "";
+    if (currentBook?.olid === olidToToggle) {
+      newCoverUri = savedCoverUri;
     } else {
-      setCoverUri(
-        "https://covers.openlibrary.org/b/olid/" + olidToToggle + "-L.jpg"
-      );
+      newCoverUri =
+        "https://covers.openlibrary.org/b/olid/" + olidToToggle + "-L.jpg";
     }
+    updateCurrentBook({
+      olid: localOlid,
+      cover_uri: newCoverUri,
+    });
   };
 
   const changeRating = async (newRating: number) => {
     let ratingToPropagate: number | null = newRating;
-    if (newRating === rating) {
+    if (newRating === currentBook?.rating) {
       ratingToPropagate = null;
     }
-    setRating(ratingToPropagate);
-    await UpdateBook(_bookId, { rating: ratingToPropagate });
+    updateCurrentBook({
+      rating: ratingToPropagate,
+    });
+    await UpdateBook(bookIdNumeric, { rating: ratingToPropagate });
   };
 
   const changeRatingClick = (event: React.MouseEvent<HTMLInputElement>) => {
@@ -192,8 +213,10 @@ function Book({ bookId, preview }: BookProps) {
       return false;
     }
     if (newReview !== savedReview) {
-      setReview(newReview);
-      const response: boolean = await UpdateBook(_bookId, {
+      updateCurrentBook({
+        review: newReview,
+      });
+      const response: boolean = await UpdateBook(bookIdNumeric, {
         review: newReview,
       });
       setAddingReview(false);
@@ -210,9 +233,11 @@ function Book({ bookId, preview }: BookProps) {
       console.log("could not get author to change");
       return false;
     }
-    if (newAuthor !== author) {
-      setAuthor(newAuthor);
-      const response: boolean = await UpdateBook(_bookId, {
+    if (newAuthor !== currentBook?.author) {
+      updateCurrentBook({
+        author: newAuthor,
+      });
+      const response: boolean = await UpdateBook(bookIdNumeric, {
         author: newAuthor,
       });
       if (!response) {
@@ -229,9 +254,11 @@ function Book({ bookId, preview }: BookProps) {
       return false;
     }
     const numericNewYear = parseInt(newYear);
-    if (numericNewYear !== year) {
-      setYear(numericNewYear);
-      const response: boolean = await UpdateBook(_bookId, {
+    if (numericNewYear !== currentBook?.year) {
+      updateCurrentBook({
+        year: numericNewYear,
+      });
+      const response: boolean = await UpdateBook(bookIdNumeric, {
         year: numericNewYear,
       });
       if (!response) {
@@ -247,9 +274,11 @@ function Book({ bookId, preview }: BookProps) {
       console.log("could not get title to change");
       return false;
     }
-    if (newTitle !== title) {
-      setTitle(newTitle);
-      const response: boolean = await UpdateBook(_bookId, {
+    if (newTitle !== currentBook?.title) {
+      updateCurrentBook({
+        title: newTitle,
+      });
+      const response: boolean = await UpdateBook(bookIdNumeric, {
         title: newTitle,
       });
       if (!response) {
@@ -348,7 +377,7 @@ function Book({ bookId, preview }: BookProps) {
         read_end_date: read_end_date,
       }),
     };
-    const response: boolean = await UpdateBook(_bookId, updateBody);
+    const response: boolean = await UpdateBook(bookIdNumeric, updateBody);
     if (!response) {
       // A message to the user may be warranted here
       return false;
@@ -359,7 +388,9 @@ function Book({ bookId, preview }: BookProps) {
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const newReadStatus = event.currentTarget.value;
-    setReadStatus(newReadStatus);
+    updateCurrentBook({
+      read_status: newReadStatus,
+    });
     if (newReadStatus === "not_read") {
       setReadStartDate(null);
       setReadEndDate(null);
@@ -373,7 +404,7 @@ function Book({ bookId, preview }: BookProps) {
     read_start_date: string | null,
     read_end_date: string | null
   ) => {
-    const response: boolean = await UpdateBook(_bookId, {
+    const response: boolean = await UpdateBook(bookIdNumeric, {
       read_start_date: read_start_date,
       read_end_date: read_end_date,
     });
@@ -398,23 +429,11 @@ function Book({ bookId, preview }: BookProps) {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      await fetchBook();
-    };
-    void fetchData();
-  }, [fetchBook]);
-
-  useEffect(() => {
-    // pass
-  }, [olids]);
+    void initialize();
+  }, [initialize]);
 
   if (loading) {
     return <div>Loading...</div>;
-  }
-
-  if (!_bookId || _bookId === 0) {
-    console.log("could not find book ID");
-    return <></>;
   }
 
   return (
@@ -441,7 +460,7 @@ function Book({ bookId, preview }: BookProps) {
               role="textbox"
             >
               <h1 className="display-5" id="book-title">
-                {title}
+                {currentBook?.title}
               </h1>
             </div>
           </Col>
@@ -452,7 +471,7 @@ function Book({ bookId, preview }: BookProps) {
                 id="floatingSelect"
                 aria-label="Floating label select example"
                 onChange={handleReadStatusChange}
-                value={readStatus}
+                value={currentBook?.read_status}
               >
                 <option value="not_read">Not read</option>
                 <option value="read">Read</option>
@@ -460,7 +479,7 @@ function Book({ bookId, preview }: BookProps) {
               </select>
               <label htmlFor="floatingSelect">Status</label>
             </div>
-            {readStatus !== "not_read" && (
+            {currentBook?.read_status !== "not_read" && (
               <DatePicker
                 selected={readStartDate}
                 onChange={(date) => handleReadDatesChange(date)}
@@ -521,9 +540,9 @@ function Book({ bookId, preview }: BookProps) {
       )}
       <Row>
         <Col xs={4} lg={3}>
-          <NavLink className="nav-link" to={"/books/" + _bookId.toString()}>
+          <NavLink className="nav-link" to={"/books/" + bookIdString}>
             <img
-              src={coverUri}
+              src={currentBook?.cover_uri}
               className="img-fluid"
               alt="Book Cover"
               loading="lazy"
@@ -532,10 +551,10 @@ function Book({ bookId, preview }: BookProps) {
         </Col>
         <Col xs={8} lg={selectingNewCover ? 5 : 9} className="mb-4">
           {preview && (
-            <NavLink className="nav-link" to={"/books/" + _bookId.toString()}>
+            <NavLink className="nav-link" to={"/books/" + bookIdString}>
               <div>
                 <span>
-                  <strong>{title}</strong>
+                  <strong>{currentBook?.title}</strong>
                 </span>
               </div>
             </NavLink>
@@ -543,7 +562,7 @@ function Book({ bookId, preview }: BookProps) {
           <Row>
             {preview && (
               <span className="text-secondary">
-                <small>{author}</small>
+                <small>{currentBook?.author}</small>
               </span>
             )}
             {!preview && (
@@ -562,14 +581,14 @@ function Book({ bookId, preview }: BookProps) {
                 tabIndex={0}
                 role="textbox"
               >
-                <h3 id="book-author">{author}</h3>
+                <h3 id="book-author">{currentBook?.author}</h3>
               </div>
             )}
           </Row>
           <Row>
             {preview && (
               <span>
-                <small>{year}</small>
+                <small>{currentBook?.year}</small>
               </span>
             )}
             {!preview && (
@@ -588,7 +607,7 @@ function Book({ bookId, preview }: BookProps) {
                 tabIndex={0}
                 role="textbox"
               >
-                <h5 id="book-year">{year}</h5>
+                <h5 id="book-year">{currentBook?.year}</h5>
               </div>
             )}
           </Row>
@@ -598,49 +617,49 @@ function Book({ bookId, preview }: BookProps) {
             >
               <input
                 type="radio"
-                id={`star5-${_bookId}`}
-                name={`rating-${_bookId}`}
+                id={`star5-${bookIdString}`}
+                name={`rating-${bookIdString}`}
                 value="5"
                 onClick={changeRatingClick}
-                checked={rating === 5}
+                checked={currentBook?.rating === 5}
               />
-              <label htmlFor={`star5-${_bookId}`}>5 stars</label>
+              <label htmlFor={`star5-${bookIdString}`}>5 stars</label>
               <input
                 type="radio"
-                id={`star4-${_bookId}`}
-                name={`rating-${_bookId}`}
+                id={`star4-${bookIdString}`}
+                name={`rating-${bookIdString}`}
                 value="4"
                 onClick={changeRatingClick}
-                checked={rating === 4}
+                checked={currentBook?.rating === 4}
               />
-              <label htmlFor={`star4-${_bookId}`}>4 stars</label>
+              <label htmlFor={`star4-${bookIdString}`}>4 stars</label>
               <input
                 type="radio"
-                id={`star3-${_bookId}`}
-                name={`rating-${_bookId}`}
+                id={`star3-${bookIdString}`}
+                name={`rating-${bookIdString}`}
                 value="3"
                 onClick={changeRatingClick}
-                checked={rating === 3}
+                checked={currentBook?.rating === 3}
               />
-              <label htmlFor={`star3-${_bookId}`}>3 stars</label>
+              <label htmlFor={`star3-${bookIdString}`}>3 stars</label>
               <input
                 type="radio"
-                id={`star2-${_bookId}`}
-                name={`rating-${_bookId}`}
+                id={`star2-${bookIdString}`}
+                name={`rating-${bookIdString}`}
                 value="2"
                 onClick={changeRatingClick}
-                checked={rating === 2}
+                checked={currentBook?.rating === 2}
               />
-              <label htmlFor={`star2-${_bookId}`}>2 stars</label>
+              <label htmlFor={`star2-${bookIdString}`}>2 stars</label>
               <input
                 type="radio"
-                id={`star1-${_bookId}`}
-                name={`rating-${_bookId}`}
+                id={`star1-${bookIdString}`}
+                name={`rating-${bookIdString}`}
                 value="1"
                 onClick={changeRatingClick}
-                checked={rating === 1}
+                checked={currentBook?.rating === 1}
               />
-              <label htmlFor={`star1-${_bookId}`}>1 star</label>
+              <label htmlFor={`star1-${bookIdString}`}>1 star</label>
             </fieldset>
           </Row>
           {!preview && (
@@ -662,7 +681,7 @@ function Book({ bookId, preview }: BookProps) {
                   data-placeholder={reviewPlaceholder}
                   className="text-secondary"
                 >
-                  {review}
+                  {currentBook?.review}
                 </div>
               </Col>
             </Row>
@@ -683,7 +702,7 @@ function Book({ bookId, preview }: BookProps) {
         </Col>
         {selectingNewCover && (
           <>
-            {olids && olids.length > 0 && (
+            {availableOlids && availableOlids.length > 0 && (
               <Col xs={12} lg={4}>
                 <Row
                   style={{
@@ -693,7 +712,7 @@ function Book({ bookId, preview }: BookProps) {
                     borderRadius: ".375em",
                   }}
                 >
-                  {olids.map((map_olid: string) => (
+                  {availableOlids.map((map_olid: string) => (
                     <Col key={map_olid} className="m-1">
                       <img
                         src={
@@ -710,7 +729,7 @@ function Book({ bookId, preview }: BookProps) {
                         onClick={(event) =>
                           toggleBookCoverSelection(event, map_olid)
                         }
-                        className={`border border-2 ${olid === map_olid ? "border-primary" : "border-light"}`}
+                        className={`border border-2 ${currentBook?.olid === map_olid ? "border-primary" : "border-light"}`}
                         alt="Book Cover"
                         loading="lazy"
                         onKeyDown={(event) => {
@@ -728,7 +747,7 @@ function Book({ bookId, preview }: BookProps) {
                 </Row>
               </Col>
             )}
-            {olids.length === 0 && (
+            {availableOlids.length === 0 && (
               <Col xs={4}>
                 <Row
                   style={{
