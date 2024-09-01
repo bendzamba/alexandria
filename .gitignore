@@ -1,5 +1,5 @@
 **/__pycache__
-bookshelf.db
+alexandria.db
 venv
 .env
 backend/.vscode
