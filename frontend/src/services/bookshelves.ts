@@ -7,18 +7,17 @@ import {
   BookshelfInterface,
   BookshelfWithBooksInterface,
 } from "../interfaces/book_and_bookshelf";
-const API_BASE_URL = "http://127.0.0.1:8000";
 
 export const GetBookshelves = async (): Promise<
   BookshelfInterface[] | boolean
 > => {
-  return await Base(`${API_BASE_URL}/bookshelves/`);
+  return await Base("/bookshelves/");
 };
 
 export const CreateBookshelf = async (
   data: CreateOrUpdateBookshelfInterface
 ): Promise<boolean> => {
-  return await Base(`${API_BASE_URL}/bookshelves/`, {
+  return await Base("/bookshelves/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -30,14 +29,14 @@ export const CreateBookshelf = async (
 export const GetBookshelf = async (
   id: number
 ): Promise<BookshelfWithBooksInterface | boolean> => {
-  return await Base(`${API_BASE_URL}/bookshelves/${id}`);
+  return await Base(`/bookshelves/${id}`);
 };
 
 export const UpdateBookshelf = async (
   id: number,
   data: Partial<CreateOrUpdateBookshelfInterface>
 ): Promise<boolean> => {
-  return await Base(`${API_BASE_URL}/bookshelves/${id}`, {
+  return await Base(`/bookshelves/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -47,7 +46,7 @@ export const UpdateBookshelf = async (
 };
 
 export const DeleteBookshelf = async (id: number): Promise<boolean> => {
-  return await Base(`${API_BASE_URL}/bookshelves/${id}`, {
+  return await Base(`/bookshelves/${id}`, {
     method: "DELETE",
   });
 };
@@ -55,14 +54,14 @@ export const DeleteBookshelf = async (id: number): Promise<boolean> => {
 export const GetBooksNotOnBookshelf = async (
   id: number
 ): Promise<BookInterface[] | boolean> => {
-  return await Base(`${API_BASE_URL}/bookshelves/${id}/books/exclude/`);
+  return await Base(`/bookshelves/${id}/books/exclude/`);
 };
 
 export const AddBooksToBookshelf = async (
   bookshelfId: number,
   bookIds: number[]
 ): Promise<boolean> => {
-  return await Base(`${API_BASE_URL}/bookshelves/${bookshelfId}/books/`, {
+  return await Base(`/bookshelves/${bookshelfId}/books/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -75,10 +74,7 @@ export const DeleteBookFromBookshelf = async (
   bookshelfId: number,
   bookId: number
 ): Promise<boolean> => {
-  return await Base(
-    `${API_BASE_URL}/bookshelves/${bookshelfId}/books/${bookId}`,
-    {
-      method: "DELETE",
-    }
-  );
+  return await Base(`/bookshelves/${bookshelfId}/books/${bookId}`, {
+    method: "DELETE",
+  });
 };

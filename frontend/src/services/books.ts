@@ -4,18 +4,17 @@ import {
   CreateOrUpdateBookInterface,
 } from "../interfaces/book_and_bookshelf";
 import { WorkInterface } from "../interfaces/work";
-const API_BASE_URL = "http://127.0.0.1:8000";
 
 export const GetBooks = async (): Promise<
   BookWithBookshelvesInterface[] | boolean
 > => {
-  return await Base(`${API_BASE_URL}/books/`);
+  return await Base("/books/");
 };
 
 export const CreateBook = async (
   data: Partial<CreateOrUpdateBookInterface>
 ): Promise<boolean> => {
-  return await Base(`${API_BASE_URL}/books/`, {
+  return await Base("/books/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -27,14 +26,14 @@ export const CreateBook = async (
 export const GetBook = async (
   id: number
 ): Promise<BookWithBookshelvesInterface | boolean> => {
-  return await Base(`${API_BASE_URL}/books/${id}`);
+  return await Base(`/books/${id}`);
 };
 
 export const UpdateBook = async (
   id: number,
   data: Partial<CreateOrUpdateBookInterface>
 ): Promise<boolean> => {
-  return await Base(`${API_BASE_URL}/books/${id}`, {
+  return await Base(`/books/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -44,7 +43,7 @@ export const UpdateBook = async (
 };
 
 export const DeleteBook = async (id: number): Promise<boolean> => {
-  return await Base(`${API_BASE_URL}/books/${id}`, {
+  return await Base(`/books/${id}`, {
     method: "DELETE",
   });
 };
@@ -52,5 +51,5 @@ export const DeleteBook = async (id: number): Promise<boolean> => {
 export const SearchBookByTitle = async (
   title: string
 ): Promise<WorkInterface[] | boolean> => {
-  return await Base(`${API_BASE_URL}/books/search/${title}`);
+  return await Base(`/books/search/${title}`);
 };

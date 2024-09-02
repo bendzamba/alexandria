@@ -1,10 +1,13 @@
 import { toast } from "react-toastify";
 
+const API_BASE_URL = process.env.REACT_APP_API_URL;
+
 export const Base = async <T>(
-  url: string,
+  path: string,
   options: RequestInit = {}
 ): Promise<T | boolean> => {
   try {
+    const url = API_BASE_URL + path;
     const response = await fetch(url, options);
 
     // Check if the response status is not OK
