@@ -1,10 +1,13 @@
 from sqlmodel import create_engine
+import os
+from dotenv import load_dotenv
 
+# Load environment variables from a .env file
+load_dotenv()
 
 class DB:
     def __init__(self):
-        self.sqlite_file_name = "alexandria.db"
-        self.sqlite_url = f"sqlite:///{self.sqlite_file_name}"
+        self.sqlite_url = os.getenv('DATABASE_URL')
         self.connect_args = {"check_same_thread": False}
         self.engine = create_engine(
             self.sqlite_url, echo=True, connect_args=self.connect_args
