@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.routers import books, bookshelves
@@ -24,6 +25,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.mount("/images", StaticFiles(directory="/images"), name="images")
 
 origins = ["*"]
 
