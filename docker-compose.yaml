@@ -1,5 +1,5 @@
 services:
-  app:
+  backend:
     image: alexandria-backend:latest
     container_name: backend
     volumes:
@@ -9,3 +9,11 @@ services:
       - ./backend/.env
     ports:
       - "8000:8000"
+  
+  frontend:
+    image: alexandria-frontend:latest
+    container_name: frontend
+    env_file:
+      - ./frontend/.env.development
+    ports:
+      - "3000:3000"
