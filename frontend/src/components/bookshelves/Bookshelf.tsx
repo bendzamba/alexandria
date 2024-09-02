@@ -47,6 +47,8 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const navigate = useNavigate();
 
+  const API_BASE_URL = process.env.REACT_APP_API_URL || "";
+
   const fetchBookshelf = useCallback(async () => {
     try {
       const response: BookshelfWithBooksInterface | boolean =
@@ -374,7 +376,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
               >
                 <img
                   height="150px"
-                  src={book.cover_uri}
+                  src={API_BASE_URL + book.cover_uri}
                   alt="Book Cover"
                   loading="lazy"
                   style={{
@@ -424,7 +426,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                   key={`book-that-can-be-added-${book.id}`}
                 >
                   <LazyImage
-                    src={book.cover_uri}
+                    src={API_BASE_URL + book.cover_uri}
                     alt="Book Cover"
                     style={{ maxWidth: "100%", maxHeight: "100%" }}
                     rootElement={document.querySelector(".modal-content")}
