@@ -1,7 +1,6 @@
 **/__pycache__
 alexandria.db
 venv
-.env
 backend/.vscode
 .DS_Store
 # TS -> JS files
@@ -32,4 +31,4 @@ frontend/yarn-debug.log*
 frontend/yarn-error.log*
 
 # static assets
-frontend/public/assets
+images/

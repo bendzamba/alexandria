@@ -28,6 +28,8 @@ function CreateBook() {
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const navigate = useNavigate();
 
+  const defaultCoverUrl = "/images/Select_A_Book_Cover.png";
+
   const handleSearch = async () => {
     setSearching(true);
     setSearchResults(false);
@@ -60,7 +62,7 @@ function CreateBook() {
       setAuthor(response[0].author_name);
       setYear(response[0].first_publish_year);
       setOlids(response[0].olids);
-      setCoverUrl("/assets/cover_images/Select_A_Book_Cover.png");
+      setCoverUrl(defaultCoverUrl);
     } else {
       setBooksToChooseFrom(response);
     }
@@ -82,7 +84,7 @@ function CreateBook() {
     setAuthor(booksToChooseFrom[index].author_name);
     setYear(booksToChooseFrom[index].first_publish_year);
     setOlids(booksToChooseFrom[index].olids);
-    setCoverUrl("/assets/cover_images/Select_A_Book_Cover.png");
+    setCoverUrl(defaultCoverUrl);
   };
 
   const handleCreate = async () => {
@@ -143,7 +145,7 @@ function CreateBook() {
 
   useEffect(() => {
     if (olids && olids.length === 0) {
-      setCoverUrl("/assets/cover_images/No_Image_Available.jpg");
+      setCoverUrl(defaultCoverUrl);
     }
   }, [olids]);
 
@@ -157,7 +159,7 @@ function CreateBook() {
     const localOlid = olid === olidToToggle ? "" : olidToToggle;
     setOlid(localOlid);
     if (olid === olidToToggle) {
-      setCoverUrl("/assets/cover_images/Select_A_Book_Cover.png");
+      setCoverUrl(defaultCoverUrl);
     } else {
       setCoverUrl(
         "https://covers.openlibrary.org/b/olid/" + olidToToggle + "-L.jpg"

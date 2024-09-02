@@ -1,13 +1,17 @@
 import os
 import urllib
+from dotenv import load_dotenv
+
+# Load environment variables from a .env file
+load_dotenv()
 
 
 class Image:
     def __init__(self):
-        self.local_image_directory = "/assets/cover_images/"
+        self.local_image_directory = os.getenv("IMAGES_DIRECTORY")
         self.default_cover_image = "No_Image_Available.jpg"
         self.relative_path_to_file = (
-            "../../../frontend/public/assets/cover_images/{filename}{extension}"
+            os.getenv("IMAGES_DIRECTORY") + "{filename}{extension}"
         )
         self.image_file_extension = ".jpg"
 
@@ -19,15 +23,10 @@ class Image:
         )
 
     def determine_local_file_destination(self, filename: str) -> str:
-        # Determine directory of our file
-        current_directory = os.path.dirname(__file__)
 
         # Assemble final local file destination
-        return os.path.join(
-            current_directory,
-            self.relative_path_to_file.format(
-                filename=filename, extension=self.image_file_extension
-            ),
+        return self.relative_path_to_file.format(
+            filename=filename, extension=self.image_file_extension
         )
 
     async def download(self, remote_url: str, local_filename: str) -> None:
