@@ -1,0 +1,11 @@
+services:
+  app:
+    image: alexandria-backend:latest
+    container_name: backend
+    volumes:
+      - ./data:/code/data  # For our database
+      - ./images:/images # For our image assets
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
