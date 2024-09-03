@@ -6,7 +6,7 @@ services:
       - ./data:/code/data  # For our database
       - ./images:/images # For our image assets
     env_file:
-      - ./backend/.env
+      - ./backend/.env.docker
     ports:
       - "8000:8000"
   
