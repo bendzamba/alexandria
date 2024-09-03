@@ -11,7 +11,7 @@ class Image:
         self.local_image_directory = os.getenv("IMAGES_DIRECTORY")
         self.default_cover_image = "No_Image_Available.jpg"
         self.relative_path_to_file = (
-            os.getenv("IMAGES_DIRECTORY") + "{filename}{extension}"
+            os.getenv("IMAGES_DIRECTORY") + "/" + "{filename}{extension}"
         )
         self.image_file_extension = ".jpg"
 

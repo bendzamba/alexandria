@@ -5,12 +5,17 @@ from contextlib import asynccontextmanager
 from app.routers import books, bookshelves
 from sqlmodel import SQLModel, text
 from app.db.sqlite import DB
+from dotenv import load_dotenv
+import os
 
 # These are only imported for the create_all call
 # `noqa: F401` is used to suppress linter errors
 from app.models.book import Book  # noqa: F401
 from app.models.bookshelf import Bookshelf  # noqa: F401
 from app.models.book_bookshelf import BookBookshelfLink  # noqa: F401
+
+# Load environment variables from a .env file
+load_dotenv()
 
 db = DB()
 engine = db.get_engine()
@@ -26,7 +31,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.mount("/images", StaticFiles(directory="/images"), name="images")
+app.mount("/images", StaticFiles(directory=os.getenv("IMAGES_DIRECTORY")), name="images")
 
 origins = ["*"]
 
