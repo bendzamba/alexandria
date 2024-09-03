@@ -10,9 +10,21 @@ import styles from "./css/Books.module.scss";
 function Books() {
   const [books, setBooks] = useState<BookWithBookshelvesInterface[]>([]);
   const [search, setSearch] = useState<string | null>(null);
-  const [sort, setSort] = useState<string>("id");
-  const [sortDirection, setSortDirection] = useState<string>("ascending");
+  const [sort, setSort] = useState<string>(
+    () => localStorage.getItem("sort") || "id"
+  );
+  const [sortDirection, setSortDirection] = useState<string>(
+    () => localStorage.getItem("sortDirection") || "ascending"
+  );
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    localStorage.setItem("sort", sort);
+  }, [sort]);
+
+  useEffect(() => {
+    localStorage.setItem("sortDirection", sortDirection);
+  }, [sortDirection]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,10 +86,9 @@ function Books() {
               id="floatingSelect"
               aria-label="Floating label select example"
               onChange={handleSort}
+              value={sort}
             >
-              <option value="id" selected>
-                Date Added
-              </option>
+              <option value="id">Date Added</option>
               <option value="title">Title</option>
               <option value="author">Author</option>
               <option value="year">Year</option>
