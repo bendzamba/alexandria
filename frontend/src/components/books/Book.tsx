@@ -210,7 +210,7 @@ function Book({ book, preview }: BookProps) {
 
   const changeReview = async () => {
     const newReview = getReview();
-    if (!newReview) {
+    if (newReview === false) {
       console.log("could not get review to change");
       return false;
     }
@@ -317,7 +317,7 @@ function Book({ book, preview }: BookProps) {
       return false;
     }
     const newReview = getReview();
-    if (!newReview || newReview === savedReview) {
+    if (newReview === false || newReview === savedReview) {
       el.setAttribute("placeholder", reviewPlaceholder);
       setAddingReview(false);
     }
