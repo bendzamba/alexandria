@@ -9,22 +9,20 @@ from app.models.book import (
 )
 from app.models.openlibrary import Works
 from app.models.exception import ExceptionHandler
-from app.services.openlibrary import OpenLibrary
-from app.db.sqlite import DB
+from app.services.openlibrary import get_open_library
+from app.db.sqlite import get_db
 from app.utils.image import Image
 from sqlmodel import Session, select
 
-openlibrary = OpenLibrary()
 image = Image()
 
 router = APIRouter()
 
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=list[BookPublic])
-def get_books(db=Depends(DB)):
-    with Session(db.get_engine()) as session:
-        books = session.exec(select(Book)).all()
-        return books
+def get_books(db: Session = Depends(get_db)):
+    books = db.exec(select(Book)).all()
+    return books
 
 
 @router.get(
@@ -33,25 +31,26 @@ def get_books(db=Depends(DB)):
     response_model=BookPublicWithBookshelves,
 )
 def get_book(
-    book_id: Annotated[int, Path(title="The ID of the book to get")], db=Depends(DB)
+    book_id: Annotated[int, Path(title="The ID of the book to get")],
+    db: Session = Depends(get_db)
 ):
-    with Session(db.get_engine()) as session:
-        book = session.get(Book, book_id)
-        if not book:
-            raise HTTPException(status_code=404, detail="Book not found")
-        return book
+    book = db.get(Book, book_id)
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return book
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_book(book_create: BookCreate, db=Depends(DB)):
-    await openlibrary.fetch_image_from_olid(book_create.olid)
-    cover_uri = openlibrary.get_cover_uri()
-
-    with Session(db.get_engine()) as session:
-        db_book = Book.model_validate(book_create, update={"cover_uri": cover_uri})
-        session.add(db_book)
-        session.commit()
-
+async def create_book(
+    book_create: BookCreate,
+    db: Session = Depends(get_db),
+    open_library=Depends(get_open_library)
+):
+    await open_library.fetch_image_from_olid(book_create.olid)
+    cover_uri = open_library.get_cover_uri()
+    db_book = Book.model_validate(book_create, update={"cover_uri": cover_uri})
+    db.add(db_book)
+    db.commit()
     return None
 
 
@@ -59,46 +58,46 @@ async def create_book(book_create: BookCreate, db=Depends(DB)):
 async def update_bookshelf(
     book_id: Annotated[int, Path(title="The ID of the book to update")],
     book_update: BookUpdate,
-    db=Depends(DB),
+    db: Session = Depends(get_db),
+    open_library=Depends(get_open_library)
 ):
-    with Session(db.get_engine()) as session:
-        db_book = session.get(Book, book_id)
-        if not db_book:
-            raise HTTPException(status_code=404, detail="Book not found")
+    db_book = db.get(Book, book_id)
+    if not db_book:
+        raise HTTPException(status_code=404, detail="Book not found")
 
-        book_data = book_update.model_dump(exclude_unset=True)
+    book_data = book_update.model_dump(exclude_unset=True)
 
-        if book_update.olid:
-            await openlibrary.fetch_image_from_olid(book_update.olid)
-            cover_uri = openlibrary.get_cover_uri()
-            book_data.update({"cover_uri": cover_uri})
+    if "olid" in book_data:
+        await open_library.fetch_image_from_olid(book_update.olid)
+        cover_uri = open_library.get_cover_uri()
+        book_data.update({"cover_uri": cover_uri})
 
-        db_book.sqlmodel_update(book_data)
-        session.add(db_book)
-        session.commit()
+    db_book.sqlmodel_update(book_data)
+    db.add(db_book)
+    db.commit()
 
     return None
 
 
 @router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_bookshelf(
-    book_id: Annotated[int, Path(title="The ID of the book to delete")], db=Depends(DB)
+    book_id: Annotated[int, Path(title="The ID of the book to delete")],
+    db: Session = Depends(get_db)
 ):
-    with Session(db.get_engine()) as session:
-        book = session.get(Book, book_id)
-        if not book:
-            raise HTTPException(status_code=404, detail="Book not found")
-        session.delete(book)
-        session.commit()
-
+    book = db.get(Book, book_id)
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    db.delete(book)
+    db.commit()
     return None
 
 
 @router.get("/search/{title}", status_code=status.HTTP_200_OK)
 async def search_by_title(
     title: Annotated[str, Path(title="The title we are searching for")],
+    open_library=Depends(get_open_library)
 ):
-    results: Works | ExceptionHandler = await openlibrary.search_by_title(title=title)
+    results: Works | ExceptionHandler = await open_library.search_by_title(title=title)
 
     if isinstance(results, ExceptionHandler):
         raise HTTPException(status_code=results.status_code, detail=results.message)

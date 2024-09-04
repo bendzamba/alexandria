@@ -102,4 +102,8 @@ Once the app is running using either method, documentation for the backend API c
 
 # Testing
 
-Backend tests can be found in `backend/tests` and tests are run using `pylint`
+Backend tests can be found in `backend/tests` and are run with `pylint` from `backend/app`
+
+`backend/tests/integration` contains integration tests, primarily testing our routes, mocking our database with an in-memory implementation of SQLite
+
+`backend/tests/unit` contains unit tests for some of our model, service, and utility class methods

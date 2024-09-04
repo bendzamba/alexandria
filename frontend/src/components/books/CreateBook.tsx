@@ -28,7 +28,9 @@ function CreateBook() {
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const navigate = useNavigate();
 
-  const defaultCoverUrl = "/images/Select_A_Book_Cover.png";
+  const API_BASE_URL = process.env.REACT_APP_API_URL || "";
+
+  const defaultCoverUrl = API_BASE_URL + "/images/Select_A_Book_Cover.png";
 
   const handleSearch = async () => {
     setSearching(true);

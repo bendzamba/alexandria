@@ -1,31 +1,17 @@
-from sqlmodel import create_engine
+from sqlmodel import create_engine, Session
 import os
 from dotenv import load_dotenv
 
 # Load environment variables from a .env file
 load_dotenv()
 
-class DB:
-    def __init__(self):
-        self.sqlite_url = os.getenv('DATABASE_URL')
-        self.connect_args = {"check_same_thread": False}
-        self.engine = create_engine(
-            self.sqlite_url, echo=True, connect_args=self.connect_args
-        )
+DATABASE_URL = os.getenv('DATABASE_URL')
 
-    def get_engine(self):
-        return self.engine
+engine = create_engine(DATABASE_URL, echo=True, connect_args={"check_same_thread": False})
 
-    def execute(self):
-        pass
-
-    def close(self):
-        pass
-
+def get_engine():
+    return engine
 
 def get_db():
-    db = DB()
-    try:
-        yield db
-    finally:
-        db.close()
+    with Session(engine) as session:
+        yield session
