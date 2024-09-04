@@ -83,7 +83,7 @@ class OpenLibrary:
     def build_image_url_from_olid(self, olid: str) -> str:
         return self.cover_image_url.format(olid=olid, size=self.cover_image_size)
 
-    async def fetch_image_from_olid(self, olid: str) -> str:
+    async def fetch_image_from_olid(self, olid: str | None) -> str:
         if olid is None:
             self.cover_uri = self.image.default_cover_image
         else:
@@ -106,3 +106,11 @@ class OpenLibrary:
 
     def get_cover_uri(self):
         return self.cover_uri
+
+
+def get_open_library():
+    open_library = OpenLibrary()
+    try:
+        yield open_library
+    finally:
+        pass
