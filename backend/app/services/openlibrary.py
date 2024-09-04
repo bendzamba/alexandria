@@ -1,5 +1,4 @@
 import httpx
-from typing import Any, Dict
 from app.models.openlibrary import Work, Works
 from app.models.exception import ExceptionHandler
 from pydantic import ValidationError
@@ -64,21 +63,10 @@ class OpenLibrary:
                 self.search_fields_values
             )
         }
-        return self.search_title_url.format(title=title) + urllib.parse.urlencode(
+        encoded_title = urllib.parse.quote(title)
+        return self.search_title_url.format(title=encoded_title) + urllib.parse.urlencode(
             params
         )
-
-    def find_olid(self, olid_response: Dict[str, Any]) -> str | None:
-        olid = None
-
-        if olid_response["numFound"] > 0:
-            for doc in olid_response["docs"]:
-                if "cover_edition_key" in doc:
-                    # Select the first cover edition key found
-                    olid = doc["cover_edition_key"]
-                    break
-
-        return olid
 
     def build_image_url_from_olid(self, olid: str) -> str:
         return self.cover_image_url.format(olid=olid, size=self.cover_image_size)
