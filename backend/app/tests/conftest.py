@@ -1,84 +1,65 @@
-from app.models.book import Book
-from typing import Any, Dict
-import sys
-import sqlite3
-
-
-class DB:
-    def __init__(self):
-        self.connection = sqlite3.connect(":memory:", check_same_thread=False)
-        self.connection.row_factory = sqlite3.Row
-        self.cursor = self.connection.cursor()
-        self.cursor.execute("PRAGMA foreign_keys = ON")
-        self.cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS bookshelves (
-                id INTEGER PRIMARY KEY, 
-                title TEXT, 
-                description TEXT
-            )
-        """
-        )
-        self.cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS books (
-                id INTEGER PRIMARY KEY, 
-                title TEXT, 
-                author TEXT, 
-                year INTEGER, 
-                cover_image TEXT
-            )
-        """
-        )
-        self.cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS bookshelves_books (
-                bookshelf_id INTEGER,
-                book_id INTEGER,
-                PRIMARY KEY (bookshelf_id, book_id),
-                FOREIGN KEY (bookshelf_id) REFERENCES bookshelves (id) ON DELETE CASCADE,
-                FOREIGN KEY (book_id) REFERENCES books (id) ON DELETE CASCADE
-            )
-        """
-        )
-        self.connection.commit()
-
-    def execute(self, query: str, values: tuple = ()):
-        self.cursor.execute(query, values)
-        self.connection.commit()
-        return self.cursor
-
-
-db_instance = None
-
-
-def get_db():
-    global db_instance
-    if db_instance is None:
-        db_instance = DB()
-    try:
-        yield db_instance
-    finally:
-        pass
-
-
-# Mock our system module so that downstream files that import app.db.sqlite will use our mock
-module = type(sys)("app.db.sqlite")
-module.get_db = get_db
-sys.modules["app.db.sqlite"] = module
-
+import pytest
+import os
+from fastapi.testclient import TestClient
+from sqlmodel import SQLModel, create_engine, Session
+from app.services.openlibrary import get_open_library
+from app.models.openlibrary import Work, Works
+from app.models.exception import ExceptionHandler
+from app.db.sqlite import get_db
+from sqlmodel.pool import StaticPool  
 
 class OpenLibrary:
-    def __init__(self):
-        self.search_url = "https://openlibrary.org/search.json?title={title}"
+    async def fetch_image_from_olid(self, olid: str) -> bool:
+        return True
 
-    async def search(self, book: Book) -> Dict[str, Any]:
-        return {}
-
-    def find_olid(self, olid_response: Dict[str, Any]) -> str | None:
+    def get_cover_uri(self) -> str:
         return "12345"
+    
+    async def search_by_title(self, title: str) -> Works:
+
+        if title == "Nonexistent+Book+Title":
+            return ExceptionHandler(status_code=ExceptionHandler.get_no_results_status_code(), message="No results found. Please try a different search.")
+        
+        work_doc = {
+            "title": "title",
+            "author_name": ["author"],
+            "first_publish_year": 2000,
+            "cover_edition_key": "abcde",
+            "edition_key": ["abcde", "fghij"]
+        }
+        return Works(**{"works": [Work(**work_doc)]})
+    
+os.environ["IMAGES_DIRECTORY_NAME"] = "images"
+os.environ["IMAGES_DIRECTORY_PATH"] = "../../"
+# We need to set environment variables prior to this line to be picked up in main.py
+from main import app # noqa
+
+@pytest.fixture(name="session", scope="function")
+def session_fixture():
+    engine = create_engine(
+        "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
+    SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        yield session
 
 
-module = type(sys)("app.services.openlibrary")
-module.OpenLibrary = OpenLibrary
-sys.modules["app.services.openlibrary"] = module
+@pytest.fixture(scope="function")
+def open_library():
+    yield OpenLibrary()
+
+
+@pytest.fixture(name="client", scope="function")  
+def client_fixture(session: Session, open_library: OpenLibrary):  
+    def get_session_override():  
+        return session
+    
+    def get_open_library_override():
+        return open_library
+
+    app.dependency_overrides[get_db] = get_session_override  
+    app.dependency_overrides[get_open_library] = get_open_library_override  
+
+    client = TestClient(app)  
+    yield client  
+    app.dependency_overrides.clear()
