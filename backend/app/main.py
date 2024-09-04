@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.routers import books, bookshelves
 from sqlmodel import SQLModel, text
-from app.db.sqlite import DB
+from app.db.sqlite import get_engine
 from dotenv import load_dotenv
 import os
 
@@ -17,8 +17,7 @@ from app.models.book_bookshelf import BookBookshelfLink  # noqa: F401
 # Load environment variables from a .env file
 load_dotenv()
 
-db = DB()
-engine = db.get_engine()
+engine = get_engine()
 
 
 @asynccontextmanager
@@ -31,7 +30,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.mount("/images", StaticFiles(directory=os.getenv("IMAGES_DIRECTORY")), name="images")
+app.mount("/images", StaticFiles(directory=os.getenv("IMAGES_DIRECTORY_PATH") + os.getenv("IMAGES_DIRECTORY_NAME")), name="images")
 
 origins = ["*"]
 
