@@ -5,7 +5,7 @@ import { useParams, useNavigate, NavLink } from "react-router-dom";
 import { GetBook, DeleteBook, UpdateBook } from "../../services/books";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
-import Container from "react-bootstrap/esm/Container";
+import Container from "react-bootstrap/Container";
 import styles from "./css/Book.module.scss";
 import { BookWithBookshelvesInterface } from "../../interfaces/book_and_bookshelf";
 import DatePicker from "react-datepicker";
@@ -172,7 +172,7 @@ function Book({ book, preview }: BookProps) {
       newCoverUri = savedCoverUri;
     } else {
       newCoverUri =
-        "https://covers.openlibrary.org/b/olid/" + olidToToggle + "-L.jpg";
+        "https://covers.openlibrary.org/b/olid/" + localOlid + "-L.jpg";
     }
     updateCurrentBook({
       olid: localOlid,
@@ -367,8 +367,8 @@ function Book({ book, preview }: BookProps) {
 
   const handleReadStatusUpdate = async (
     read_status: string,
-    read_start_date = null,
-    read_end_date = null
+    read_start_date: string | null | undefined = undefined,
+    read_end_date: string | null | undefined = undefined
   ) => {
     const updateBody = {
       read_status: read_status,
@@ -460,6 +460,8 @@ function Book({ book, preview }: BookProps) {
               }}
               tabIndex={0}
               role="textbox"
+              suppressContentEditableWarning={true}
+              data-testid="book-title-content-editable"
             >
               <h1 className="display-5" id="book-title">
                 {currentBook?.title}
@@ -471,7 +473,7 @@ function Book({ book, preview }: BookProps) {
               <select
                 className="form-select"
                 id="floatingSelect"
-                aria-label="Floating label select example"
+                aria-label="Read Status"
                 onChange={handleReadStatusChange}
                 value={currentBook?.read_status}
               >
@@ -490,7 +492,11 @@ function Book({ book, preview }: BookProps) {
                 selectsRange
                 className="me-1"
                 customInput={
-                  <button className="btn btn-sm btn-primary">
+                  <button
+                    className="btn btn-sm btn-primary"
+                    aria-label="Date Selection"
+                    data-testid="reading-dates-selection"
+                  >
                     {readStartDate &&
                       `${readStartDate?.toLocaleDateString("en-us", {
                         year: "numeric",
@@ -550,7 +556,8 @@ function Book({ book, preview }: BookProps) {
                   : API_BASE_URL + currentBook?.cover_uri
               }
               className="img-fluid"
-              alt="Book Cover"
+              alt={`${currentBook?.title}: Book Cover`}
+              data-testid={currentBook?.cover_uri}
               loading="lazy"
             />
           </NavLink>
@@ -586,6 +593,8 @@ function Book({ book, preview }: BookProps) {
                 }}
                 tabIndex={0}
                 role="textbox"
+                suppressContentEditableWarning={true}
+                data-testid="book-author-content-editable"
               >
                 <h3 id="book-author">{currentBook?.author}</h3>
               </div>
@@ -612,6 +621,8 @@ function Book({ book, preview }: BookProps) {
                 }}
                 tabIndex={0}
                 role="textbox"
+                suppressContentEditableWarning={true}
+                data-testid="book-year-content-editable"
               >
                 <h5 id="book-year">{currentBook?.year}</h5>
               </div>
@@ -627,7 +638,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="5"
                 onClick={changeRatingClick}
-                checked={currentBook?.rating === 5}
+                defaultChecked={currentBook?.rating === 5}
               />
               <label htmlFor={`star5-${bookIdString}`}>5 stars</label>
               <input
@@ -636,7 +647,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="4"
                 onClick={changeRatingClick}
-                checked={currentBook?.rating === 4}
+                defaultChecked={currentBook?.rating === 4}
               />
               <label htmlFor={`star4-${bookIdString}`}>4 stars</label>
               <input
@@ -645,7 +656,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="3"
                 onClick={changeRatingClick}
-                checked={currentBook?.rating === 3}
+                defaultChecked={currentBook?.rating === 3}
               />
               <label htmlFor={`star3-${bookIdString}`}>3 stars</label>
               <input
@@ -654,7 +665,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="2"
                 onClick={changeRatingClick}
-                checked={currentBook?.rating === 2}
+                defaultChecked={currentBook?.rating === 2}
               />
               <label htmlFor={`star2-${bookIdString}`}>2 stars</label>
               <input
@@ -663,7 +674,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="1"
                 onClick={changeRatingClick}
-                checked={currentBook?.rating === 1}
+                defaultChecked={currentBook?.rating === 1}
               />
               <label htmlFor={`star1-${bookIdString}`}>1 star</label>
             </fieldset>
@@ -674,6 +685,7 @@ function Book({ book, preview }: BookProps) {
                 <div
                   contentEditable="true"
                   id="book-review-content-editable"
+                  data-testid="book-review-content-editable"
                   onClick={editReview}
                   onBlur={blurReview}
                   onKeyDown={(e) => {
@@ -684,8 +696,10 @@ function Book({ book, preview }: BookProps) {
                   }}
                   tabIndex={0}
                   role="textbox"
+                  aria-label="Book Review"
                   data-placeholder={reviewPlaceholder}
                   className="text-secondary"
+                  suppressContentEditableWarning={true}
                 >
                   {currentBook?.review}
                 </div>
@@ -718,7 +732,7 @@ function Book({ book, preview }: BookProps) {
                     borderRadius: ".375em",
                   }}
                 >
-                  {availableOlids.map((map_olid: string) => (
+                  {availableOlids.map((map_olid: string, index) => (
                     <Col key={map_olid} className="m-1">
                       <img
                         src={
@@ -736,7 +750,7 @@ function Book({ book, preview }: BookProps) {
                           toggleBookCoverSelection(event, map_olid)
                         }
                         className={`border border-2 ${currentBook?.olid === map_olid ? "border-primary" : "border-light"}`}
-                        alt="Book Cover"
+                        alt={`Alternate Book Cover ${index.toString()}`}
                         loading="lazy"
                         onKeyDown={(event) => {
                           if (
@@ -776,10 +790,18 @@ function Book({ book, preview }: BookProps) {
         </Modal.Header>
         <Modal.Body>Are you sure you want to delete this book?</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseDeleteModal}>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDeleteModal}
+            aria-label="Cancel Delete"
+          >
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleDelete}>
+          <Button
+            variant="primary"
+            onClick={handleDelete}
+            aria-label="Delete Confirmation"
+          >
             Delete
           </Button>
         </Modal.Footer>
