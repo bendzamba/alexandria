@@ -102,6 +102,7 @@ function Books() {
             type="button"
             className={`btn btn-outline-secondary ms-1 ${styles["custom-sort-button"]}`}
             onClick={handleSortDirection}
+            aria-label="Sort"
           >
             {sortDirection === "ascending" && (
               <svg
