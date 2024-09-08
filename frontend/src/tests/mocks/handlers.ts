@@ -234,6 +234,26 @@ export const bookHandlers = [
     }
   ),
 
+  http.get(
+    `${process.env.REACT_APP_API_URL}/books/search/Tale%20of%20Two%20Cities`,
+    () => {
+      const response: WorkInterface[] = [
+        {
+          title: "A Tale of Two Cities",
+          author_name: "Charles Dickens",
+          first_publish_year: 1859,
+          olids: ["OL52151281M", "OL51503229M", "OL46911647M"],
+        },
+      ];
+      return HttpResponse.json(response);
+    }
+  ),
+
+  http.get(`${process.env.REACT_APP_API_URL}/books/search/Potrzebie!`, () => {
+    const response: WorkInterface[] = [];
+    return HttpResponse.json(response);
+  }),
+
   http.post(`${process.env.REACT_APP_API_URL}/books/`, () => {
     return HttpResponse.json("");
   }),
