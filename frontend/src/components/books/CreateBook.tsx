@@ -180,6 +180,7 @@ function CreateBook() {
             value={searchTitle}
             onChange={(e) => setSearchTitle(e.target.value)}
             placeholder="Search for a title..."
+            aria-label="Search for a title"
           />
         </div>
         <button type="submit" className="btn btn-primary">
@@ -239,14 +240,14 @@ function CreateBook() {
               <img
                 src={coverUrl}
                 className="img-fluid"
-                alt="Book Cover"
+                alt="Selected Book Cover"
                 height="300px"
               />
             </Col>
             <Col xs={9} lg={4}>
-              <h2>{title}</h2>
-              <h4>{author}</h4>
-              <h6>{year}</h6>
+              <h2 data-testid="selected-book-title">{title}</h2>
+              <h4 data-testid="selected-book-author">{author}</h4>
+              <h6 data-testid="selected-book-year">{year}</h6>
             </Col>
             {olids && olids.length > 0 && (
               <>
@@ -259,7 +260,7 @@ function CreateBook() {
                       borderRadius: ".375em",
                     }}
                   >
-                    {olids.map((map_olid) => (
+                    {olids.map((map_olid, index) => (
                       <Col key={map_olid} className={"m-2"}>
                         <img
                           src={
@@ -277,7 +278,7 @@ function CreateBook() {
                             toggleBookCoverSelection(event, map_olid)
                           }
                           className={`border border-2 ${olid === map_olid ? "border-primary" : "border-light"}`}
-                          alt="Book Cover"
+                          alt={`Available Book Cover ${index.toString()}`}
                           loading="lazy"
                           onKeyDown={(event) => {
                             if (event.key === "Enter" || event.key === " ") {
@@ -312,6 +313,7 @@ function CreateBook() {
                 xl={2}
                 className={`mt-4 ${styles["search-result-book"]} ${index === selectedBook ? styles["search-result-book-selected"] : ""}`}
                 key={`col-booktochoosefrom-${index}`}
+                aria-label={`Book to choose from ${index.toString()}`}
                 onClick={(event) => handleSelectBook(event, index)}
               >
                 <Row>
@@ -323,7 +325,7 @@ function CreateBook() {
                         "-M.jpg"
                       }
                       style={{ maxWidth: "100%", maxHeight: "100%" }}
-                      alt="Book Cover"
+                      alt={`Book to choose from ${index.toString()}`}
                       loading="lazy"
                     />
                   </Col>

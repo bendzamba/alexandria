@@ -258,11 +258,9 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                 id="floatingSelect"
                 aria-label="Floating label select example"
                 onChange={handleSort}
-                value={sortKey}
+                defaultValue={sortKey}
               >
-                <option value="id" selected>
-                  Date Added
-                </option>
+                <option value="id">Date Added</option>
                 <option value="title">Title</option>
                 <option value="author">Author</option>
                 <option value="year">Year</option>
@@ -337,6 +335,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
               className="btn btn-outline-primary"
               style={{ width: "90px", height: "150px" }}
               onClick={handleShowModal}
+              aria-label="Add Book to Bookshelf"
             >
               +
             </button>
@@ -377,7 +376,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                 <img
                   height="150px"
                   src={API_BASE_URL + book.cover_uri}
-                  alt="Book Cover"
+                  alt={`${book.title}: Book Cover`}
                   loading="lazy"
                   style={{
                     height: "150px",
@@ -389,6 +388,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                   <div className="remove-book-from-bookshelf-button">
                     <button
                       className="btn btn-close"
+                      aria-label={`Remove ${book.title} from bookshelf`}
                       onClick={(event) => {
                         handleDeleteBookFromBookshelfClick(event, book.id);
                       }}
@@ -427,7 +427,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                 >
                   <LazyImage
                     src={API_BASE_URL + book.cover_uri}
-                    alt="Book Cover"
+                    alt={`${book.title}: Book Cover`}
                     style={{ maxWidth: "100%", maxHeight: "100%" }}
                     rootElement={document.querySelector(".modal-content")}
                   ></LazyImage>
@@ -437,10 +437,18 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
           </Container>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseModal}>
-            Close
+          <Button
+            variant="secondary"
+            onClick={handleCloseModal}
+            aria-label="Cancel Adding Books to Bookshelf"
+          >
+            Cancel
           </Button>
-          <Button variant="primary" onClick={handleSaveChangeClick}>
+          <Button
+            variant="primary"
+            onClick={handleSaveChangeClick}
+            aria-label="Add Books to Bookshelf"
+          >
             Save Changes
           </Button>
         </Modal.Footer>
@@ -451,10 +459,18 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
         </Modal.Header>
         <Modal.Body>Are you sure you want to delete this bookshelf?</Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseDeleteModal}>
+          <Button
+            variant="secondary"
+            onClick={handleCloseDeleteModal}
+            aria-label="Cancel Delete"
+          >
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleDelete}>
+          <Button
+            variant="primary"
+            onClick={handleDelete}
+            aria-label="Delete Confirmation"
+          >
             Delete
           </Button>
         </Modal.Footer>
