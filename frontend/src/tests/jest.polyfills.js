@@ -34,3 +34,16 @@ Object.defineProperties(globalThis, {
   Request: { value: Request },
   Response: { value: Response },
 });
+
+class IntersectionObserver {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  constructor() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  observe() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  unobserve() {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  disconnect() {}
+}
+
+global.IntersectionObserver = IntersectionObserver;
