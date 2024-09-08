@@ -1,49 +1,132 @@
 import { http, HttpResponse } from "msw";
 import dotenv from "dotenv";
-import { BookWithBookshelvesInterface } from "../../interfaces/book_and_bookshelf";
+import {
+  BookWithBookshelvesInterface,
+  BookshelfWithBooksInterface,
+  BookshelfInterface,
+  BookInterface,
+} from "../../interfaces/book_and_bookshelf";
 dotenv.config({ path: ".env.development" });
 
 export const bookshelfHandlers = [
   // Example: Mock GET request to fetch bookshelves
   http.get(`${process.env.REACT_APP_API_URL}/bookshelves/`, () => {
-    return HttpResponse.json([
+    const response: BookshelfInterface[] = [
       {
         id: 1,
-        title: "My First Bookshelf",
-        description: "A nice bookshelf.",
+        title: "The Great American Novel",
+        description: "Books that capture the essence of America",
         sort_key: "title",
         sort_direction: "ascending",
       },
       {
         id: 2,
-        title: "Favorite Bookshelf",
-        description: "Holds my favorite books.",
+        title: "Science Fiction Classics",
+        description: "Masters of speculation",
         sort_key: "title",
         sort_direction: "ascending",
       },
-    ]);
+    ];
+    return HttpResponse.json(response);
   }),
 
   http.get(`${process.env.REACT_APP_API_URL}/bookshelves/1`, () => {
-    return HttpResponse.json({
+    const response: BookshelfWithBooksInterface = {
       id: 1,
-      title: "My First Bookshelf",
-      description: "A nice bookshelf.",
+      title: "The Great American Novel",
+      description: "Books that capture the essence of America",
       sort_key: "title",
       sort_direction: "ascending",
-      books: [],
-    });
+      books: [
+        {
+          id: 1,
+          title: "Lonesome Dove",
+          author: "Larry McMurtry",
+          year: 1985,
+          olid: "OL7660473M",
+          olids: '["OL7660473M","OL12086552M", "OL26296459M", "OL28267018M"]',
+          cover_uri: "/images/OL7660473M.jpg",
+          read_status: "read",
+          read_start_date: "2023-06-11T05:00:00.000Z",
+          read_end_date: "2023-07-09T05:00:00.000Z",
+          rating: 5,
+          review:
+            "All America lies at the end of the wilderness road, and our past is not a dead past, but still lives in us.",
+        },
+      ],
+    };
+    return HttpResponse.json(response);
   }),
 
   http.get(`${process.env.REACT_APP_API_URL}/bookshelves/2`, () => {
-    return HttpResponse.json({
+    const response: BookshelfWithBooksInterface = {
       id: 2,
-      title: "Favorite Bookshelf",
-      description: "Holds my favorite books.",
+      title: "Science Fiction Classics",
+      description: "Masters of speculation",
       sort_key: "title",
       sort_direction: "ascending",
-      books: [],
-    });
+      books: [
+        {
+          id: 2,
+          title: "The Left Hand of Darkness",
+          author: "Ursula K. Le Guin",
+          year: 1962,
+          olid: "OL7893085M",
+          olids: '["OL7893085M","OL50179038M", "OL32576277M", "OL27289471M"]',
+          cover_uri: "/images/OL7893085M.jpg",
+          read_status: "read",
+          read_start_date: "2021-01-22T05:00:00.000Z",
+          read_end_date: "2021-02-12T05:00:00.000Z",
+          rating: 5,
+          review:
+            "Light, dark. Fear, courage. Cold, warmth. Female, male. It is yourself, Therem. Both and one. A shadow on the snow.",
+        },
+      ],
+    };
+    return HttpResponse.json(response);
+  }),
+
+  http.get(
+    `${process.env.REACT_APP_API_URL}/bookshelves/1/books/exclude/`,
+    () => {
+      const response: BookInterface[] = [
+        {
+          id: 3,
+          title: "The Grapes of Wrath",
+          author: "John Steinbeck",
+          year: 1939,
+          olid: "OL14994208M",
+          olids: '["OL37811454M","OL46855753M","OL13890061M","OL7641090M"]',
+          cover_uri: "/images/OL14994208M.jpg",
+          read_status: "read",
+          read_start_date: "2022-02-13T05:00:00.000Z",
+          read_end_date: "2022-02-21T05:00:00.000Z",
+          rating: 5,
+          review: "I liked it!",
+        },
+      ];
+      return HttpResponse.json(response);
+    }
+  ),
+
+  http.post(`${process.env.REACT_APP_API_URL}/bookshelves/`, () => {
+    return HttpResponse.json("");
+  }),
+
+  http.patch(`${process.env.REACT_APP_API_URL}/bookshelves/1`, () => {
+    return HttpResponse.json("");
+  }),
+
+  http.post(`${process.env.REACT_APP_API_URL}/bookshelves/1/books/`, () => {
+    return HttpResponse.json("");
+  }),
+
+  http.delete(`${process.env.REACT_APP_API_URL}/bookshelves/1/books/1`, () => {
+    return HttpResponse.json("");
+  }),
+
+  http.delete(`${process.env.REACT_APP_API_URL}/bookshelves/1`, () => {
+    return HttpResponse.json("");
   }),
 ];
 
@@ -103,7 +186,7 @@ export const bookHandlers = [
   }),
 
   http.get(`${process.env.REACT_APP_API_URL}/books/2`, () => {
-    const response = {
+    const response: BookWithBookshelvesInterface = {
       id: 2,
       title: "Crime and Punishment",
       author: "Fyodor Dostoevsky",
