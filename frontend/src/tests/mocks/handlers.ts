@@ -6,6 +6,7 @@ import {
   BookshelfInterface,
   BookInterface,
 } from "../../interfaces/book_and_bookshelf";
+import { WorkInterface } from "../../interfaces/work";
 dotenv.config({ path: ".env.development" });
 
 export const bookshelfHandlers = [
@@ -209,6 +210,31 @@ export const bookHandlers = [
   }),
 
   http.delete(`${process.env.REACT_APP_API_URL}/books/1`, () => {
+    return HttpResponse.json("");
+  }),
+
+  http.get(
+    `${process.env.REACT_APP_API_URL}/books/search/Farewell%20to%20Arms`,
+    () => {
+      const response: WorkInterface[] = [
+        {
+          title: "A Farewell to Arms",
+          author_name: "Ernest Hemingway",
+          first_publish_year: 1929,
+          olids: ["OL24206828M", "OL32992800M", "OL32596124M"],
+        },
+        {
+          title: "An Armful of Farewells",
+          author_name: "Errol Wellinghay",
+          first_publish_year: 1931,
+          olids: ["OL24206821M", "OL32992801M", "OL32596121M"],
+        },
+      ];
+      return HttpResponse.json(response);
+    }
+  ),
+
+  http.post(`${process.env.REACT_APP_API_URL}/books/`, () => {
     return HttpResponse.json("");
   }),
 ];
