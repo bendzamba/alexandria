@@ -9,12 +9,21 @@ export interface BookInterface {
   rating: number | null;
   review: string;
   read_status: string;
-  read_start_date: string;
-  read_end_date: string;
+  read_start_date: string | null;
+  read_end_date: string | null;
 }
 
 export interface BookWithBookshelvesInterface extends BookInterface {
   bookshelves?: BookshelfInterface[];
+}
+
+export interface SortableBookProperties {
+  id: number;
+  title: string;
+  author: string;
+  year: number;
+  rating: number | null;
+  read_end_date: string | null;
 }
 
 export interface CreateOrUpdateBookInterface {

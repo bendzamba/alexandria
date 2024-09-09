@@ -4,7 +4,11 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Book from "./Book";
 import { GetBooks } from "../../services/books";
-import { BookWithBookshelvesInterface } from "../../interfaces/book_and_bookshelf";
+import {
+  BookWithBookshelvesInterface,
+  SortableBookProperties,
+} from "../../interfaces/book_and_bookshelf";
+import { bookSort } from "../../utils/book_sort";
 import styles from "./css/Books.module.scss";
 
 function Books() {
@@ -93,6 +97,7 @@ function Books() {
               <option value="author">Author</option>
               <option value="year">Year</option>
               <option value="rating">Rating</option>
+              <option value="read_end_date">Reading Dates</option>
             </select>
             <label htmlFor="floatingSelect">Sort by</label>
           </div>
@@ -143,31 +148,12 @@ function Books() {
               bookA: BookWithBookshelvesInterface,
               bookB: BookWithBookshelvesInterface
             ) => {
-              const sortKey = sort as keyof BookWithBookshelvesInterface;
-              const directionModifier = sortDirection === "ascending" ? 1 : -1;
-              if (
-                !bookA ||
-                !bookB ||
-                bookA[sortKey] === undefined ||
-                bookB[sortKey] === undefined
-              ) {
-                return 0;
-              }
-              let nullPosition = Infinity;
-              if (directionModifier === -1) {
-                nullPosition = 0;
-              }
-              const bookAComparison =
-                bookA[sortKey] !== null ? bookA[sortKey] : nullPosition;
-              const bookBComparison =
-                bookB[sortKey] !== null ? bookB[sortKey] : nullPosition;
-              if (bookAComparison < bookBComparison) {
-                return -1 * directionModifier;
-              } else if (bookAComparison > bookBComparison) {
-                return 1 * directionModifier;
-              }
-              // a must be equal to b
-              return 0;
+              return bookSort(
+                bookA,
+                bookB,
+                sort as keyof SortableBookProperties,
+                sortDirection
+              );
             }
           )
           .map((book: BookWithBookshelvesInterface) => (
