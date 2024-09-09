@@ -17,7 +17,9 @@ import LazyImage from "../common/LazyLoadImage";
 import {
   BookInterface,
   BookshelfWithBooksInterface,
+  SortableBookProperties,
 } from "../../interfaces/book_and_bookshelf";
+import { bookSort } from "../../utils/book_sort";
 import styles from "./css/Bookshelf.module.scss";
 
 interface BookshelfProps {
@@ -344,27 +346,12 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
         {bookshelf &&
           bookshelf.books
             .sort((bookA: BookInterface, bookB: BookInterface) => {
-              const localSortKey = sortKey as keyof BookInterface;
-              const directionModifier = sortDirection === "ascending" ? 1 : -1;
-              let nullPosition = Infinity;
-              if (directionModifier === -1) {
-                nullPosition = 0;
-              }
-              const bookAComparison =
-                bookA[localSortKey] !== null
-                  ? bookA[localSortKey]
-                  : nullPosition;
-              const bookBComparison =
-                bookB[localSortKey] !== null
-                  ? bookB[localSortKey]
-                  : nullPosition;
-              if (bookAComparison < bookBComparison) {
-                return -1 * directionModifier;
-              } else if (bookAComparison > bookBComparison) {
-                return 1 * directionModifier;
-              }
-              // a must be equal to b
-              return 0;
+              return bookSort(
+                bookA,
+                bookB,
+                sortKey as keyof SortableBookProperties,
+                sortDirection
+              );
             })
             .map((book: BookInterface) => (
               <Col
