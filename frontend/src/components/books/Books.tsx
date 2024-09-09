@@ -15,7 +15,7 @@ function Books() {
   const [books, setBooks] = useState<BookWithBookshelvesInterface[]>([]);
   const [search, setSearch] = useState<string | null>(null);
   const [sort, setSort] = useState<string>(
-    () => localStorage.getItem("sort") || "id"
+    () => localStorage.getItem("sort") || "title"
   );
   const [sortDirection, setSortDirection] = useState<string>(
     () => localStorage.getItem("sortDirection") || "ascending"
