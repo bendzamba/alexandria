@@ -82,9 +82,20 @@ const dateSort: SortFunction<string> = (
   return new Date(read_end_date_string);
 };
 
+const titleSort: SortFunction<string> = (title: string) => {
+  const articlesToIgnore = ["the", "a", "an"];
+  const lowerCaseTitle = title.toLowerCase();
+  const titleSplit = lowerCaseTitle.split(" ");
+  if (articlesToIgnore.includes(titleSplit[0])) {
+    return titleSplit.slice(1).join(" ");
+  }
+  return lowerCaseTitle;
+};
+
 const sortFunctions: Record<string, SortFunction<any>> = {
   author: surnameSort as SortFunction<string>,
   read_end_date: dateSort as SortFunction<string>,
+  title: titleSort as SortFunction<string>,
 };
 
 const mapValueToSortable = (
@@ -116,15 +127,46 @@ export const bookSort = (
   if (directionModifier === -1) {
     nullPosition = 0;
   }
-  const bookAMappedValue = mapValueToSortable(sortKey, bookA[sortKey], bookA);
-  const bookAComparison = bookAMappedValue ? bookAMappedValue : nullPosition;
-  const bookBMappedValue = mapValueToSortable(sortKey, bookB[sortKey], bookB);
-  const bookBComparison = bookBMappedValue ? bookBMappedValue : nullPosition;
+  let bookAMappedValue = mapValueToSortable(sortKey, bookA[sortKey], bookA);
+  let bookAComparison = bookAMappedValue ? bookAMappedValue : nullPosition;
+  let bookBMappedValue = mapValueToSortable(sortKey, bookB[sortKey], bookB);
+  let bookBComparison = bookBMappedValue ? bookBMappedValue : nullPosition;
+
+  // If A and B are equal, we need to consider a secondary sort, to sort within the
+  // equal values. Default to `title` as secondary, unless title is the same, in which
+  // case default to `author` as secondary.
+  if (bookAComparison === bookBComparison) {
+    let secondarySortKey: keyof SortableBookProperties = "title";
+    if (sortKey === "title") {
+      secondarySortKey = "author";
+    }
+    bookAMappedValue = mapValueToSortable(
+      secondarySortKey,
+      bookA[secondarySortKey],
+      bookA
+    );
+    bookAComparison = bookAMappedValue ? bookAMappedValue : nullPosition;
+    bookBMappedValue = mapValueToSortable(
+      secondarySortKey,
+      bookB[secondarySortKey],
+      bookB
+    );
+    bookBComparison = bookBMappedValue ? bookBMappedValue : nullPosition;
+  }
+
   if (bookAComparison < bookBComparison) {
     return -1 * directionModifier;
   } else if (bookAComparison > bookBComparison) {
     return 1 * directionModifier;
   }
-  // A and B are equal
+
+  /* 
+  Being still equal at this point seems like an edge case.
+  It would mean that both `rating|date added|reading dates|year` PLUS
+  title are equal, which means two books with identical titles exist,
+  AND have the same comparison value the user has selected. Possible
+  but unlikely. OR it means that two books exist with the same title 
+  AND author, which is surely an error on the user's part.
+  */
   return 0;
 };
