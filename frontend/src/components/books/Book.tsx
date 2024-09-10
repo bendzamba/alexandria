@@ -23,7 +23,7 @@ function Book({ book, preview }: BookProps) {
   const [currentBook, setCurrentBook] =
     useState<BookWithBookshelvesInterface>();
   const [savedCoverUri, setSavedCoverUri] = useState("");
-  const [savedReview, setSavedReview] = useState("");
+  const [savedReview, setSavedReview] = useState<string | null>("");
   const [loading, setLoading] = useState(true);
   const [availableOlids, setAvailableOlids] = useState<string[]>([]);
   const [savedOlid, setSavedOlid] = useState("");
@@ -332,10 +332,14 @@ function Book({ book, preview }: BookProps) {
     const newReview = element.innerHTML;
     // innerHtml will get <div> and <br> elements added by contentenditable <div>
     // swap these for newlines
-    return newReview
+    const cleanedNewReview = newReview
       .replace(/<br\s*\/?>/gi, "\n")
       .replace(/<\/div>|<\/p>/gi, "\n")
       .replace(/<div>|<p>/gi, "");
+    if (cleanedNewReview === "") {
+      return null;
+    }
+    return cleanedNewReview;
   };
 
   const getAuthor = () => {

@@ -7,7 +7,7 @@ export interface BookInterface {
   cover_uri: string;
   olids: string;
   rating: number | null;
-  review: string;
+  review: string | null;
   read_status: string;
   read_start_date: string | null;
   read_end_date: string | null;
@@ -34,7 +34,7 @@ export interface CreateOrUpdateBookInterface {
   cover_uri: string;
   olids: string;
   rating: number | null;
-  review: string;
+  review: string | null;
   read_status: string;
   read_start_date: string | null;
   read_end_date: string | null;
