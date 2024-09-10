@@ -642,7 +642,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="5"
                 onClick={changeRatingClick}
-                defaultChecked={currentBook?.rating === 5}
+                checked={currentBook?.rating === 5}
               />
               <label htmlFor={`star5-${bookIdString}`}>5 stars</label>
               <input
@@ -651,7 +651,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="4"
                 onClick={changeRatingClick}
-                defaultChecked={currentBook?.rating === 4}
+                checked={currentBook?.rating === 4}
               />
               <label htmlFor={`star4-${bookIdString}`}>4 stars</label>
               <input
@@ -660,7 +660,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="3"
                 onClick={changeRatingClick}
-                defaultChecked={currentBook?.rating === 3}
+                checked={currentBook?.rating === 3}
               />
               <label htmlFor={`star3-${bookIdString}`}>3 stars</label>
               <input
@@ -669,7 +669,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="2"
                 onClick={changeRatingClick}
-                defaultChecked={currentBook?.rating === 2}
+                checked={currentBook?.rating === 2}
               />
               <label htmlFor={`star2-${bookIdString}`}>2 stars</label>
               <input
@@ -678,7 +678,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="1"
                 onClick={changeRatingClick}
-                defaultChecked={currentBook?.rating === 1}
+                checked={currentBook?.rating === 1}
               />
               <label htmlFor={`star1-${bookIdString}`}>1 star</label>
             </fieldset>

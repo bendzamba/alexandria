@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Books from "../../components/books/Books";
 
-test("displays book search and sort tools", async () => {
+test("displays book search, filter and sort tools", async () => {
   render(
     <BrowserRouter>
       <Books />
@@ -14,6 +14,9 @@ test("displays book search and sort tools", async () => {
 
   const sortByDropdown = await screen.findByLabelText("Sort by");
   expect(sortByDropdown).toBeInTheDocument();
+
+  const filterByReadStatusDropdown = await screen.findByLabelText("Filter");
+  expect(filterByReadStatusDropdown).toBeInTheDocument();
 
   const sortDirectionButton = screen.getByRole("button", {
     name: "Sort",
@@ -57,6 +60,8 @@ test("loads and displays books from the API", async () => {
   const fiveStarRatings = screen.getAllByLabelText(/5 Stars/i);
   const fourStarRatings = screen.getAllByLabelText(/4 Stars/i);
 
-  expect(fiveStarRatings[0]).toBeChecked(); // 0 = first book
-  expect(fourStarRatings[1]).toBeChecked(); // 1 = second book
+  // The order of the books is dependent on the default sort
+  // It is currently `title`, thus our second book from the API being first
+  expect(fourStarRatings[0]).toBeChecked(); // 0 = first book
+  expect(fiveStarRatings[1]).toBeChecked(); // 1 = second book
 });
