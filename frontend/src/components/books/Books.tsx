@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -12,8 +12,14 @@ import { bookSort } from "../../utils/book_sort";
 import styles from "./css/Books.module.scss";
 
 function Books() {
-  const [books, setBooks] = useState<BookWithBookshelvesInterface[]>([]);
-  const [search, setSearch] = useState<string | null>(null);
+  const [allBooks, setAllBooks] = useState<BookWithBookshelvesInterface[]>([]);
+  const [books, setBooks] = useState<BookWithBookshelvesInterface[]>([]); // All filtered/sorted books
+  const [displayedBooks, setDisplayedBooks] = useState<
+    BookWithBookshelvesInterface[]
+  >([]); // The books that are currently rendered
+  const displayedCount = 20; // Number of books to display initially and to load on scroll
+  const [hasMore, setHasMore] = useState(true);
+  const [searchTerm, setSearchTerm] = useState<string | null>(null);
   const [sort, setSort] = useState<string>(
     () => localStorage.getItem("sort") || "title"
   );
@@ -24,6 +30,63 @@ function Books() {
     () => localStorage.getItem("sortDirection") || "ascending"
   );
   const [loading, setLoading] = useState(true);
+  const sentinelRef = useRef<HTMLDivElement | null>(null); // Ref for the sentinel element for IntersectionObserver
+  const observerRef = useRef<IntersectionObserver | null>(null); // Ref for IntersectionObserver instance
+
+  // Function to update filtered books based on search, sort, and filter
+  const updateFilteredBooks = () => {
+    const filteredBooks = allBooks
+      .filter((book: BookWithBookshelvesInterface) => {
+        return searchTerm && searchTerm !== ""
+          ? book.title.toLowerCase().includes(searchTerm.toLowerCase())
+          : true;
+      })
+      .filter((book: BookWithBookshelvesInterface) => {
+        if (readStatusFilter === "all") {
+          return true;
+        }
+        return book.read_status === readStatusFilter;
+      })
+      .sort(
+        (
+          bookA: BookWithBookshelvesInterface,
+          bookB: BookWithBookshelvesInterface
+        ) => {
+          return bookSort(
+            bookA,
+            bookB,
+            sort as keyof SortableBookProperties,
+            sortDirection
+          );
+        }
+      );
+
+    // Pause the observer to avoid triggering during re-render
+    if (observerRef.current && sentinelRef.current) {
+      observerRef.current.unobserve(sentinelRef.current);
+    }
+
+    setBooks(filteredBooks); // Store the filtered and sorted books
+    setDisplayedBooks(filteredBooks.slice(0, displayedCount)); // Show initial batch of books
+    setHasMore(filteredBooks.length > displayedCount); // Determine if more books are available
+  };
+
+  // Load more books when the sentinel is intersected
+  const loadMoreBooks = () => {
+    if (!hasMore) return;
+    const nextBooks = books.slice(
+      displayedBooks.length,
+      displayedBooks.length + displayedCount
+    );
+    setDisplayedBooks((prev) => [...prev, ...nextBooks]);
+    if (nextBooks.length < displayedCount) {
+      setHasMore(false); // No more books to load
+    }
+  };
+
+  useEffect(() => {
+    updateFilteredBooks();
+  }, [allBooks, searchTerm, readStatusFilter, sort, sortDirection]);
 
   useEffect(() => {
     localStorage.setItem("sort", sort);
@@ -45,7 +108,7 @@ function Books() {
           // A message to the user may be warranted here
           return false;
         }
-        setBooks(data);
+        setAllBooks(data);
       } catch (error) {
         console.error("Error fetching books:", error);
       } finally {
@@ -57,7 +120,7 @@ function Books() {
   }, []);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(event.currentTarget.value);
+    setSearchTerm(event.currentTarget.value);
   };
 
   const handleSort = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -75,6 +138,27 @@ function Books() {
   ) => {
     setReadStatusFilter(event.currentTarget.value);
   };
+
+  // IntersectionObserver for lazy loading
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMoreBooks();
+      }
+    });
+
+    observerRef.current = observer; // Store the observer instance
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+
+    return () => {
+      if (sentinelRef.current) {
+        observer.unobserve(sentinelRef.current);
+      }
+    };
+  }, [hasMore, displayedBooks]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -167,42 +251,18 @@ function Books() {
         </Col>
       </Row>
       <Row>
-        {books
-          .filter((book: BookWithBookshelvesInterface) => {
-            return search && search !== ""
-              ? book.title.toLowerCase().includes(search.toLowerCase())
-              : true;
-          })
-          .filter((book: BookWithBookshelvesInterface) => {
-            if (readStatusFilter === "all") {
-              return true;
-            }
-            return book.read_status === readStatusFilter;
-          })
-          .sort(
-            (
-              bookA: BookWithBookshelvesInterface,
-              bookB: BookWithBookshelvesInterface
-            ) => {
-              return bookSort(
-                bookA,
-                bookB,
-                sort as keyof SortableBookProperties,
-                sortDirection
-              );
-            }
-          )
-          .map((book: BookWithBookshelvesInterface) => (
-            <Col
-              xs={12}
-              md={6}
-              xl={4}
-              className="mt-3 mb-3"
-              key={`col-${book.id}`}
-            >
-              <Book book={book} preview={true} key={book.id} />
-            </Col>
-          ))}
+        {displayedBooks.map((book: BookWithBookshelvesInterface) => (
+          <Col
+            xs={12}
+            md={6}
+            xl={4}
+            className="mt-3 mb-3"
+            key={`col-${book.id}`}
+          >
+            <Book book={book} preview={true} key={book.id} />
+          </Col>
+        ))}
+        <div ref={sentinelRef} style={{ height: "1px" }}></div>
       </Row>
     </Container>
   );
