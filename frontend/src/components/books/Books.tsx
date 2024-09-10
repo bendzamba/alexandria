@@ -17,6 +17,9 @@ function Books() {
   const [sort, setSort] = useState<string>(
     () => localStorage.getItem("sort") || "title"
   );
+  const [readStatusFilter, setReadStatusFilter] = useState<string>(
+    () => localStorage.getItem("readStatusFilter") || "all"
+  );
   const [sortDirection, setSortDirection] = useState<string>(
     () => localStorage.getItem("sortDirection") || "ascending"
   );
@@ -29,6 +32,10 @@ function Books() {
   useEffect(() => {
     localStorage.setItem("sortDirection", sortDirection);
   }, [sortDirection]);
+
+  useEffect(() => {
+    localStorage.setItem("readStatusFilter", readStatusFilter);
+  }, [readStatusFilter]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,6 +70,12 @@ function Books() {
     );
   };
 
+  const handleReadStatusFilter = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    setReadStatusFilter(event.currentTarget.value);
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -70,7 +83,7 @@ function Books() {
   return (
     <Container>
       <Row>
-        <Col xs={5} lg={3}>
+        <Col xs={12} sm={3} className="mb-2">
           <form className={`form-floating ${styles["custom-form-floating"]}`}>
             <input
               type="text"
@@ -83,12 +96,29 @@ function Books() {
             <label htmlFor="search">Search...</label>
           </form>
         </Col>
-        <Col xs={5} lg={3}>
+        <Col xs={4} sm={3}>
+          <div className={`form-floating ${styles["custom-form-floating"]}`}>
+            <select
+              className="form-select"
+              id="read-status-filter-select"
+              aria-label="Read Status Filter"
+              onChange={handleReadStatusFilter}
+              value={readStatusFilter}
+            >
+              <option value="all">All Books</option>
+              <option value="read">Read</option>
+              <option value="reading">Reading</option>
+              <option value="not_read">Not Read</option>
+            </select>
+            <label htmlFor="floatingSelect">Filter</label>
+          </div>
+        </Col>
+        <Col xs={4} sm={3}>
           <div className={`form-floating ${styles["custom-form-floating"]}`}>
             <select
               className="form-select"
               id="floatingSelect"
-              aria-label="Floating label select example"
+              aria-label="Sort Key"
               onChange={handleSort}
               value={sort}
             >
@@ -142,6 +172,12 @@ function Books() {
             return search && search !== ""
               ? book.title.toLowerCase().includes(search.toLowerCase())
               : true;
+          })
+          .filter((book: BookWithBookshelvesInterface) => {
+            if (readStatusFilter === "all") {
+              return true;
+            }
+            return book.read_status === readStatusFilter;
           })
           .sort(
             (
