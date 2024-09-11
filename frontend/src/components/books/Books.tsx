@@ -3,7 +3,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Book from "./Book";
-import { GetBooks } from "../../services/books";
+import { GetBooks, BulkDeleteBooks } from "../../services/books";
 import {
   BookWithBookshelvesInterface,
   SortableBookProperties,
@@ -32,6 +32,10 @@ function Books() {
   const [loading, setLoading] = useState(true);
   const sentinelRef = useRef<HTMLDivElement | null>(null); // Ref for the sentinel element for IntersectionObserver
   const observerRef = useRef<IntersectionObserver | null>(null); // Ref for IntersectionObserver instance
+  const [bulkDeleteMode, setBulkDeleteMode] = useState(false);
+  const [selectedBooksForDeletion, setSelectedBooksForDeletion] = useState<
+    number[]
+  >([]);
 
   // Function to update filtered books based on search, sort, and filter
   const updateFilteredBooks = () => {
@@ -160,6 +164,46 @@ function Books() {
     };
   }, [hasMore, displayedBooks]);
 
+  const handleBulkDeleteSetup = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+    setBulkDeleteMode(true);
+  };
+
+  const handleBulkDeleteCancel = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+    setBulkDeleteMode(false);
+    setSelectedBooksForDeletion([]);
+  };
+
+  const handleBulkDelete = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+    const response: boolean = await BulkDeleteBooks(selectedBooksForDeletion);
+    if (!response) {
+      // A message to the user may be warranted here
+      // Especially if we are going to prevent navigation
+      return false;
+    }
+    setAllBooks((prev) =>
+      prev.filter((book) => !selectedBooksForDeletion.includes(book.id))
+    );
+    setSelectedBooksForDeletion([]);
+    setBulkDeleteMode(false);
+  };
+
+  const toggleBookForDeletion = (bookId: number) => {
+    setSelectedBooksForDeletion((prev) =>
+      prev.includes(bookId)
+        ? prev.filter((id) => id !== bookId)
+        : [...prev, bookId]
+    );
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -181,7 +225,7 @@ function Books() {
               <label htmlFor="search">Search...</label>
             </form>
           </Col>
-          <Col xs={4} sm={3}>
+          <Col xs={3} sm={2}>
             <div className={`form-floating ${styles["custom-form-floating"]}`}>
               <select
                 className="form-select"
@@ -198,7 +242,7 @@ function Books() {
               <label htmlFor="floatingSelect">Filter</label>
             </div>
           </Col>
-          <Col xs={4} sm={3}>
+          <Col xs={3} sm={2}>
             <div className={`form-floating ${styles["custom-form-floating"]}`}>
               <select
                 className="form-select"
@@ -250,6 +294,42 @@ function Books() {
               )}
             </button>
           </Col>
+          <Col
+            xs={4}
+            sm={3}
+            className="d-flex justify-content-end align-items-center"
+          >
+            {!bulkDeleteMode && (
+              <button
+                type="button"
+                className={`btn btn-sm btn-outline-danger`}
+                onClick={handleBulkDeleteSetup}
+                aria-label="Bulk Delete Setup"
+              >
+                Bulk Delete
+              </button>
+            )}
+            {bulkDeleteMode && (
+              <>
+                <button
+                  type="button"
+                  className={`btn btn-sm btn-outline-danger`}
+                  onClick={handleBulkDelete}
+                  aria-label="Bulk Delete"
+                >
+                  Delete
+                </button>
+                <button
+                  type="button"
+                  className={`btn btn-sm btn-outline-secondary ms-1`}
+                  onClick={handleBulkDeleteCancel}
+                  aria-label="Bulk Delete Cancel"
+                >
+                  Cancel
+                </button>
+              </>
+            )}
+          </Col>
         </Row>
         <Row>
           {displayedBooks.map((book: BookWithBookshelvesInterface) => (
@@ -257,9 +337,23 @@ function Books() {
               xs={12}
               md={6}
               xl={4}
-              className="mt-3 mb-3"
+              className="mt-3 mb-3 position-relative"
               key={`col-${book.id}`}
             >
+              {bulkDeleteMode && (
+                <div
+                  className={`${styles["bulk-delete-overlay"]} ${selectedBooksForDeletion.includes(book.id) ? styles["bulk-delete-selected"] : ""}`}
+                  onClick={() => toggleBookForDeletion(book.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      toggleBookForDeletion(book.id);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={selectedBooksForDeletion.includes(book.id)}
+                ></div>
+              )}
               <Book book={book} preview={true} key={book.id} />
             </Col>
           ))}
