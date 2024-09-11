@@ -22,6 +22,7 @@ def get_bookshelves(db: Session = Depends(get_db)):
     return bookshelves
 
 
+# This route needs to appear before the one below so `sort_keys` is not interpreted as a `bookshelf_id`
 @router.get("/sort_keys", status_code=status.HTTP_200_OK, response_model=list[str])
 def get_bookshelf_sort_keys():
     return [key.value for key in SortKey]
