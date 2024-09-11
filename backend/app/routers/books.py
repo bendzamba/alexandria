@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Path, status, HTTPException, Body
+from fastapi import APIRouter, Depends, Path, status, HTTPException
 from typing import Annotated
 from app.models.book import (
     Book,
@@ -83,7 +83,7 @@ async def update_book(
 # This route needs to appear before the one below so `bulk` is not interpreted as a `book_id`
 @router.delete("/bulk", status_code=status.HTTP_204_NO_CONTENT)
 def bulk_delete_book(
-    bulk_delete: BookIds = Body(...),
+    bulk_delete: BookIds,
     db: Session = Depends(get_db)
 ):
     book_ids = bulk_delete.book_ids
