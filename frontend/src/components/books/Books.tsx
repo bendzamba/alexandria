@@ -250,7 +250,7 @@ function Books() {
           </button>
         </Col>
       </Row>
-      <Row>
+      <Row style={{ minHeight: "100vh" }}>
         {displayedBooks.map((book: BookWithBookshelvesInterface) => (
           <Col
             xs={12}
@@ -262,8 +262,8 @@ function Books() {
             <Book book={book} preview={true} key={book.id} />
           </Col>
         ))}
-        <div ref={sentinelRef} style={{ height: "1px" }}></div>
       </Row>
+      <div ref={sentinelRef} style={{ height: "1px" }}></div>
     </Container>
   );
 }
