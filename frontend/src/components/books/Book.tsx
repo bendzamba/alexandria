@@ -802,7 +802,7 @@ function Book({ book, preview }: BookProps) {
             Cancel
           </Button>
           <Button
-            variant="primary"
+            variant="danger"
             onClick={handleDelete}
             aria-label="Delete Confirmation"
           >
