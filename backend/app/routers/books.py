@@ -6,6 +6,7 @@ from app.models.book import (
     BookUpdate,
     BookPublic,
     BookPublicWithBookshelves,
+    BookIds
 )
 from app.models.openlibrary import Works
 from app.models.exception import ExceptionHandler
@@ -55,7 +56,7 @@ async def create_book(
 
 
 @router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def update_bookshelf(
+async def update_book(
     book_id: Annotated[int, Path(title="The ID of the book to update")],
     book_update: BookUpdate,
     db: Session = Depends(get_db),
@@ -79,8 +80,25 @@ async def update_bookshelf(
     return None
 
 
+# This route needs to appear before the one below so `bulk` is not interpreted as a `book_id`
+@router.delete("/bulk", status_code=status.HTTP_204_NO_CONTENT)
+def bulk_delete_book(
+    bulk_delete: BookIds,
+    db: Session = Depends(get_db)
+):
+    book_ids = bulk_delete.book_ids
+    statement = select(Book).where(Book.id.in_(book_ids))
+    books_to_delete = db.exec(statement).all()
+    if not books_to_delete:
+        raise HTTPException(status_code=404, detail="Books not found")
+    for book in books_to_delete:
+        db.delete(book)
+    db.commit()
+    return None
+
+
 @router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_bookshelf(
+def delete_book(
     book_id: Annotated[int, Path(title="The ID of the book to delete")],
     db: Session = Depends(get_db)
 ):

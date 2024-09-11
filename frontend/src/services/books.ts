@@ -48,6 +48,16 @@ export const DeleteBook = async (id: number): Promise<boolean> => {
   });
 };
 
+export const BulkDeleteBooks = async (book_ids: number[]): Promise<boolean> => {
+  return await Base(`/books/bulk`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ book_ids: book_ids }),
+  });
+};
+
 export const SearchBookByTitle = async (
   title: string
 ): Promise<WorkInterface[] | boolean> => {
