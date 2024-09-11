@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -36,6 +38,7 @@ function Books() {
   const [selectedBooksForDeletion, setSelectedBooksForDeletion] = useState<
     number[]
   >([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Function to update filtered books based on search, sort, and filter
   const updateFilteredBooks = () => {
@@ -194,6 +197,7 @@ function Books() {
     );
     setSelectedBooksForDeletion([]);
     setBulkDeleteMode(false);
+    handleCloseDeleteModal();
   };
 
   const toggleBookForDeletion = (bookId: number) => {
@@ -202,6 +206,17 @@ function Books() {
         ? prev.filter((id) => id !== bookId)
         : [...prev, bookId]
     );
+  };
+
+  const handleShowDeleteModal = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+    setShowDeleteModal(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
   };
 
   if (loading) {
@@ -314,7 +329,7 @@ function Books() {
                 <button
                   type="button"
                   className={`btn btn-sm btn-outline-danger`}
-                  onClick={handleBulkDelete}
+                  onClick={handleShowDeleteModal}
                   aria-label="Bulk Delete"
                 >
                   Delete
@@ -358,6 +373,28 @@ function Books() {
             </Col>
           ))}
         </Row>
+        <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Warning</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Are you sure you want to delete these books?</Modal.Body>
+          <Modal.Footer>
+            <Button
+              variant="outline-secondary"
+              onClick={handleCloseDeleteModal}
+              aria-label="Cancel Delete"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="outline-danger"
+              onClick={handleBulkDelete}
+              aria-label="Delete Confirmation"
+            >
+              Delete
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
       <div ref={sentinelRef} style={{ height: "1px" }}></div>
     </>
