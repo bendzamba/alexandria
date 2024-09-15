@@ -6,6 +6,7 @@ from app.routers import books, bookshelves
 from sqlmodel import SQLModel, text
 from app.db.sqlite import get_engine
 from dotenv import load_dotenv
+from mangum import Mangum
 import os
 
 # These are only imported for the create_all call
@@ -44,3 +45,6 @@ app.add_middleware(
 
 app.include_router(books.router, prefix="/books", tags=["books"])
 app.include_router(bookshelves.router, prefix="/bookshelves", tags=["bookshelves"])
+
+# For Lambda. Ignored otherwise.
+handler = Mangum(app)
