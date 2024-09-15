@@ -17,8 +17,3 @@ variable "region" {
   type    = string
   default = "us-east-1"
 }
-
-variable "route53_zone_id" {
-  type    = string
-  default = aws_route53_zone.route53_zone.id
-}

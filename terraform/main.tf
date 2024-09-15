@@ -39,7 +39,7 @@ module "frontend" {
   app_name        = var.app_name
   app_domain      = var.app_domain
   environment     = var.environment
-  route53_zone_id = aws_route53_zone.route53_zone.id
+  route53_zone_id = data.aws_route53_zone.route53_zone.zone_id
   certificate_arn = aws_acm_certificate.acm_certificate.arn
 }
 
@@ -48,7 +48,7 @@ module "backend" {
   app_name        = var.app_name
   app_domain      = var.app_domain
   environment     = var.environment
-  route53_zone_id = aws_route53_zone.route53_zone.id
+  route53_zone_id = data.aws_route53_zone.route53_zone.zone_id
   certificate_arn = aws_acm_certificate.acm_certificate.arn
 }
 
@@ -63,7 +63,7 @@ resource "aws_acm_certificate" "acm_certificate" {
 }
 
 data "aws_route53_zone" "route53_zone" {
-  id = "Z03068893L6HPT1E8HOW" # Taken from separate dns_setup results
+  zone_id = "Z03068893L6HPT1E8HOW" # Taken from separate dns_setup results
 }
 
 resource "aws_route53_record" "route53_record" {
@@ -80,7 +80,7 @@ resource "aws_route53_record" "route53_record" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = aws_route53_zone.route53_zone.zone_id
+  zone_id         = data.aws_route53_zone.route53_zone.zone_id
 }
 
 resource "aws_acm_certificate_validation" "acm_certificate_validation" {
