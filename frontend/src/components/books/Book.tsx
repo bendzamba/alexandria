@@ -35,8 +35,6 @@ function Book({ book, preview }: BookProps) {
   const reviewPlaceholder = "Share your thoughts on this book ...";
   const navigate = useNavigate();
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || "";
-
   // From /books/{id}
   const { id } = useParams();
 
@@ -78,7 +76,7 @@ function Book({ book, preview }: BookProps) {
       } catch (e) {
         console.log("Could not set available olids", e);
       }
-      setSavedCoverUri(API_BASE_URL + currentBook.cover_uri);
+      setSavedCoverUri(currentBook.cover_uri);
       setSavedReview(currentBook.review);
       if (currentBook.read_start_date) {
         setReadStartDate(new Date(currentBook.read_start_date));
@@ -554,11 +552,7 @@ function Book({ book, preview }: BookProps) {
         <Col xs={4} lg={3}>
           <NavLink className="nav-link" to={"/books/" + bookIdString}>
             <img
-              src={
-                currentBook?.cover_uri.includes("openlibrary.org")
-                  ? currentBook?.cover_uri
-                  : API_BASE_URL + currentBook?.cover_uri
-              }
+              src={currentBook?.cover_uri}
               className="img-fluid"
               alt={`${currentBook?.title}: Book Cover`}
               data-testid={currentBook?.cover_uri}
