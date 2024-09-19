@@ -31,7 +31,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.mount("/images", StaticFiles(directory=os.getenv("IMAGES_DIRECTORY_PATH") + os.getenv("IMAGES_DIRECTORY_NAME")), name="images")
+if os.getenv("STORAGE_BACKEND") == "local":
+    app.mount("/images", StaticFiles(directory=os.getenv("LOCAL_IMAGE_DIRECTORY")), name="images")
 
 origins = ["*"]
 
