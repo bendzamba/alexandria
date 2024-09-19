@@ -2,9 +2,8 @@ import httpx
 from app.models.openlibrary import Work, Works
 from app.models.exception import ExceptionHandler
 from pydantic import ValidationError
-from app.utils.image import Image
-import os
 import urllib.parse
+from app.utils.images.factory import get_image_handler
 
 
 class OpenLibrary:
@@ -19,11 +18,12 @@ class OpenLibrary:
         self.search_fields_separator = ","
 
         # For fetching cover images. Size options are S, M, L (small, medium, large)
-        self.cover_image_url = "https://covers.openlibrary.org/b/olid/{olid}-{size}.jpg"
+        self.cover_image_url = "https://covers.openlibrary.org/b/olid/{olid}-{size}.{extension}"
         self.cover_image_size = "L"
+        self.cover_image_extension = "jpg"
 
         # Use Image utility to help with image fetching and determining cover URI
-        self.image = Image()
+        self.image_handler = get_image_handler()
         self.cover_uri = ""
 
     async def search_by_title(self, title: str) -> Works | ExceptionHandler:
@@ -69,28 +69,24 @@ class OpenLibrary:
         )
 
     def build_image_url_from_olid(self, olid: str) -> str:
-        return self.cover_image_url.format(olid=olid, size=self.cover_image_size)
+        return self.cover_image_url.format(olid=olid, size=self.cover_image_size, extension=self.cover_image_extension)
 
     async def fetch_image_from_olid(self, olid: str | None) -> str:
         if olid is None:
-            self.cover_uri = self.image.default_cover_image
-        else:
-            # URL where we can find the cover image we want using OLID
-            open_library_url = self.build_image_url_from_olid(olid=olid)
-            # Local file destination where we want to store the image
-            local_file_destination = self.image.determine_local_file_destination(
-                filename=olid
-            )
+            pass
 
-            if not os.path.isfile(local_file_destination):
-                # Download remote to local only if we don't already have the file
-                await self.image.download(
-                    remote_url=open_library_url, local_filename=local_file_destination
-                )
+        # URL where we can find the cover image we want using OLID
+        open_library_url = self.build_image_url_from_olid(olid=olid)
 
-            # Get path for database, which can be different from full local file destination, such as
-            # serving the image from a relative directory from the frontend application
-            self.cover_uri = self.image.get_cover_with_path_for_database(filename=olid)
+        # Download image from Open Library
+        image_path = self.image_handler.download_image(open_library_url, olid + "." + self.cover_image_extension)
+
+        # Read image contents to bytes
+        with open(image_path, "rb") as image_file:
+            image_content = image_file.read()
+
+        # Store the image in its final location
+        self.image_handler.save_image(olid + "." + self.cover_image_extension, image_content)
 
     def get_cover_uri(self):
         return self.cover_uri
