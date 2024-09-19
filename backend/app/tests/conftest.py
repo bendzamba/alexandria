@@ -31,6 +31,11 @@ class OpenLibrary:
     
 os.environ["IMAGES_DIRECTORY_NAME"] = "images"
 os.environ["IMAGES_DIRECTORY_PATH"] = "../../"
+os.environ["STORAGE_BACKEND"] = "local"
+os.environ["LOCAL_IMAGE_DIRECTORY"] = "../../images"
+os.environ["S3_IMAGE_BUCKET"] = "alexandria-images-s3-bucket-production"
+os.environ["API_URL"] = "http://localhost:8000"
+os.environ["API_IMAGE_MOUNT_PATH"] = "images"
 # We need to set environment variables prior to this line to be picked up in main.py
 from main import app # noqa
 
