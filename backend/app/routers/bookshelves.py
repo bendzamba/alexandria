@@ -40,7 +40,11 @@ def get_bookshelf(
     bookshelf = db.get(Bookshelf, bookshelf_id)
     if not bookshelf:
         raise HTTPException(status_code=404, detail="Bookshelf not found")
-    return bookshelf
+    
+    bookshelf_with_books = BookshelfPublicWithBooks.model_validate(bookshelf)
+    bookshelf_with_books.books = [book.model_dump() for book in bookshelf_with_books.books]
+    
+    return bookshelf_with_books
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
