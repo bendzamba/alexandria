@@ -17,3 +17,7 @@ variable "certificate_arn" {
 variable "route53_zone_id" {
   type = string
 }
+
+variable "region" {
+  type = string
+}
