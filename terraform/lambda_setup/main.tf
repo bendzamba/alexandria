@@ -53,8 +53,10 @@ resource "aws_s3_bucket" "lambda_bucket" {
 resource "null_resource" "lambda_zip_upload" {
   provisioner "local-exec" {
     command = <<EOT
-      zip -r9 ./alexandria.zip venv/lib/python3.12/site-packages/ &&
-      zip -g ./alexandria.zip -r app &&
+      cd venv/lib/python3.12/site-packages
+      zip -r9 ../../../../alexandria.zip . &&
+      cd ../../../../
+      zip -g ./alexandria.zip -r app -x "app/.env" -x "*/__pycache__/*" &&
       aws s3 cp ./alexandria.zip s3://${aws_s3_bucket.lambda_bucket.bucket}/alexandria.zip
     EOT
     working_dir = "${path.module}/../../backend"  # Where your Lambda function code is stored
