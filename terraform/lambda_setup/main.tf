@@ -50,6 +50,13 @@ resource "aws_s3_bucket" "lambda_bucket" {
   }
 }
 
+resource "aws_s3_bucket_versioning" "s3_bucket_versioning" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 resource "null_resource" "lambda_zip_upload" {
   provisioner "local-exec" {
     command = <<EOT
