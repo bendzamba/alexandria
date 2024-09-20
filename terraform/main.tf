@@ -41,6 +41,7 @@ module "frontend" {
   environment     = var.environment
   route53_zone_id = data.aws_route53_zone.route53_zone.zone_id
   certificate_arn = aws_acm_certificate.acm_certificate.arn
+  depends_on = [ aws_acm_certificate.acm_certificate, aws_acm_certificate_validation.acm_certificate_validation ]
 }
 
 module "backend" {
@@ -50,10 +51,15 @@ module "backend" {
   environment     = var.environment
   route53_zone_id = data.aws_route53_zone.route53_zone.zone_id
   certificate_arn = aws_acm_certificate.acm_certificate.arn
+  region          = var.region
+  depends_on = [ aws_acm_certificate.acm_certificate, aws_acm_certificate_validation.acm_certificate_validation ]
 }
 
 resource "aws_acm_certificate" "acm_certificate" {
-  domain_name       = var.app_domain
+  domain_name       = "${var.app_domain}"
+  subject_alternative_names = [
+    "*.${var.app_domain}"
+  ]
   validation_method = "DNS"
 
   tags = {
