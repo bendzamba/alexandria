@@ -1,6 +1,5 @@
 resource "aws_api_gateway_rest_api" "api_gateway_res_api" {
   name = "${var.app_name}-backend-api-gateway-api-${var.environment}"
-
   tags = {
     application = var.app_name
     environment = var.environment
@@ -31,16 +30,13 @@ resource "aws_api_gateway_integration" "api_gateway_integration" {
 
 resource "aws_api_gateway_deployment" "api_gateway_deployment" {
   depends_on = [aws_api_gateway_integration.api_gateway_integration]
-
   rest_api_id = aws_api_gateway_rest_api.api_gateway_res_api.id
-  stage_name  = var.environment
 }
 
 resource "aws_api_gateway_stage" "api_gateway_stage" {
   deployment_id = aws_api_gateway_deployment.api_gateway_deployment.id
   rest_api_id   = aws_api_gateway_rest_api.api_gateway_res_api.id
   stage_name    = var.environment
-
   tags = {
     application = var.app_name
     environment = var.environment
@@ -48,23 +44,107 @@ resource "aws_api_gateway_stage" "api_gateway_stage" {
 }
 
 resource "aws_route53_record" "api_gateway_cname_record" {
-  zone_id = var.route53_zone_id
   name    = "api.${var.app_domain}"
-  type    = "CNAME"
+  type    = "A"
+  zone_id = var.route53_zone_id
 
-  ttl     = 60
-  records = [aws_api_gateway_stage.api_gateway_stage.invoke_url]
+  alias {
+    evaluate_target_health  = false
+    zone_id                 = aws_api_gateway_domain_name.api_gateway_custom_domain.regional_zone_id
+    name                    = aws_api_gateway_domain_name.api_gateway_custom_domain.regional_domain_name
+  }
 }
 
 resource "aws_api_gateway_domain_name" "api_gateway_custom_domain" {
   domain_name = "api.${var.app_domain}"
-
-  certificate_arn = var.certificate_arn
+  regional_certificate_arn = var.certificate_arn
+  endpoint_configuration {
+    types = ["REGIONAL"]
+  }
 }
 
 resource "aws_api_gateway_base_path_mapping" "api_gateway_base_path_mapping" {
   api_id      = aws_api_gateway_rest_api.api_gateway_res_api.id
   stage_name  = aws_api_gateway_stage.api_gateway_stage.stage_name
   domain_name = aws_api_gateway_domain_name.api_gateway_custom_domain.domain_name
+}
+
+# Create IAM Role for API Gateway to access CloudWatch Logs
+resource "aws_iam_role" "api_gateway_cloudwatch_role" {
+  name = "APIGatewayCloudWatchLogsRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "apigateway.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# Create a policy that allows API Gateway to interact with CloudWatch Logs
+resource "aws_iam_policy" "api_gateway_cloudwatch_policy" {
+  name = "APIGatewayCloudWatchLogsPolicy"
+  
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action   = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Effect   = "Allow",
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach the policy to the IAM Role
+resource "aws_iam_role_policy_attachment" "attach_api_gateway_cloudwatch_policy" {
+  role       = aws_iam_role.api_gateway_cloudwatch_role.name
+  policy_arn = aws_iam_policy.api_gateway_cloudwatch_policy.arn
+}
+
+# Assign the IAM Role to API Gateway Account
+resource "aws_api_gateway_account" "api_gateway_account" {
+  cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch_role.arn
+}
+
+resource "aws_api_gateway_method_response" "cors_response" {
+  rest_api_id = aws_api_gateway_rest_api.api_gateway_res_api.id
+  resource_id = aws_api_gateway_resource.api_gateway_resource.id
+  http_method = "OPTIONS"
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "cors_integration_response" {
+  rest_api_id = aws_api_gateway_rest_api.api_gateway_res_api.id
+  resource_id = aws_api_gateway_resource.api_gateway_resource.id
+  http_method = "OPTIONS"
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'DELETE, GET, HEAD, OPTIONS, PATCH, POST'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  response_templates = {
+    "application/json" = ""
+  }
 }
 
