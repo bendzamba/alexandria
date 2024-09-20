@@ -8,7 +8,7 @@ from app.models.bookshelf import (
     BookshelfPublicWithBooks,
     SortKey
 )
-from app.models.book import BookIds, Book
+from app.models.book import BookIds, Book, BookPublic
 from app.models.book_bookshelf import BookBookshelfLink
 from app.db.sqlite import get_db
 from sqlmodel import Session, select
@@ -84,7 +84,11 @@ def delete_bookshelf(
     return None
 
 
-@router.get("/{bookshelf_id}/books/exclude/", status_code=status.HTTP_200_OK)
+@router.get(
+    "/{bookshelf_id}/books/exclude/",
+    status_code=status.HTTP_200_OK,
+    response_model=list[BookPublic]
+)
 def get_books_not_on_bookshelf(
     bookshelf_id: Annotated[
         int,
@@ -108,7 +112,7 @@ def get_books_not_on_bookshelf(
     result = db.exec(query)
     books = result.fetchall()
 
-    return books
+    return [BookPublic.model_validate(book).model_dump() for book in books]
 
 
 @router.post("/{bookshelf_id}/books/", status_code=status.HTTP_201_CREATED)
