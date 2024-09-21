@@ -29,8 +29,6 @@ class OpenLibrary:
         }
         return Works(**{"works": [Work(**work_doc)]})
     
-os.environ["IMAGES_DIRECTORY_NAME"] = "images"
-os.environ["IMAGES_DIRECTORY_PATH"] = "../../"
 os.environ["STORAGE_BACKEND"] = "local"
 os.environ["LOCAL_IMAGE_DIRECTORY"] = "../../images"
 os.environ["S3_IMAGE_BUCKET"] = "alexandria-images-s3-bucket-production"
