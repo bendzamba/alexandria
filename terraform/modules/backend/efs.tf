@@ -5,6 +5,7 @@ resource "aws_efs_file_system" "efs_file_system" {
   tags = {
     application = var.app_name
     environment = var.environment
+    Name        = "${var.app_name}-backend-efs-file-system-${var.environment}"
   }
 }
 
@@ -28,6 +29,7 @@ resource "aws_efs_access_point" "efs_access_point" {
   tags = {
     application = var.app_name
     environment = var.environment
+    Name        = "${var.app_name}-backend-efs-access-point-${var.environment}"
   }
 }
 
