@@ -36,7 +36,7 @@ resource "aws_cloudfront_distribution" "cloudfront_distribution" {
   }
 
   viewer_certificate {
-    acm_certificate_arn       = var.certificate_arn
+    acm_certificate_arn       = var.environment == "production" ? var.production_certificate_arn : var.stage_certificate_arn
     minimum_protocol_version  = "TLSv1.2_2021"
     ssl_support_method        = "sni-only"
   }

@@ -1,3 +1,9 @@
+# We have separately created an S3 bucket to house this Lambda function's code
+# However, we will not link the two via Terraform as that requires a ZIP file
+# to exist in S3
+# Rather, the updating of the lambda function via CLI when we are pushing a code
+# change, will instruct the Lambda to fetch the code from S3
+
 data "aws_caller_identity" "current" {}
 
 resource "aws_iam_role" "lambda_exec" {
@@ -123,8 +129,8 @@ resource "aws_lambda_function" "lambda_function" {
   }
 
   vpc_config {
-    subnet_ids         = [aws_subnet.subnet_1.id, aws_subnet.subnet_2.id]
-    security_group_ids = [aws_security_group.lambda_sg.id]
+    subnet_ids         = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]
+    security_group_ids = [aws_security_group.lambda_security_group.id]
   }
 
   depends_on = [ aws_efs_mount_target.efs_mount_target_1, aws_efs_mount_target.efs_mount_target_2 ]

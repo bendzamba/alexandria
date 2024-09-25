@@ -43,8 +43,11 @@ resource "aws_api_gateway_stage" "api_gateway_stage" {
   }
 }
 
+# If we are in production, the 'stage' is not explicit, meaning we don't want
+# production.api.myalexandria.ai
+# var.domain_prefix is either a stage subdomain with '.' or an empty string, in the case of production
 resource "aws_route53_record" "api_gateway_cname_record" {
-  name    = "api.${var.app_domain}"
+  name    = "${var.domain_prefix}api.${var.app_domain}"
   type    = "A"
   zone_id = var.route53_zone_id
 
@@ -55,9 +58,14 @@ resource "aws_route53_record" "api_gateway_cname_record" {
   }
 }
 
+# If we are in production, the 'stage' is not explicit, meaning we don't want
+# production.api.<domain>
+# var.domain_prefix is either a stage subdomain with '.' or an empty string, in the case of production
+# Similarly, we need the stage certificate if not in production, which covers *.api.<domain>, and the 
+# production certificate if in production, which covers *.<domain>, which includes api.<domain>
 resource "aws_api_gateway_domain_name" "api_gateway_custom_domain" {
-  domain_name = "api.${var.app_domain}"
-  regional_certificate_arn = var.certificate_arn
+  domain_name = "${var.domain_prefix}api.${var.app_domain}"
+  regional_certificate_arn = var.environment == "production" ? var.production_certificate_arn : var.stage_certificate_arn
   endpoint_configuration {
     types = ["REGIONAL"]
   }
