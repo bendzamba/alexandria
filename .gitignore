@@ -38,8 +38,6 @@ images/*.svg
 # terraform
 *.tfstate
 *.tfstate.*
-*.tfvars
-*.tfvars.json
 .terraform/
 
 # lambda zip
