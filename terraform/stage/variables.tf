@@ -18,5 +18,4 @@ variable "environment" {
 
 variable "domain_prefix" {
   type = string
-  default = environment == "production" ? "" : "${var.environment}."
 }
