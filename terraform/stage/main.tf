@@ -53,7 +53,7 @@ module "frontend" {
   route53_zone_id             = data.aws_route53_zone.route53_zone.zone_id
   production_certificate_arn  = aws_acm_certificate.acm_certificate_production.arn
   stage_certificate_arn       = aws_acm_certificate.acm_certificate_stage.arn
-  domain_prefix               = var.domain_prefix
+  domain_prefix               = local.domain_prefix
   depends_on                  = [ 
     aws_acm_certificate.acm_certificate_production,
     aws_acm_certificate_validation.acm_certificate_validation_production,
@@ -71,7 +71,7 @@ module "backend" {
   region                      = var.region
   production_certificate_arn  = aws_acm_certificate.acm_certificate_production.arn
   stage_certificate_arn       = aws_acm_certificate.acm_certificate_stage.arn
-  domain_prefix               = var.domain_prefix
+  domain_prefix               = local.domain_prefix
   depends_on                  = [ 
     aws_acm_certificate.acm_certificate_production,
     aws_acm_certificate_validation.acm_certificate_validation_production,
