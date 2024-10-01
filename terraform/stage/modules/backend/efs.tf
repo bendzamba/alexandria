@@ -13,13 +13,15 @@ resource "aws_efs_file_system" "efs_file_system" {
 }
 
 resource "aws_efs_access_point" "efs_access_point" {
-  file_system_id = aws_efs_file_system.efs_file_system.id
-
+  file_system_id  = aws_efs_file_system.efs_file_system.id
+  tags            = {
+    application = var.app_name
+    Name        = "${var.app_name}-backend-efs-access-point"
+  }
   posix_user {
     uid = 1000
     gid = 1000
   }
-
   root_directory {
     path = "/lambda"
     creation_info {
@@ -27,11 +29,6 @@ resource "aws_efs_access_point" "efs_access_point" {
       owner_uid   = 1000
       permissions = "0777"
     }
-  }
-
-  tags = {
-    application = var.app_name
-    Name        = "${var.app_name}-backend-efs-access-point"
   }
 }
 
@@ -48,9 +45,8 @@ resource "aws_efs_mount_target" "efs_mount_target_2" {
 }
 
 resource "aws_s3_bucket" "efs_datasync_bucket" {
-  bucket = "${var.app_name}-backend-s3-bucket-efs-datasync"
-
-  tags = {
+  bucket  = "${var.app_name}-backend-s3-bucket-efs-datasync"
+  tags    = {
     application = var.app_name
     environment = var.environment
   }
@@ -67,7 +63,6 @@ resource "aws_datasync_task" "datasync_task" {
   destination_location_arn = aws_s3_bucket.efs_datasync_bucket.arn
   name                     = "${var.app_name}-backend-efs-datasync"
   source_location_arn      = aws_efs_file_system.efs_file_system.arn
-
   schedule {
     schedule_expression = "${var.efs_datasync_schedule}"
   }
