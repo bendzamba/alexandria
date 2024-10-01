@@ -148,5 +148,5 @@ resource "aws_lambda_permission" "apigateway_invoke_lambda" {
   principal     = "apigateway.amazonaws.com"
 
   # This gives permission to the specific API Gateway to invoke the Lambda
-  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.api_gateway_res_api.id}/*/ANY/${aws_api_gateway_resource.api_gateway_resource.path_part}"
+  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.api_gateway_rest_api.id}/*/ANY/${aws_api_gateway_resource.api_gateway_resource.path_part}"
 }
