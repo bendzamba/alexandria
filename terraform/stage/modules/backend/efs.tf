@@ -46,3 +46,29 @@ resource "aws_efs_mount_target" "efs_mount_target_2" {
   subnet_id       = aws_subnet.private_subnet_1.id
   security_groups = [aws_security_group.efs_security_group.id]
 }
+
+resource "aws_s3_bucket" "efs_datasync_bucket" {
+  bucket = "${var.app_name}-backend-s3-bucket-efs-datasync"
+
+  tags = {
+    application = var.app_name
+    environment = var.environment
+  }
+}
+
+resource "aws_s3_bucket_versioning" "efs_datasync_s3_bucket_versioning" {
+  bucket = aws_s3_bucket.efs_datasync_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_datasync_task" "datasync_task" {
+  destination_location_arn = aws_s3_bucket.efs_datasync_bucket.arn
+  name                     = "${var.app_name}-backend-efs-datasync"
+  source_location_arn      = aws_efs_file_system.efs_file_system.arn
+
+  schedule {
+    schedule_expression = "${var.efs_datasync_schedule}"
+  }
+} 

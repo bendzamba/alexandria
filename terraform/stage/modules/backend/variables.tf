@@ -29,3 +29,7 @@ variable "route53_zone_id" {
 variable "region" {
   type = string
 }
+
+variable "efs_datasync_schedule" {
+  type = string
+}
