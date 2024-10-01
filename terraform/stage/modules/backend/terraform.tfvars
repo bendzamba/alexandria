@@ -1,1 +1,0 @@
-efs_datasync_schedule = "cron(0 12 ? * SUN,WED *)"

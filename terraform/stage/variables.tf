@@ -16,6 +16,10 @@ variable "environment" {
   type = string
 }
 
+variable "efs_datasync_schedule" {
+  type = string
+}
+
 locals {
   # This is significant for getting our stage to be accessible in AWS
   # If we are in production, we want our domains, front and backend, to be 'as-is' with no additional subdomains

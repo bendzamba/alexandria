@@ -72,6 +72,7 @@ module "backend" {
   production_certificate_arn  = aws_acm_certificate.acm_certificate_production.arn
   stage_certificate_arn       = aws_acm_certificate.acm_certificate_stage.arn
   domain_prefix               = local.domain_prefix
+  efs_datasync_schedule       = var.efs_datasync_schedule
   depends_on                  = [ 
     aws_acm_certificate.acm_certificate_production,
     aws_acm_certificate_validation.acm_certificate_validation_production,
