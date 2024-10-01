@@ -3,11 +3,11 @@ data "aws_caller_identity" "current" {}
 resource "aws_cloudfront_distribution" "cloudfront_distribution" {
 
   enabled             = true
-  aliases             = [var.app_domain, "www.${var.app_domain}"]
+  aliases             = var.environment == "production" ? [var.app_domain, "www.${var.app_domain}"] : ["${var.domain_prefix}${var.app_domain}"]
   default_root_object = "index.html"
   is_ipv6_enabled     = true
   wait_for_deployment = true
-  comment             = "CloudFront distribution for ${var.app_name} frontend"
+  comment             = "CloudFront distribution for ${var.app_name} frontend, ${var.environment} stage"
 
   default_cache_behavior {
     allowed_methods         = ["GET", "HEAD", "OPTIONS"]
@@ -74,14 +74,14 @@ data "aws_iam_policy_document" "iam_policy_document" {
 
     condition {
       test      = "StringEquals"
-      values   = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_origin_access_control.cloudfront_origin_access_control.id}"]
+      values    = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_origin_access_control.cloudfront_origin_access_control.id}"]
       variable  = "AWS:SourceArn"
     }
   }
 }
 
 resource "aws_route53_record" "route53_record_www" {
-  name    = "www.${var.app_domain}"
+  name    = var.environment == "production" ? "www.${var.app_domain}" : "${var.domain_prefix}${var.app_domain}"
   type    = "A"
   zone_id = var.route53_zone_id
 
