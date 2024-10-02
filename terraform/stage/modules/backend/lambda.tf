@@ -60,11 +60,6 @@ resource "aws_iam_policy" "lambda_vpc_policy" {
         Resource = "*"
       },
       {
-        Effect    = "Allow"
-        Action    = "lambda:InvokeFunction"
-        Resource  = "arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:${aws_lambda_function.lambda_function.function_name}"
-      },
-      {
         Effect = "Allow"
         Action = [
           "logs:CreateLogGroup",
@@ -107,11 +102,33 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc_policy_attachment" {
   policy_arn  = aws_iam_policy.lambda_vpc_policy.arn
 }
 
+# Inline template for the lambda function
+data "template_file" "lambda_code" {
+  template = <<-EOT
+    def handler(event, context):
+        return {
+            'statusCode': 200,
+            'body': 'Hello, World!'
+        }
+  EOT
+}
+
+# Create a temporary file with the rendered template content
+resource "local_file" "lambda_code" {
+  content  = data.template_file.lambda_code.rendered
+  filename = "${path.module}/lambda.py"
+}
+
+# Create the archive from the template
+data "archive_file" "lambda_zip" {
+  type            = "zip"
+  source_file     = local_file.lambda_code.filename
+  output_path     = "${path.module}/lambda.zip"
+}
 
 resource "aws_lambda_function" "lambda_function" {
   function_name = "${var.app_name}-backend-lambda-function-${var.environment}"
-  s3_bucket     = "${var.app_name}-backend-s3-bucket-lambda-code-${var.environment}"
-  s3_key        = "${var.app_name}.zip"
+  filename      = data.archive_file.lambda_zip.output_path
   role          = aws_iam_role.lambda_exec.arn
   handler       = "app.main.handler"
   runtime       = "python3.12"
@@ -119,7 +136,10 @@ resource "aws_lambda_function" "lambda_function" {
 
   environment {
     variables = {
-      DATABASE_URL = "/mnt/efs/${var.app_name}.db"
+      DATABASE_URL          = "/mnt/efs/${var.app_name}.db",
+      LOCAL_IMAGE_DIRECTORY = "/tmp",
+      S3_IMAGE_BUCKET       = aws_s3_bucket.lambda_bucket.bucket,
+      STORAGE_BACKEND       = "s3"
     }
   }
 
@@ -133,7 +153,11 @@ resource "aws_lambda_function" "lambda_function" {
     security_group_ids = [aws_security_group.lambda_security_group.id]
   }
 
-  depends_on = [ aws_efs_mount_target.efs_mount_target_1, aws_efs_mount_target.efs_mount_target_2 ]
+  depends_on = [
+    aws_efs_mount_target.efs_mount_target_1,
+    aws_efs_mount_target.efs_mount_target_2,
+    aws_iam_role_policy_attachment.lambda_vpc_policy_attachment
+  ]
 
   tags = {
     application = var.app_name
@@ -149,4 +173,25 @@ resource "aws_lambda_permission" "apigateway_invoke_lambda" {
 
   # This gives permission to the specific API Gateway to invoke the Lambda
   source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.api_gateway_rest_api.id}/*/ANY/${aws_api_gateway_resource.api_gateway_resource.path_part}"
+}
+
+resource "aws_iam_policy" "lambda_invoke_policy" {
+  name   = "${var.app_name}-lambda-invoke-policy-${var.environment}"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Action    = "lambda:InvokeFunction"
+        Resource  = "arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:${aws_lambda_function.lambda_function.function_name}"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_invoke_policy_attachment" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = aws_iam_policy.lambda_invoke_policy.arn
+
+  depends_on = [aws_lambda_function.lambda_function]
 }
