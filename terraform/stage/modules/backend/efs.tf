@@ -100,7 +100,7 @@ resource "aws_iam_role_policy_attachment" "datasync_s3_policy_attach" {
 resource "aws_datasync_location_efs" "efs_location" {
   ec2_config {
     security_group_arns = [aws_security_group.efs_security_group.arn]
-    subnet_arn          = aws_subnet.public_subnet.arn
+    subnet_arn          = aws_subnet.private_subnet_1.arn
   }
   efs_file_system_arn = aws_efs_file_system.efs_file_system.arn
 }
