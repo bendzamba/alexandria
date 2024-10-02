@@ -59,11 +59,75 @@ resource "aws_s3_bucket_versioning" "efs_datasync_s3_bucket_versioning" {
   }
 }
 
+resource "aws_iam_role" "datasync_s3_role" {
+  name = "${var.app_name}-datasync-s3-role-${var.environment}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = "sts:AssumeRole",
+      Effect = "Allow",
+      Principal = {
+        Service = "datasync.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_policy" "datasync_s3_policy" {
+  name = "${var.app_name}-datasync-s3-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "s3:ListBucket",
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ],
+        Effect   = "Allow",
+        Resource = [
+          aws_s3_bucket.efs_datasync_bucket.arn,
+          "${aws_s3_bucket.efs_datasync_bucket.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "datasync_s3_policy_attach" {
+  role       = aws_iam_role.datasync_s3_role.name
+  policy_arn = aws_iam_policy.datasync_s3_policy.arn
+}
+
+resource "aws_datasync_location_efs" "efs_location" {
+  ec2_config {
+    security_group_arns = [aws_security_group.efs_security_group.arn]
+    subnet_arn          = aws_subnet.public_subnet.arn
+  }
+  efs_file_system_arn = aws_efs_file_system.efs_file_system.arn
+}
+
+resource "aws_datasync_location_s3" "s3_location" {
+  s3_bucket_arn = aws_s3_bucket.efs_datasync_bucket.arn
+  subdirectory  = "/"  # Set this if you want to sync only part of the bucket
+  s3_config {
+    bucket_access_role_arn = aws_iam_role.datasync_s3_role.arn
+  }
+}
+
 resource "aws_datasync_task" "datasync_task" {
-  destination_location_arn = aws_s3_bucket.efs_datasync_bucket.arn
+  destination_location_arn = aws_datasync_location_s3.s3_location.arn
   name                     = "${var.app_name}-backend-efs-datasync"
-  source_location_arn      = aws_efs_file_system.efs_file_system.arn
+  source_location_arn      = aws_datasync_location_efs.efs_location.arn
   schedule {
     schedule_expression = "${var.efs_datasync_schedule}"
   }
+  depends_on = [
+    aws_iam_role.datasync_s3_role,
+    aws_iam_policy.datasync_s3_policy,
+    aws_iam_role_policy_attachment.datasync_s3_policy_attach
+  ]
 } 
