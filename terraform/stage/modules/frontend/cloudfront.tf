@@ -74,7 +74,7 @@ data "aws_iam_policy_document" "iam_policy_document" {
 
     condition {
       test      = "StringEquals"
-      values    = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_origin_access_control.cloudfront_origin_access_control.id}"]
+      values    = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.cloudfront_distribution.id}"]
       variable  = "AWS:SourceArn"
     }
   }
