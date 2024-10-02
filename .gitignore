@@ -39,6 +39,8 @@ images/*.svg
 *.tfstate
 *.tfstate.*
 .terraform/
+terraform/stage/modules/backend/lambda.py
+terraform/stage/modules/backend/lambda.zip
 
 # lambda zip
 alexandria.zip
