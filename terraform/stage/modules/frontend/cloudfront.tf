@@ -12,7 +12,7 @@ resource "aws_cloudfront_distribution" "cloudfront_distribution" {
   default_cache_behavior {
     allowed_methods         = ["GET", "HEAD", "OPTIONS"]
     cached_methods          = ["GET", "HEAD", "OPTIONS"]
-    target_origin_id        = aws_s3_bucket.s3_bucket.bucket
+    target_origin_id        = aws_s3_bucket.frontend_s3_bucket.bucket
     viewer_protocol_policy  = "redirect-to-https"
     compress                = true
     forwarded_values {
@@ -24,9 +24,9 @@ resource "aws_cloudfront_distribution" "cloudfront_distribution" {
   }
 
   origin {
-    domain_name               = aws_s3_bucket.s3_bucket.bucket_regional_domain_name
+    domain_name               = aws_s3_bucket.frontend_s3_bucket.bucket_regional_domain_name
     origin_access_control_id  = aws_cloudfront_origin_access_control.cloudfront_origin_access_control.id
-    origin_id                 = aws_s3_bucket.s3_bucket.id
+    origin_id                 = aws_s3_bucket.frontend_s3_bucket.id
   }
 
   restrictions {
@@ -36,7 +36,7 @@ resource "aws_cloudfront_distribution" "cloudfront_distribution" {
   }
 
   viewer_certificate {
-    acm_certificate_arn       = var.environment == "production" ? var.production_certificate_arn : var.stage_certificate_arn
+    acm_certificate_arn       = var.certificate_arn
     minimum_protocol_version  = "TLSv1.2_2021"
     ssl_support_method        = "sni-only"
   }
@@ -70,7 +70,7 @@ data "aws_iam_policy_document" "iam_policy_document" {
     }
 
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.s3_bucket.arn}/*"]
+    resources = ["${aws_s3_bucket.frontend_s3_bucket.arn}/*"]
 
     condition {
       test      = "StringEquals"
