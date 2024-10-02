@@ -29,7 +29,10 @@ resource "aws_api_gateway_integration" "api_gateway_integration" {
 }
 
 resource "aws_api_gateway_deployment" "api_gateway_deployment" {
-  depends_on  = [aws_api_gateway_integration.api_gateway_integration]
+  depends_on  = [
+    aws_api_gateway_integration.api_gateway_integration,
+    aws_api_gateway_method.api_gateway_any_method
+    ]
   rest_api_id = aws_api_gateway_rest_api.api_gateway_rest_api.id
 }
 
@@ -46,7 +49,7 @@ resource "aws_api_gateway_stage" "api_gateway_stage" {
 # If we are in production, the 'stage' is not explicit, meaning we don't want
 # production.api.myalexandria.ai
 # var.domain_prefix is either a stage subdomain with '.' or an empty string, in the case of production
-resource "aws_route53_record" "api_gateway_cname_record" {
+resource "aws_route53_record" "api_gateway_a_record" {
   name    = "${var.domain_prefix}api.${var.app_domain}"
   type    = "A"
   zone_id = var.route53_zone_id
@@ -65,7 +68,11 @@ resource "aws_route53_record" "api_gateway_cname_record" {
 # production certificate if in production, which covers *.<domain>, which includes api.<domain>
 resource "aws_api_gateway_domain_name" "api_gateway_custom_domain" {
   domain_name               = "${var.domain_prefix}api.${var.app_domain}"
-  regional_certificate_arn  = var.environment == "production" ? var.production_certificate_arn : var.stage_certificate_arn
+  regional_certificate_arn  = var.certificate_arn
+  tags                      = {
+    application = var.app_name
+    environment = var.environment
+  }
   endpoint_configuration {
     types = ["REGIONAL"]
   }
@@ -104,7 +111,9 @@ resource "aws_iam_policy" "api_gateway_cloudwatch_policy" {
         Action   = [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
-          "logs:PutLogEvents"
+          "logs:PutLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams"
         ],
         Effect   = "Allow",
         Resource = "*"
@@ -122,9 +131,22 @@ resource "aws_iam_role_policy_attachment" "attach_api_gateway_cloudwatch_policy"
 # Assign the IAM Role to API Gateway Account
 resource "aws_api_gateway_account" "api_gateway_account" {
   cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch_role.arn
+
+  depends_on = [
+    aws_iam_role.api_gateway_cloudwatch_role,
+    aws_iam_policy.api_gateway_cloudwatch_policy,
+    aws_iam_role_policy_attachment.attach_api_gateway_cloudwatch_policy
+  ]
 }
 
-resource "aws_api_gateway_method_response" "cors_response" {
+resource "aws_api_gateway_method" "api_gateway_options_method" {
+  rest_api_id   = aws_api_gateway_rest_api.api_gateway_rest_api.id
+  resource_id   = aws_api_gateway_resource.api_gateway_resource.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_method_response" "api_gateway_options_method_response" {
   rest_api_id         = aws_api_gateway_rest_api.api_gateway_rest_api.id
   resource_id         = aws_api_gateway_resource.api_gateway_resource.id
   http_method         = "OPTIONS"
@@ -134,7 +156,17 @@ resource "aws_api_gateway_method_response" "cors_response" {
     "method.response.header.Access-Control-Allow-Methods" = true
     "method.response.header.Access-Control-Allow-Origin"  = true
   }
+  depends_on = [aws_api_gateway_method.api_gateway_options_method]
 }
+
+resource "aws_api_gateway_integration" "cors_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.api_gateway_rest_api.id
+  resource_id             = aws_api_gateway_resource.api_gateway_resource.id
+  http_method             = "OPTIONS"
+  type                    = "MOCK"
+  integration_http_method = "POST"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+} 
 
 resource "aws_api_gateway_integration_response" "cors_integration_response" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway_rest_api.id
@@ -151,5 +183,10 @@ resource "aws_api_gateway_integration_response" "cors_integration_response" {
   response_templates = {
     "application/json" = ""
   }
+
+  depends_on = [
+    aws_api_gateway_method.api_gateway_options_method,
+    aws_api_gateway_integration.cors_integration
+  ]
 }
 
