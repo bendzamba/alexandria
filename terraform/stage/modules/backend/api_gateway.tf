@@ -46,6 +46,17 @@ resource "aws_api_gateway_stage" "api_gateway_stage" {
   }
 }
 
+resource "aws_api_gateway_method_settings" "api_gateway_method_settings" {
+  rest_api_id = aws_api_gateway_rest_api.api_gateway_rest_api.id
+  stage_name  = aws_api_gateway_stage.api_gateway_stage.stage_name
+  method_path = "*/*"
+  settings {
+    logging_level = "INFO"
+    data_trace_enabled = true
+    metrics_enabled = true
+  }
+}
+
 # If we are in production, the 'stage' is not explicit, meaning we don't want
 # production.api.myalexandria.ai
 # var.domain_prefix is either a stage subdomain with '.' or an empty string, in the case of production
@@ -149,39 +160,34 @@ resource "aws_api_gateway_method" "api_gateway_options_method" {
 resource "aws_api_gateway_method_response" "api_gateway_options_method_response" {
   rest_api_id         = aws_api_gateway_rest_api.api_gateway_rest_api.id
   resource_id         = aws_api_gateway_resource.api_gateway_resource.id
-  http_method         = "OPTIONS"
-  status_code         = "200"
+  http_method         = aws_api_gateway_method.api_gateway_options_method.http_method
+  status_code         = 200
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = true
     "method.response.header.Access-Control-Allow-Methods" = true
     "method.response.header.Access-Control-Allow-Origin"  = true
   }
-  depends_on = [aws_api_gateway_method.api_gateway_options_method]
+  depends_on          = [aws_api_gateway_method.api_gateway_options_method]
 }
 
 resource "aws_api_gateway_integration" "cors_integration" {
   rest_api_id             = aws_api_gateway_rest_api.api_gateway_rest_api.id
   resource_id             = aws_api_gateway_resource.api_gateway_resource.id
-  http_method             = "OPTIONS"
+  http_method             = aws_api_gateway_method.api_gateway_options_method.http_method
   type                    = "MOCK"
-  integration_http_method = "POST"
-  passthrough_behavior    = "WHEN_NO_MATCH"
+  depends_on              = [aws_api_gateway_method.api_gateway_options_method]
 } 
 
 resource "aws_api_gateway_integration_response" "cors_integration_response" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway_rest_api.id
   resource_id = aws_api_gateway_resource.api_gateway_resource.id
-  http_method = "OPTIONS"
-  status_code = "200"
+  http_method = aws_api_gateway_method.api_gateway_options_method.http_method
+  status_code = aws_api_gateway_method_response.api_gateway_options_method_response.status_code
 
   response_parameters = {
     "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
     "method.response.header.Access-Control-Allow-Methods" = "'DELETE, GET, HEAD, OPTIONS, PATCH, POST'"
     "method.response.header.Access-Control-Allow-Origin"  = "'*'"
-  }
-
-  response_templates = {
-    "application/json" = ""
   }
 
   depends_on = [
