@@ -5,9 +5,9 @@
 # application files to S3
 
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = "${var.app_name}-backend-s3-bucket-lambda-code-${var.environment}"
-
-  tags = {
+  bucket        = "${var.app_name}-backend-s3-bucket-lambda-code-${var.environment}"
+  force_destroy = true # Deletes all objects in bucket!
+  tags          = {
     application = var.app_name
     environment = var.environment
   }

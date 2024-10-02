@@ -1,7 +1,7 @@
 resource "aws_s3_bucket" "frontend_s3_bucket" {
-  bucket = "${var.app_name}-frontend-s3-bucket-${var.environment}"
-
-  tags = {
+  bucket        = "${var.app_name}-frontend-s3-bucket-${var.environment}"
+  force_destroy = true # Deletes all objects in bucket!
+  tags          = {
     application = var.app_name
     environment = var.environment
   }

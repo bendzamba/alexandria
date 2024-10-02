@@ -39,8 +39,9 @@ resource "aws_efs_mount_target" "efs_mount_target" {
 }
 
 resource "aws_s3_bucket" "efs_datasync_bucket" {
-  bucket  = "${var.app_name}-backend-s3-bucket-efs-datasync"
-  tags    = {
+  bucket        = "${var.app_name}-backend-s3-bucket-efs-datasync"
+  force_destroy = true # Deletes all objects in bucket!
+  tags          = {
     application = var.app_name
     environment = var.environment
   }
