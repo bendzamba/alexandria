@@ -10,11 +10,7 @@ variable "environment" {
   type = string
 }
 
-variable "production_certificate_arn" {
-  type = string
-}
-
-variable "stage_certificate_arn" {
+variable "certificate_arn" {
   type = string
 }
 
