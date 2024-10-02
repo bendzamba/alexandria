@@ -61,9 +61,8 @@ resource "aws_network_interface" "network_interface" {
   }
 }
 
-resource "aws_eip" "eip" {
+resource "aws_eip" "nat_gateway_eip" {
   domain            = "vpc"
-  network_interface = aws_network_interface.network_interface.id
   tags = {
     application = var.app_name
     Name        = "${var.app_name}-backend-elastic-ip"
@@ -71,7 +70,7 @@ resource "aws_eip" "eip" {
 }
 
 resource "aws_nat_gateway" "nat_gateway" {
-  allocation_id = aws_eip.eip.id
+  allocation_id = aws_eip.nat_gateway_eip.id
   subnet_id     = aws_subnet.public_subnet.id
   tags          = {
     application = var.app_name
@@ -90,12 +89,8 @@ resource "aws_route_table" "private_route_table" {
     application = var.app_name
   }
   route {
-    cidr_block = "10.0.0.0/16"
-    gateway_id = aws_nat_gateway.nat_gateway.id
-  }
-  route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = "local"
+    gateway_id = aws_nat_gateway.nat_gateway.id
   }
 }
 
@@ -106,12 +101,8 @@ resource "aws_route_table" "public_route_table" {
     application = var.app_name
   }
   route {
-    cidr_block = "10.0.0.0/16"
-    gateway_id = aws_internet_gateway.internet_gateway.id
-  }
-  route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = "local"
+    gateway_id = aws_internet_gateway.internet_gateway.id
   }
 }
 
