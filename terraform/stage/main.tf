@@ -51,14 +51,11 @@ module "frontend" {
   app_domain                  = var.app_domain
   environment                 = var.environment
   route53_zone_id             = data.aws_route53_zone.route53_zone.zone_id
-  production_certificate_arn  = aws_acm_certificate.acm_certificate_production.arn
-  stage_certificate_arn       = aws_acm_certificate.acm_certificate_stage.arn
+  certificate_arn             = aws_acm_certificate.acm_certificate_frontend.arn
   domain_prefix               = local.domain_prefix
   depends_on                  = [ 
-    aws_acm_certificate.acm_certificate_production,
-    aws_acm_certificate_validation.acm_certificate_validation_production,
-    aws_acm_certificate.acm_certificate_stage,
-    aws_acm_certificate_validation.acm_certificate_validation_stage,
+    aws_acm_certificate.acm_certificate_frontend,
+    aws_acm_certificate_validation.acm_certificate_validation_frontend
   ]
 }
 
@@ -69,15 +66,12 @@ module "backend" {
   environment                 = var.environment
   route53_zone_id             = data.aws_route53_zone.route53_zone.zone_id
   region                      = var.region
-  production_certificate_arn  = aws_acm_certificate.acm_certificate_production.arn
-  stage_certificate_arn       = aws_acm_certificate.acm_certificate_stage.arn
+  certificate_arn             = aws_acm_certificate.acm_certificate_backend.arn
   domain_prefix               = local.domain_prefix
   efs_datasync_schedule       = var.efs_datasync_schedule
   depends_on                  = [ 
-    aws_acm_certificate.acm_certificate_production,
-    aws_acm_certificate_validation.acm_certificate_validation_production,
-    aws_acm_certificate.acm_certificate_stage,
-    aws_acm_certificate_validation.acm_certificate_validation_stage,
+    aws_acm_certificate.acm_certificate_backend,
+    aws_acm_certificate_validation.acm_certificate_validation_backend,
   ]
 }
 
@@ -90,13 +84,13 @@ module "backend" {
 # These can all live in the same hosted zone for our Root Domain
 # These are also required by both our frontend and backend components
 
-# This covers our Root Domain plus api.<ROOT DOMAIN> for our backend API
+# This covers our frontend needs, meaning <ROOT DOMAIN>, www.<ROOT DOMAIN>, and <stage>.<ROOT DOMAIN>
 
-resource "aws_acm_certificate" "acm_certificate_production" {
+resource "aws_acm_certificate" "acm_certificate_frontend" {
   domain_name               = "${var.app_domain}"
   validation_method         = "DNS"
   subject_alternative_names = [
-    "api.${var.app_domain}"
+    "*.${var.app_domain}"
   ]
 
   tags = {
@@ -104,9 +98,9 @@ resource "aws_acm_certificate" "acm_certificate_production" {
   }
 }
 
-resource "aws_route53_record" "route53_records_production" {
+resource "aws_route53_record" "route53_records_frontend" {
   for_each = {
-    for dvo in aws_acm_certificate.acm_certificate_production.domain_validation_options : dvo.domain_name => {
+    for dvo in aws_acm_certificate.acm_certificate_frontend.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
@@ -121,16 +115,15 @@ resource "aws_route53_record" "route53_records_production" {
   zone_id         = data.aws_route53_zone.route53_zone.zone_id
 }
 
-resource "aws_acm_certificate_validation" "acm_certificate_validation_production" {
-  certificate_arn         = aws_acm_certificate.acm_certificate_production.arn
-  validation_record_fqdns = [for record in aws_route53_record.route53_records_production : record.fqdn]
+resource "aws_acm_certificate_validation" "acm_certificate_validation_frontend" {
+  certificate_arn         = aws_acm_certificate.acm_certificate_frontend.arn
+  validation_record_fqdns = [for record in aws_route53_record.route53_records_frontend : record.fqdn]
 }
 
-# This covers a wildcard subdomain for our Root Domain such as staging.<ROOT DOMAIN>
-# and also staging.api.<ROOT DOMAIN> for our backend API
+# This covers our backend needs, meaning api.<ROOT DOMAIN> and <stage>.api.<ROOT DOMAIN>
 
-resource "aws_acm_certificate" "acm_certificate_stage" {
-  domain_name               = "*.${var.app_domain}"
+resource "aws_acm_certificate" "acm_certificate_backend" {
+  domain_name               = "api.${var.app_domain}"
   validation_method         = "DNS"
   subject_alternative_names = [
     "*.api.${var.app_domain}"
@@ -141,9 +134,9 @@ resource "aws_acm_certificate" "acm_certificate_stage" {
   }
 }
 
-resource "aws_route53_record" "route53_records_stage" {
+resource "aws_route53_record" "route53_records_backend" {
   for_each = {
-    for dvo in aws_acm_certificate.acm_certificate_stage.domain_validation_options : dvo.domain_name => {
+    for dvo in aws_acm_certificate.acm_certificate_backend.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
@@ -158,7 +151,7 @@ resource "aws_route53_record" "route53_records_stage" {
   zone_id         = data.aws_route53_zone.route53_zone.zone_id
 }
 
-resource "aws_acm_certificate_validation" "acm_certificate_validation_stage" {
-  certificate_arn         = aws_acm_certificate.acm_certificate_stage.arn
-  validation_record_fqdns = [for record in aws_route53_record.route53_records_stage : record.fqdn]
+resource "aws_acm_certificate_validation" "acm_certificate_validation_backend" {
+  certificate_arn         = aws_acm_certificate.acm_certificate_backend.arn
+  validation_record_fqdns = [for record in aws_route53_record.route53_records_backend : record.fqdn]
 }
