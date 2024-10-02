@@ -136,7 +136,7 @@ resource "aws_lambda_function" "lambda_function" {
 
   environment {
     variables = {
-      DATABASE_URL          = "/mnt/efs/${var.app_name}.db",
+      DATABASE_URL          = "sqlite:////mnt/lambda/${var.app_name}.db",
       LOCAL_IMAGE_DIRECTORY = "/tmp",
       S3_IMAGE_BUCKET       = aws_s3_bucket.lambda_bucket.bucket,
       STORAGE_BACKEND       = "s3"
@@ -154,8 +154,7 @@ resource "aws_lambda_function" "lambda_function" {
   }
 
   depends_on = [
-    aws_efs_mount_target.efs_mount_target_1,
-    aws_efs_mount_target.efs_mount_target_2,
+    aws_efs_mount_target.efs_mount_target,
     aws_iam_role_policy_attachment.lambda_vpc_policy_attachment
   ]
 
@@ -172,7 +171,7 @@ resource "aws_lambda_permission" "apigateway_invoke_lambda" {
   principal     = "apigateway.amazonaws.com"
 
   # This gives permission to the specific API Gateway to invoke the Lambda
-  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.api_gateway_rest_api.id}/*/ANY/${aws_api_gateway_resource.api_gateway_resource.path_part}"
+  source_arn    = "arn:aws:execute-api:${var.region}:${data.aws_caller_identity.current.account_id}:${aws_api_gateway_rest_api.api_gateway_rest_api.id}/*/*/${aws_api_gateway_resource.api_gateway_resource.path_part}"
 }
 
 resource "aws_iam_policy" "lambda_invoke_policy" {
