@@ -146,7 +146,7 @@ resource "aws_lambda_function" "lambda_function" {
     variables = {
       DATABASE_URL          = "sqlite:////mnt/lambda/${var.app_name}.db",
       LOCAL_IMAGE_DIRECTORY = "/tmp",
-      S3_IMAGE_BUCKET       = aws_s3_bucket.lambda_bucket.bucket,
+      S3_IMAGE_BUCKET       = aws_s3_bucket.images_bucket.bucket,
       STORAGE_BACKEND       = "s3"
     }
   }
