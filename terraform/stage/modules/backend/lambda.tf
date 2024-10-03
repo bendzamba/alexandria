@@ -96,7 +96,8 @@ resource "aws_iam_policy" "lambda_vpc_policy" {
       {
         Effect   = "Allow"
         Action   = [
-          "s3:PutObject"
+          "s3:PutObject",
+          "s3:GetObject"
         ]
         Resource = "arn:aws:s3:::${aws_s3_bucket.images_bucket.bucket}/*"  # The bucket you're writing to
       }
