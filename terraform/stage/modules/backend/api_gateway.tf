@@ -28,24 +28,6 @@ resource "aws_api_gateway_integration" "api_gateway_integration" {
   integration_http_method = "POST"
 }
 
-resource "aws_api_gateway_deployment" "api_gateway_deployment" {
-  depends_on  = [
-    aws_api_gateway_integration.api_gateway_integration,
-    aws_api_gateway_method.api_gateway_any_method
-    ]
-  rest_api_id = aws_api_gateway_rest_api.api_gateway_rest_api.id
-}
-
-resource "aws_api_gateway_stage" "api_gateway_stage" {
-  deployment_id = aws_api_gateway_deployment.api_gateway_deployment.id
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway_rest_api.id
-  stage_name    = var.environment
-  tags          = {
-    application = var.app_name
-    environment = var.environment
-  }
-}
-
 resource "aws_api_gateway_method_settings" "api_gateway_method_settings" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway_rest_api.id
   stage_name  = aws_api_gateway_stage.api_gateway_stage.stage_name
@@ -75,8 +57,7 @@ resource "aws_route53_record" "api_gateway_a_record" {
 # If we are in production, the 'stage' is not explicit, meaning we don't want
 # production.api.<domain>
 # var.domain_prefix is either a stage subdomain with '.' or an empty string, in the case of production
-# Similarly, we need the stage certificate if not in production, which covers *.api.<domain>, and the 
-# production certificate if in production, which covers *.<domain>, which includes api.<domain>
+# The certificate we need has been determined upstream
 resource "aws_api_gateway_domain_name" "api_gateway_custom_domain" {
   domain_name               = "${var.domain_prefix}api.${var.app_domain}"
   regional_certificate_arn  = var.certificate_arn
@@ -150,6 +131,7 @@ resource "aws_api_gateway_account" "api_gateway_account" {
   ]
 }
 
+# CORS
 resource "aws_api_gateway_method" "api_gateway_options_method" {
   rest_api_id   = aws_api_gateway_rest_api.api_gateway_rest_api.id
   resource_id   = aws_api_gateway_resource.api_gateway_resource.id
@@ -157,35 +139,25 @@ resource "aws_api_gateway_method" "api_gateway_options_method" {
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_method_response" "api_gateway_options_method_response" {
-  rest_api_id         = aws_api_gateway_rest_api.api_gateway_rest_api.id
-  resource_id         = aws_api_gateway_resource.api_gateway_resource.id
-  http_method         = aws_api_gateway_method.api_gateway_options_method.http_method
-  status_code         = 200
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true
-    "method.response.header.Access-Control-Allow-Methods" = true
-    "method.response.header.Access-Control-Allow-Origin"  = true
-  }
-  depends_on          = [aws_api_gateway_method.api_gateway_options_method]
-}
-
 resource "aws_api_gateway_integration" "cors_integration" {
   rest_api_id             = aws_api_gateway_rest_api.api_gateway_rest_api.id
   resource_id             = aws_api_gateway_resource.api_gateway_resource.id
   http_method             = aws_api_gateway_method.api_gateway_options_method.http_method
   type                    = "MOCK"
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
   depends_on              = [aws_api_gateway_method.api_gateway_options_method]
-} 
+}
 
 resource "aws_api_gateway_integration_response" "cors_integration_response" {
   rest_api_id = aws_api_gateway_rest_api.api_gateway_rest_api.id
   resource_id = aws_api_gateway_resource.api_gateway_resource.id
   http_method = aws_api_gateway_method.api_gateway_options_method.http_method
-  status_code = 200
+  status_code = "200"
 
   response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
     "method.response.header.Access-Control-Allow-Methods" = "'DELETE, GET, HEAD, OPTIONS, PATCH, POST'"
     "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
@@ -196,3 +168,39 @@ resource "aws_api_gateway_integration_response" "cors_integration_response" {
   ]
 }
 
+resource "aws_api_gateway_method_response" "api_gateway_options_method_response" {
+  rest_api_id         = aws_api_gateway_rest_api.api_gateway_rest_api.id
+  resource_id         = aws_api_gateway_resource.api_gateway_resource.id
+  http_method         = aws_api_gateway_method.api_gateway_options_method.http_method
+  status_code         = "200"
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = false
+    "method.response.header.Access-Control-Allow-Methods" = false
+    "method.response.header.Access-Control-Allow-Origin"  = false
+  }
+  response_models = {
+    "application/json" = "Empty"
+  }
+  depends_on          = [aws_api_gateway_method.api_gateway_options_method]
+}
+
+# Deployment
+resource "aws_api_gateway_deployment" "api_gateway_deployment" {
+  depends_on  = [
+    aws_api_gateway_integration.api_gateway_integration,
+    aws_api_gateway_integration.cors_integration,
+    aws_api_gateway_method.api_gateway_any_method,
+    aws_api_gateway_method.api_gateway_options_method
+    ]
+  rest_api_id = aws_api_gateway_rest_api.api_gateway_rest_api.id
+}
+
+resource "aws_api_gateway_stage" "api_gateway_stage" {
+  deployment_id = aws_api_gateway_deployment.api_gateway_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.api_gateway_rest_api.id
+  stage_name    = var.environment
+  tags          = {
+    application = var.app_name
+    environment = var.environment
+  }
+}
