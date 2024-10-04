@@ -38,7 +38,7 @@ terraform {
 
 provider "aws" {
   region  = var.region
-  profile = "terraform-alexandria"
+  profile = var.aws_profile != "" ? var.aws_profile : null
 }
 
 data "aws_route53_zone" "route53_zone" {
