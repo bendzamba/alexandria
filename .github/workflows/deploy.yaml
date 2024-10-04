@@ -89,7 +89,7 @@ jobs:
   frontend:
     name: frontend
     runs-on: ubuntu-latest
-    needs: infrastructure  # Ensure backend runs after infrastructure
+    needs: infrastructure  # Ensure frontend runs after infrastructure
     permissions:
       id-token: write
       contents: read
