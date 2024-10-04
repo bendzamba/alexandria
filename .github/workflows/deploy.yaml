@@ -16,6 +16,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    defaults:
+      run:
+        working-directory: ./terraform/stage
 
     steps:
       - name: Checkout repository
