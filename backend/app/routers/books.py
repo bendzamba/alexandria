@@ -12,10 +12,8 @@ from app.models.openlibrary import Works
 from app.models.exception import ExceptionHandler
 from app.services.openlibrary import get_open_library
 from app.db.sqlite import get_db
-from app.utils.image import Image
 from sqlmodel import Session, select
 
-image = Image()
 
 router = APIRouter()
 
@@ -23,7 +21,7 @@ router = APIRouter()
 @router.get("/", status_code=status.HTTP_200_OK, response_model=list[BookPublic])
 def get_books(db: Session = Depends(get_db)):
     books = db.exec(select(Book)).all()
-    return books
+    return [BookPublic.model_validate(book).model_dump() for book in books]
 
 
 @router.get(
@@ -38,7 +36,8 @@ def get_book(
     book = db.get(Book, book_id)
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
-    return book
+    book_public_with_bookshelves = BookPublicWithBookshelves.model_validate(book)
+    return book_public_with_bookshelves.model_dump()
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
@@ -48,8 +47,7 @@ async def create_book(
     open_library=Depends(get_open_library)
 ):
     await open_library.fetch_image_from_olid(book_create.olid)
-    cover_uri = open_library.get_cover_uri()
-    db_book = Book.model_validate(book_create, update={"cover_uri": cover_uri})
+    db_book = Book.model_validate(book_create)
     db.add(db_book)
     db.commit()
     return None
@@ -70,8 +68,6 @@ async def update_book(
 
     if "olid" in book_data:
         await open_library.fetch_image_from_olid(book_update.olid)
-        cover_uri = open_library.get_cover_uri()
-        book_data.update({"cover_uri": cover_uri})
 
     db_book.sqlmodel_update(book_data)
     db.add(db_book)

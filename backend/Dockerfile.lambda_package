@@ -1,0 +1,19 @@
+FROM python:3.12-slim
+
+# Install AWS CLI and necessary tools
+RUN apt-get update && apt-get install -y zip
+
+# Set work directory inside container
+WORKDIR /var/task
+
+# Copy over the app and requirements into container
+COPY requirements.txt ./
+COPY app/ ./app
+
+RUN pip install -r requirements.txt -t ./python
+
+RUN cd python \
+  && cp -r ../app/ .
+
+RUN cd python \
+  && zip -r9 ../alexandria.zip . -x "*/__pycache__/*" -x "app/.env"

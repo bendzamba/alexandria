@@ -2,6 +2,9 @@ from app.models.book_bookshelf import BookBookshelfLink
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, TYPE_CHECKING, List
 from enum import Enum
+from app.utils.images.factory import get_image_handler
+
+image_handler = get_image_handler()
 
 if TYPE_CHECKING:
     from app.models.bookshelf import Bookshelf  # Only imported when type checking
@@ -29,7 +32,6 @@ class BookBase(SQLModel):
 
 class Book(BookBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    cover_uri: str
     bookshelves: List["Bookshelf"] = Relationship(
         back_populates="books",
         link_model=BookBookshelfLink,
@@ -43,7 +45,13 @@ class BookCreate(BookBase):
 
 class BookPublic(BookBase):
     id: int
-    cover_uri: str
+    cover_uri: str | None = None
+
+    def model_dump(self, **kwargs):
+        data = super().model_dump(**kwargs)
+        data["cover_uri"] = image_handler.get_image_uri(self.olid)
+
+        return data
 
 
 class BookUpdate(SQLModel):

@@ -1,5 +1,6 @@
 import pytest
 import random
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 from app.models.bookshelf import Bookshelf, SortKey # noqa: F401
@@ -136,14 +137,19 @@ def test_delete_bookshelf_not_exists(client: TestClient, seed_bookshelf, create_
 
 
 def test_add_book_to_bookshelf(client: TestClient, seed_bookshelf, seed_book, create_bookshelf, create_book):
-    body = {"book_ids": [create_book.id]}
-    response = client.post(f"/bookshelves/{create_bookshelf.id}/books", json=body)
-    assert response.status_code == 201
-    assert response.json() is None
+    with patch("app.models.book.image_handler") as mock_image_handler:
+        mock_s3_uri = "https://mock-s3-bucket.s3.amazonaws.com/abcde.jpg"
+        mock_image_handler.get_image_uri.return_value = mock_s3_uri
 
-    response = client.get(f"/bookshelves/{create_bookshelf.id}")
-    assert response.status_code == 200
-    assert response.json() == create_bookshelf.model_dump() | {"books": [create_book.model_dump()]}
+        body = {"book_ids": [create_book.id]}
+        response = client.post(f"/bookshelves/{create_bookshelf.id}/books", json=body)
+        assert response.status_code == 201
+        assert response.json() is None
+
+        response = client.get(f"/bookshelves/{create_bookshelf.id}")
+        assert response.status_code == 200
+        cover = {"cover_uri": mock_s3_uri}
+        assert response.json() == create_bookshelf.model_dump() | {"books": [create_book.model_dump() | cover]}
 
 
 def test_add_book_to_bookshelf_bookshelf_not_exists(client: TestClient, seed_bookshelf, seed_book, create_bookshelf, create_book):
@@ -189,6 +195,11 @@ def test_delete_book_cascade(client: TestClient, seed_bookshelf_book, create_boo
 
 
 def test_get_books_not_on_bookshelf(client: TestClient, seed_bookshelf, seed_book, create_book, create_bookshelf):
-    response = client.get(f"/bookshelves/{create_bookshelf.id}/books/exclude/")
-    assert response.status_code == 200
-    assert response.json() == [create_book.model_dump()]
+    with patch("app.models.book.image_handler") as mock_image_handler:
+        mock_s3_uri = "https://mock-s3-bucket.s3.amazonaws.com/abcde.jpg"
+        mock_image_handler.get_image_uri.return_value = mock_s3_uri
+    
+        response = client.get(f"/bookshelves/{create_bookshelf.id}/books/exclude/")
+        assert response.status_code == 200
+        cover = {"cover_uri": mock_s3_uri}
+        assert response.json() == [create_book.model_dump() | cover]

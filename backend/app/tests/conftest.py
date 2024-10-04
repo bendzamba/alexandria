@@ -28,9 +28,13 @@ class OpenLibrary:
             "edition_key": ["abcde", "fghij"]
         }
         return Works(**{"works": [Work(**work_doc)]})
-    
-os.environ["IMAGES_DIRECTORY_NAME"] = "images"
-os.environ["IMAGES_DIRECTORY_PATH"] = "../../"
+
+# Using S3 in mocks. Fewer bits to mock
+os.environ["STORAGE_BACKEND"] = "s3"
+os.environ["LOCAL_IMAGE_DIRECTORY"] = "../../../images"
+os.environ["S3_IMAGE_BUCKET"] = "alexandria-images-s3-bucket-production"
+os.environ["API_URL"] = "http://localhost:8000"
+os.environ["API_IMAGE_MOUNT_PATH"] = "images"
 # We need to set environment variables prior to this line to be picked up in main.py
 from main import app # noqa
 
@@ -58,7 +62,7 @@ def client_fixture(session: Session, open_library: OpenLibrary):
         return open_library
 
     app.dependency_overrides[get_db] = get_session_override  
-    app.dependency_overrides[get_open_library] = get_open_library_override  
+    app.dependency_overrides[get_open_library] = get_open_library_override
 
     client = TestClient(app)  
     yield client  

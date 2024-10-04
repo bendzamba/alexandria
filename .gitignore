@@ -1,12 +1,12 @@
+# local setup
 **/__pycache__
 alexandria.db
 venv
 backend/.vscode
 .DS_Store
+
 # TS -> JS files
 frontend/dist
-
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
 frontend/node_modules
@@ -31,4 +31,19 @@ frontend/yarn-debug.log*
 frontend/yarn-error.log*
 
 # static assets
-images/
+images/*.jpg
+images/*.png
+images/*.svg
+
+# terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform/stage/modules/backend/lambda.py
+terraform/stage/modules/backend/lambda.zip
+
+# lambda zip
+alexandria.zip
+lambda_function.zip
+
+backend/python/*
