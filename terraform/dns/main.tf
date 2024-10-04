@@ -16,7 +16,6 @@ terraform {
 
   # Uncomment this once your bucket and dynamo table have been created
   # Variables are not allowed here, so swap out the placeholders
-  # This allows our 'backend' to use itself as its own backend
   # backend "s3" {
   #   bucket         = "<APP_NANE>-terraform-backend-s3-bucket"
   #   key            = "dns/terraform.tfstate"
