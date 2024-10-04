@@ -1,0 +1,118 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  ACTIONS_RUNNER_DEBUG: true # Enable debug logging globally
+
+jobs:
+  infrastructure:
+    name: infrastructure
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1.5.0
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github_oidc_role
+        aws-region: us-east-1
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1.2.3
+
+    - name: Terraform Init
+      run: terraform init
+
+    # Makes all relevant infrastructure updates
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    needs: infrastructure  # Ensure backend runs after infrastructure
+    permissions:
+      id-token: write
+      contents: read
+    defaults:
+      run:
+        working-directory: ./backend
+
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1.5.0
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github_oidc_role
+        aws-region: us-east-1
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install Production Dependencies
+      run: pip install --target ./package -r requirements.txt
+
+    - name: Package application
+      run: |
+        cd package && \
+          zip -r ../alexandria.zip . && \
+          cd .. && \
+          zip -g alexandria.zip -r app -x "*/__pycache__/*" -x "app/.env"
+
+    - name: Push to S3
+      run: s3 cp alexandria.zip s3://alexandria-backend-s3-bucket-lambda-code-production
+
+    - name: Deploy to Lambda
+      run: aws lambda update-function-code \
+            --function-name alexandria-backend-lambda-function-production \
+            --s3-bucket alexandria-backend-s3-bucket-lambda-code-production \
+            --s3-key alexandria.zip \
+            --region 'us-east-1'
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    needs: infrastructure  # Ensure backend runs after infrastructure
+    permissions:
+      id-token: write
+      contents: read
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1.5.0
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github_oidc_role
+          aws-region: us-east-1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Production Dependencies
+        run: npm ci --only=production
+
+      - name: Package application
+        run: npm run build
+
+      # No region required here for S3
+      - name: Deploy to S3
+        run: aws s3 sync ./frontend/build s3://alexandria-frontend-s3-bucket-production --delete
