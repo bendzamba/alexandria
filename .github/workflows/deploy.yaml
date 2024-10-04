@@ -17,24 +17,24 @@ jobs:
       contents: read
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1.5.0
-      with:
-        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github_oidc_role
-        aws-region: us-east-1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1.5.0
+        with:
+          role-to-assume: arn:aws:iam::$GITHUB_REPOSITORY_OWNER_ID:role/github_oidc_role
+          aws-region: us-east-1
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v1.2.3
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1.2.3
 
-    - name: Terraform Init
-      run: terraform init
+      - name: Terraform Init
+        run: terraform init
 
-    # Makes all relevant infrastructure updates
-    - name: Terraform Apply
-      run: terraform apply -auto-approve
+      # Makes all relevant infrastructure updates
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
 
   backend:
     name: backend
@@ -47,39 +47,40 @@ jobs:
       run:
         working-directory: ./backend
 
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1.5.0
-      with:
-        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github_oidc_role
-        aws-region: us-east-1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1.5.0
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github_oidc_role
+          aws-region: us-east-1
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.12'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
-    - name: Install Production Dependencies
-      run: pip install --target ./package -r requirements.txt
+      - name: Install Production Dependencies
+        run: pip install --target ./package -r requirements.txt
 
-    - name: Package application
-      run: |
-        cd package && \
-          zip -r ../alexandria.zip . && \
-          cd .. && \
-          zip -g alexandria.zip -r app -x "*/__pycache__/*" -x "app/.env"
+      - name: Package application
+        run: |
+          cd package && \
+            zip -r ../alexandria.zip . && \
+            cd .. && \
+            zip -g alexandria.zip -r app -x "*/__pycache__/*" -x "app/.env"
 
-    - name: Push to S3
-      run: s3 cp alexandria.zip s3://alexandria-backend-s3-bucket-lambda-code-production
+      - name: Push to S3
+        run: s3 cp alexandria.zip s3://alexandria-backend-s3-bucket-lambda-code-production
 
-    - name: Deploy to Lambda
-      run: aws lambda update-function-code \
-            --function-name alexandria-backend-lambda-function-production \
-            --s3-bucket alexandria-backend-s3-bucket-lambda-code-production \
-            --s3-key alexandria.zip \
-            --region 'us-east-1'
+      - name: Deploy to Lambda
+        run: aws lambda update-function-code \
+              --function-name alexandria-backend-lambda-function-production \
+              --s3-bucket alexandria-backend-s3-bucket-lambda-code-production \
+              --s3-key alexandria.zip \
+              --region 'us-east-1'
 
   frontend:
     name: frontend
