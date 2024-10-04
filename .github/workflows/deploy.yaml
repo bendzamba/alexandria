@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 env:
   ACTIONS_RUNNER_DEBUG: true # Enable debug logging globally
