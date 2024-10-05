@@ -149,7 +149,7 @@ function CreateBook() {
     if (olids && olids.length === 0) {
       setCoverUrl(defaultCoverUrl);
     }
-  }, [olids]);
+  }, [olids, defaultCoverUrl, setCoverUrl]);
 
   const toggleBookCoverSelection = (
     event:

@@ -92,10 +92,14 @@ const titleSort: SortFunction<string> = (title: string) => {
   return lowerCaseTitle;
 };
 
-const sortFunctions: Record<string, SortFunction<any>> = {
-  author: surnameSort as SortFunction<string>,
-  read_end_date: dateSort as SortFunction<string>,
-  title: titleSort as SortFunction<string>,
+const sortFunctions: {
+  author: SortFunction<string>;
+  read_end_date: SortFunction<string>;
+  title: SortFunction<string>;
+} = {
+  author: surnameSort,
+  read_end_date: dateSort,
+  title: titleSort,
 };
 
 const mapValueToSortable = (
@@ -103,11 +107,19 @@ const mapValueToSortable = (
   value: string | number | null,
   book: BookWithBookshelvesInterface
 ) => {
+  if (value === null) {
+    // null values do not need to be mapped in order to sort
+    return value;
+  }
+  if (typeof value === "number") {
+    // numbers do not need to be mapped in order to sort
+    return value;
+  }
   // We've defined no specific sorting function for the value
   if (!(key in sortFunctions)) {
     return value;
   }
-  return sortFunctions[key](value, book);
+  return sortFunctions[key as keyof typeof sortFunctions](value, book);
 };
 
 export const bookSort = (
