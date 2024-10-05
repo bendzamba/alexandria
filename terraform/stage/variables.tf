@@ -22,6 +22,7 @@ variable "efs_datasync_schedule" {
 
 variable "aws_profile" {
   type = string
+  default = ""
 }
 
 locals {
