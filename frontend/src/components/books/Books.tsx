@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
@@ -41,7 +41,7 @@ function Books() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Function to update filtered books based on search, sort, and filter
-  const updateFilteredBooks = () => {
+  const updateFilteredBooks = useCallback(() => {
     const filteredBooks = allBooks
       .filter((book: BookWithBookshelvesInterface) => {
         return searchTerm && searchTerm !== ""
@@ -76,10 +76,17 @@ function Books() {
     setBooks(filteredBooks); // Store the filtered and sorted books
     setDisplayedBooks(filteredBooks.slice(0, displayedCount)); // Show initial batch of books
     setHasMore(filteredBooks.length > displayedCount); // Determine if more books are available
-  };
+  }, [
+    allBooks,
+    searchTerm,
+    readStatusFilter,
+    sort,
+    sortDirection,
+    displayedCount,
+  ]);
 
   // Load more books when the sentinel is intersected
-  const loadMoreBooks = () => {
+  const loadMoreBooks = useCallback(() => {
     if (!hasMore) return;
     const nextBooks = books.slice(
       displayedBooks.length,
@@ -89,11 +96,18 @@ function Books() {
     if (nextBooks.length < displayedCount) {
       setHasMore(false); // No more books to load
     }
-  };
+  }, [hasMore, books, displayedBooks]);
 
   useEffect(() => {
     updateFilteredBooks();
-  }, [allBooks, searchTerm, readStatusFilter, sort, sortDirection]);
+  }, [
+    allBooks,
+    searchTerm,
+    readStatusFilter,
+    sort,
+    sortDirection,
+    updateFilteredBooks,
+  ]);
 
   useEffect(() => {
     localStorage.setItem("sort", sort);
@@ -156,16 +170,19 @@ function Books() {
 
     observerRef.current = observer; // Store the observer instance
 
+    // Store the current sentinel ref value in a local variable
+    const currentSentinel = sentinelRef.current;
+
     if (sentinelRef.current) {
       observer.observe(sentinelRef.current);
     }
 
     return () => {
-      if (sentinelRef.current) {
-        observer.unobserve(sentinelRef.current);
+      if (currentSentinel) {
+        observer.unobserve(currentSentinel);
       }
     };
-  }, [hasMore, displayedBooks]);
+  }, [hasMore, displayedBooks, loadMoreBooks]);
 
   const handleBulkDeleteSetup = (
     event: React.MouseEvent<HTMLButtonElement>

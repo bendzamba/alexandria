@@ -84,11 +84,12 @@ jobs:
         run: aws s3 cp alexandria.zip s3://alexandria-backend-s3-bucket-lambda-code-production
 
       - name: Deploy to Lambda
-        run: aws lambda update-function-code \
-              --function-name alexandria-backend-lambda-function-production \
-              --s3-bucket alexandria-backend-s3-bucket-lambda-code-production \
-              --s3-key alexandria.zip \
-              --region 'us-east-1'
+        run: |
+          aws lambda update-function-code \
+            --function-name alexandria-backend-lambda-function-production \
+            --s3-bucket alexandria-backend-s3-bucket-lambda-code-production \
+            --s3-key alexandria.zip \
+            --region 'us-east-1'
 
   frontend:
     name: frontend
