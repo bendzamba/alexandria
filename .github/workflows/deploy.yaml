@@ -125,4 +125,4 @@ jobs:
 
       # No region required here for S3
       - name: Deploy to S3
-        run: aws s3 sync ./frontend/build s3://alexandria-frontend-s3-bucket-production --delete
+        run: aws s3 sync ./build s3://alexandria-frontend-s3-bucket-production --delete
