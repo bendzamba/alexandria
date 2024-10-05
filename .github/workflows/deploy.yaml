@@ -8,11 +8,14 @@ on:
 
 env:
   ACTIONS_RUNNER_DEBUG: true # Enable debug logging globally
+  TF_LOG: DEBUG
 
 jobs:
   infrastructure:
     name: infrastructure
     runs-on: ubuntu-latest
+    env:
+      aws_profile: ""
     permissions:
       id-token: write
       contents: read
@@ -35,6 +38,9 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan
 
       # Makes all relevant infrastructure updates
       - name: Terraform Apply
