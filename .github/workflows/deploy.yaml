@@ -81,7 +81,7 @@ jobs:
             zip -g alexandria.zip -r app -x "*/__pycache__/*" -x "app/.env"
 
       - name: Push to S3
-        run: s3 cp alexandria.zip s3://alexandria-backend-s3-bucket-lambda-code-production
+        run: aws s3 cp alexandria.zip s3://alexandria-backend-s3-bucket-lambda-code-production
 
       - name: Deploy to Lambda
         run: aws lambda update-function-code \
@@ -117,7 +117,7 @@ jobs:
           node-version: '18'
 
       - name: Install Production Dependencies
-        run: npm ci --only=production
+        run: npm ci
 
       - name: Package application
         run: npm run build
