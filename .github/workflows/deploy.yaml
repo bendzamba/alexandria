@@ -14,8 +14,6 @@ jobs:
   infrastructure:
     name: infrastructure
     runs-on: ubuntu-latest
-    env:
-      aws_profile: ""
     permissions:
       id-token: write
       contents: read
@@ -50,8 +48,6 @@ jobs:
     name: backend
     runs-on: ubuntu-latest
     needs: infrastructure  # Ensure backend runs after infrastructure
-    env:
-      aws_profile: ""
     permissions:
       id-token: write
       contents: read
@@ -98,8 +94,6 @@ jobs:
     name: frontend
     runs-on: ubuntu-latest
     needs: infrastructure  # Ensure frontend runs after infrastructure
-    env:
-      aws_profile: ""
     permissions:
       id-token: write
       contents: read
