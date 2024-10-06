@@ -32,7 +32,7 @@ function CreateBookshelf() {
     }
     setTitle("");
     setDescription("");
-    // navigate(`/`);
+    navigate(`/`);
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLFormElement>) => {
