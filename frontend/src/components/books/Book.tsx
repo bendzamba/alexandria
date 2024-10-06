@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { useParams, useNavigate, NavLink } from "react-router-dom";
@@ -33,6 +33,10 @@ function Book({ book, preview }: BookProps) {
   const [readStartDate, setReadStartDate] = useState<Date | null>(null);
   const [readEndDate, setReadEndDate] = useState<Date | null>(null);
   const reviewPlaceholder = "Share your thoughts on this book ...";
+  // This is for tracking whether or not we've rendered the Book already
+  // when loaded from the Books component. We want to prevent unnecessarily
+  // re-setting the current book below, which can overwrite our state
+  const hasRenderedFromParent = useRef(false);
   const navigate = useNavigate();
 
   // From /books/{id}
@@ -40,10 +44,13 @@ function Book({ book, preview }: BookProps) {
 
   const initialize = useCallback(async () => {
     try {
-      if (bookProp) {
+      if (bookProp && !hasRenderedFromParent.current) {
         setCurrentBook(bookProp);
         setBookIdNumeric(bookProp.id);
         setBookIdString(bookProp.id.toString());
+        // Track the fact that we have rendered this component
+        // We don't want to overwrite our currentBook from the parent again
+        hasRenderedFromParent.current = true;
       }
       if (!currentBook && id) {
         setBookIdNumeric(parseInt(id));
