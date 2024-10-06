@@ -26,6 +26,7 @@ function CreateBook() {
     []
   );
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
+  const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || "";
@@ -90,6 +91,8 @@ function CreateBook() {
   };
 
   const handleCreate = async () => {
+    // We are in the process of creating. Disable the 'Create' button
+    setCreating(true);
     const json_olids = JSON.stringify(olids);
     const filteredBookData: Partial<CreateOrUpdateBookInterface> = {
       read_status: "not_read",
@@ -103,6 +106,7 @@ function CreateBook() {
     const response: boolean = await CreateBookService(filteredBookData);
     if (!response) {
       // A message to the user may be warranted here
+      setCreating(false);
       return false;
     }
     setTitle(null);
@@ -230,8 +234,19 @@ function CreateBook() {
                 type="button"
                 className="btn btn-primary"
                 onClick={handleCreateClick}
+                disabled={creating}
               >
-                Create
+                {creating && (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm me-1"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    Creating...
+                  </>
+                )}
+                {!creating && <span>Create</span>}
               </button>
             </Col>
           </Row>

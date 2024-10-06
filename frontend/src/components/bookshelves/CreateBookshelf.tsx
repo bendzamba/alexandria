@@ -11,9 +11,12 @@ function CreateBookshelf() {
   const [description, setDescription] = useState("");
   const sort_key = "id";
   const sort_direction = "ascending";
+  const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
+    // We are in the process of creating. Disable the 'Create' button
+    setCreating(true);
     const bookshelfData: CreateOrUpdateBookshelfInterface = {
       title,
       description,
@@ -24,11 +27,12 @@ function CreateBookshelf() {
     if (!response) {
       // A message to the user may be warranted here
       // Especially if we are going to prevent navigation
+      setCreating(false);
       return false;
     }
     setTitle("");
     setDescription("");
-    navigate(`/`);
+    // navigate(`/`);
   };
 
   const handleSubmitClick = (event: React.FormEvent<HTMLFormElement>) => {
@@ -70,8 +74,22 @@ function CreateBookshelf() {
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
-            <button type="submit" className="btn btn-primary">
-              Create
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={creating}
+            >
+              {creating && (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-1"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  Creating...
+                </>
+              )}
+              {!creating && <span>Create</span>}
             </button>
           </form>
         </Col>
