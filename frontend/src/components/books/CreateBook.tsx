@@ -258,7 +258,7 @@ function CreateBook() {
                     : createPlaceholderImage(320, 484, placeholderImageText)
                 }
                 className="img-fluid"
-                alt="Selected Book Cover"
+                alt={`${coverUrl !== "" ? "Selected" : "Placeholder"} Book Cover: ${title}`}
                 height="300px"
               />
             </Col>
