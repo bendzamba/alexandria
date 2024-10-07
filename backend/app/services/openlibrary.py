@@ -73,7 +73,7 @@ class OpenLibrary:
 
     async def fetch_image_from_olid(self, olid: str | None) -> str:
         if olid is None:
-            pass
+            return
 
         # URL where we can find the cover image we want using OLID
         open_library_url = self.build_image_url_from_olid(olid=olid)

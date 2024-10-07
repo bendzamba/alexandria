@@ -97,7 +97,9 @@ test("creates a book from multiple search results", async () => {
   const createButton = await screen.findByText("Create");
   expect(createButton).toBeInTheDocument();
 
-  const imagePlaceholder = await screen.findByAltText("Selected Book Cover");
+  const imagePlaceholder = await screen.findByAltText(
+    "Placeholder Book Cover: " + firstResultTitle
+  );
   expect(imagePlaceholder).toBeInTheDocument();
 
   const selectedBookTitle = await screen.findByTestId("selected-book-title");
@@ -119,6 +121,16 @@ test("creates a book from multiple search results", async () => {
 
   // Select the first of the available cover images
   await userEvent.click(selectedBookAvailableCover1);
+
+  // Check that the selected cover is now populated in the image element
+  const selectedImage = await screen.findByAltText(
+    "Selected Book Cover: " + firstResultTitle
+  );
+  expect(selectedImage).toBeInTheDocument();
+  expect(selectedImage).toHaveAttribute(
+    "src",
+    "https://covers.openlibrary.org/b/olid/OL24206828M-L.jpg"
+  );
 
   // Create the book
   await userEvent.click(createButton);
@@ -181,13 +193,15 @@ test("creates a book from one search result", async () => {
   const createButton = await screen.findByText("Create");
   expect(createButton).toBeInTheDocument();
 
-  const imagePlaceholder = await screen.findByAltText("Selected Book Cover");
-  expect(imagePlaceholder).toBeInTheDocument();
-
   const searchResultTitle = "A Tale of Two Cities";
   const selectedBookTitle = await screen.findByTestId("selected-book-title");
   expect(selectedBookTitle).toBeInTheDocument();
   expect(selectedBookTitle).toHaveTextContent(searchResultTitle);
+
+  const imagePlaceholder = await screen.findByAltText(
+    "Placeholder Book Cover: " + searchResultTitle
+  );
+  expect(imagePlaceholder).toBeInTheDocument();
 
   const searchResultAuthor = "Charles Dickens";
   const selectedBookAuthor = await screen.findByTestId("selected-book-author");
@@ -206,6 +220,16 @@ test("creates a book from one search result", async () => {
 
   // Select the first of the available cover images
   await userEvent.click(selectedBookAvailableCover1);
+
+  // Check that the selected cover is now populated in the image element
+  const selectedImage = await screen.findByAltText(
+    "Selected Book Cover: " + searchResultTitle
+  );
+  expect(selectedImage).toBeInTheDocument();
+  expect(selectedImage).toHaveAttribute(
+    "src",
+    "https://covers.openlibrary.org/b/olid/OL52151281M-L.jpg"
+  );
 
   // Create the book
   await userEvent.click(createButton);
