@@ -49,7 +49,8 @@ class BookPublic(BookBase):
 
     def model_dump(self, **kwargs):
         data = super().model_dump(**kwargs)
-        data["cover_uri"] = image_handler.get_image_uri(self.olid)
+        if self.olid is not None:
+            data["cover_uri"] = image_handler.get_image_uri(self.olid)
 
         return data
 
