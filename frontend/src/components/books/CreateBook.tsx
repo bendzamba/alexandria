@@ -10,6 +10,7 @@ import Container from "react-bootstrap/Container";
 import styles from "./css/CreateBook.module.css";
 import { WorkInterface } from "../../interfaces/work";
 import { CreateOrUpdateBookInterface } from "../../interfaces/book_and_bookshelf";
+import { createPlaceholderImage } from "../../utils/create_placeholder_image";
 
 function CreateBook() {
   const [searchTitle, setSearchTitle] = useState<string>("");
@@ -29,9 +30,7 @@ function CreateBook() {
   const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
 
-  const API_BASE_URL = process.env.REACT_APP_API_URL || "";
-
-  const defaultCoverUrl = API_BASE_URL + "/images/Select_A_Book_Cover.png";
+  const placeholderImageText = "No Cover Image Selected";
 
   const handleSearch = async () => {
     setSearching(true);
@@ -65,7 +64,7 @@ function CreateBook() {
       setAuthor(response[0].author_name);
       setYear(response[0].first_publish_year);
       setOlids(response[0].olids);
-      setCoverUrl(defaultCoverUrl);
+      setCoverUrl("");
     } else {
       setBooksToChooseFrom(response);
     }
@@ -87,7 +86,7 @@ function CreateBook() {
     setAuthor(booksToChooseFrom[index].author_name);
     setYear(booksToChooseFrom[index].first_publish_year);
     setOlids(booksToChooseFrom[index].olids);
-    setCoverUrl(defaultCoverUrl);
+    setCoverUrl("");
   };
 
   const handleCreate = async () => {
@@ -151,9 +150,9 @@ function CreateBook() {
 
   useEffect(() => {
     if (olids && olids.length === 0) {
-      setCoverUrl(defaultCoverUrl);
+      setCoverUrl("");
     }
-  }, [olids, defaultCoverUrl, setCoverUrl]);
+  }, [olids, setCoverUrl]);
 
   const toggleBookCoverSelection = (
     event:
@@ -165,7 +164,7 @@ function CreateBook() {
     const localOlid = olid === olidToToggle ? "" : olidToToggle;
     setOlid(localOlid);
     if (olid === olidToToggle) {
-      setCoverUrl(defaultCoverUrl);
+      setCoverUrl("");
     } else {
       setCoverUrl(
         "https://covers.openlibrary.org/b/olid/" + olidToToggle + "-L.jpg"
@@ -253,7 +252,11 @@ function CreateBook() {
           <Row>
             <Col xs={3} className="mb-3">
               <img
-                src={coverUrl}
+                src={
+                  coverUrl !== ""
+                    ? coverUrl
+                    : createPlaceholderImage(320, 484, placeholderImageText)
+                }
                 className="img-fluid"
                 alt="Selected Book Cover"
                 height="300px"

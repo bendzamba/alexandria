@@ -9,6 +9,7 @@ import Container from "react-bootstrap/Container";
 import styles from "./css/Book.module.scss";
 import { BookWithBookshelvesInterface } from "../../interfaces/book_and_bookshelf";
 import DatePicker from "react-datepicker";
+import { createPlaceholderImage } from "../../utils/create_placeholder_image";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface BookProps {
@@ -38,6 +39,8 @@ function Book({ book, preview }: BookProps) {
   // re-setting the current book below, which can overwrite our state
   const hasRenderedFromParent = useRef(false);
   const navigate = useNavigate();
+
+  const placeholderImageText = "No Cover Image Selected";
 
   // From /books/{id}
   const { id } = useParams();
@@ -559,7 +562,11 @@ function Book({ book, preview }: BookProps) {
         <Col xs={4} lg={3}>
           <NavLink className="nav-link" to={"/books/" + bookIdString}>
             <img
-              src={currentBook?.cover_uri}
+              src={
+                currentBook?.cover_uri !== null
+                  ? currentBook?.cover_uri
+                  : createPlaceholderImage(320, 484, placeholderImageText)
+              }
               className="img-fluid"
               alt={`${currentBook?.title}: Book Cover`}
               data-testid={currentBook?.cover_uri}
