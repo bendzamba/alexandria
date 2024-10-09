@@ -31,7 +31,20 @@ test("creates a bookshelf", async () => {
   await userEvent.type(titleField, title);
   await userEvent.type(descriptionField, description);
 
-  await userEvent.click(createButton);
+  // Create the bookshelf
+  await waitFor(() => {
+    userEvent.click(createButton);
+  });
+
+  // Wait for the "Creating..." button to appear
+  const creatingButton = await screen.findByText("Creating...");
+  expect(creatingButton).toBeInTheDocument();
+
+  // Button should be disabled
+  expect(creatingButton).toHaveAttribute("disabled");
+
+  // Ensure the original "Create" button is no longer present
+  expect(screen.queryByText("Create")).not.toBeInTheDocument();
 
   // Verify that delete API call happens
   await waitFor(() => {

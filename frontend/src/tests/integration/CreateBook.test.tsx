@@ -133,7 +133,19 @@ test("creates a book from multiple search results", async () => {
   );
 
   // Create the book
-  await userEvent.click(createButton);
+  await waitFor(() => {
+    userEvent.click(createButton);
+  });
+
+  // Wait for the "Creating..." button to appear
+  const creatingButton = await screen.findByText("Creating...");
+  expect(creatingButton).toBeInTheDocument();
+
+  // Button should be disabled
+  expect(creatingButton).toHaveAttribute("disabled");
+
+  // Ensure the original "Create" button is no longer present
+  expect(screen.queryByText("Create")).not.toBeInTheDocument();
 
   // Verify that create API call happens
   await waitFor(() => {
@@ -232,7 +244,19 @@ test("creates a book from one search result", async () => {
   );
 
   // Create the book
-  await userEvent.click(createButton);
+  await waitFor(() => {
+    userEvent.click(createButton);
+  });
+
+  // Wait for the "Creating..." button to appear
+  const creatingButton = await screen.findByText("Creating...");
+  expect(creatingButton).toBeInTheDocument();
+
+  // Button should be disabled
+  expect(creatingButton).toHaveAttribute("disabled");
+
+  // Ensure the original "Create" button is no longer present
+  expect(screen.queryByText("Create")).not.toBeInTheDocument();
 
   // Verify that create API call happens
   await waitFor(() => {
