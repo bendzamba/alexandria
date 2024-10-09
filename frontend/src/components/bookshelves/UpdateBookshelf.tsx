@@ -13,6 +13,7 @@ function UpdateBookshelf() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const navigate = useNavigate();
 
   // get ID from path using react-router
@@ -44,12 +45,15 @@ function UpdateBookshelf() {
   }, [_bookshelfId]);
 
   const handleSubmit = async () => {
+    // We are in the process of updating. Disable the 'Update' button
+    setUpdating(true);
     const response: boolean = await UpdateBookshelfService(_bookshelfId, {
       title,
       description,
     });
     if (!response) {
       // A message to the user may be warranted here
+      setUpdating(false);
       return false;
     }
     // not sure if I need this
@@ -106,8 +110,18 @@ function UpdateBookshelf() {
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
-        <button type="submit" className="btn btn-primary">
-          Update
+        <button type="submit" className="btn btn-primary" disabled={updating}>
+          {updating && (
+            <>
+              <span
+                className="spinner-border spinner-border-sm me-1"
+                role="status"
+                aria-hidden="true"
+              ></span>
+              Updating...
+            </>
+          )}
+          {!updating && <span>Update</span>}
         </button>
         <button
           type="button"
