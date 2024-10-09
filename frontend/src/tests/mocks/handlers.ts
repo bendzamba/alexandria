@@ -213,6 +213,10 @@ export const bookHandlers = [
     return HttpResponse.json("");
   }),
 
+  http.delete(`${process.env.REACT_APP_API_URL}/books/bulk`, () => {
+    return HttpResponse.json("");
+  }),
+
   http.get(
     `${process.env.REACT_APP_API_URL}/books/search/Farewell%20to%20Arms`,
     () => {
