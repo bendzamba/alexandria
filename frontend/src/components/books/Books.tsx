@@ -383,6 +383,7 @@ function Books() {
                   }}
                   role="button"
                   tabIndex={0}
+                  data-testid={book.id}
                   aria-pressed={selectedBooksForDeletion.includes(book.id)}
                 ></div>
               )}
