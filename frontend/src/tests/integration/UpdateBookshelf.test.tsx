@@ -54,7 +54,17 @@ test("updates a bookshelf", async () => {
   await userEvent.clear(descriptionField);
   await userEvent.type(descriptionField, descriptionRedux);
 
-  await userEvent.click(updateButton);
+  // Update the bookshelf
+  await waitFor(() => {
+    userEvent.click(updateButton);
+  });
+
+  // Wait for the "Updating..." button to appear
+  const updatingButton = await screen.findByText("Updating...");
+  expect(updatingButton).toBeInTheDocument();
+
+  // Button should be disabled
+  expect(updatingButton).toHaveAttribute("disabled");
 
   // Verify that delete API call happens
   await waitFor(() => {
