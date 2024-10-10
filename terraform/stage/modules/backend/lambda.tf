@@ -142,6 +142,16 @@ resource "aws_lambda_function" "lambda_function" {
   runtime       = "python3.12"
   timeout       = 60
 
+  # For our initial Lambda creation, we need to include our temporary file
+  # However, when updates run, we don't want Terraform to manage the filename
+  # because elsewhere in our CICD pipeline we are updating our Lambda function
+  # to fetch our packaged, production code from S3
+  lifecycle {
+    ignore_changes = [
+      filename
+    ]
+  }
+
   environment {
     variables = {
       DATABASE_URL          = "sqlite:////mnt/lambda/${var.app_name}.db",
