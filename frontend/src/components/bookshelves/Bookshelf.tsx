@@ -357,6 +357,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                 className="mt-3 bookshelf-book-image-wrapper"
                 style={{ minHeight: "150px", minWidth: "80px" }}
                 key={`bookshelf-book-${book.id}`}
+                tabIndex={0}
               >
                 <img
                   height="150px"
@@ -372,12 +373,15 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                 {!preview && (
                   <div className="remove-book-from-bookshelf-button">
                     <button
-                      className="btn btn-close"
+                      className="btn btn-sm btn-danger"
                       aria-label={`Remove ${book.title} from bookshelf`}
                       onClick={(event) => {
                         handleDeleteBookFromBookshelfClick(event, book.id);
                       }}
-                    ></button>
+                      data-bs-theme="dark"
+                    >
+                      X
+                    </button>
                   </div>
                 )}
               </Col>
