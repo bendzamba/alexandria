@@ -475,7 +475,7 @@ function Book({ book, preview }: BookProps) {
               suppressContentEditableWarning={true}
               data-testid="book-title-content-editable"
             >
-              <h1 className="display-5" id="book-title">
+              <h1 className="display-4" id="book-title">
                 {currentBook?.title}
               </h1>
             </div>
@@ -608,7 +608,9 @@ function Book({ book, preview }: BookProps) {
                 suppressContentEditableWarning={true}
                 data-testid="book-author-content-editable"
               >
-                <h3 id="book-author">{currentBook?.author}</h3>
+                <h3 id="book-author" className="display-6">
+                  {currentBook?.author}
+                </h3>
               </div>
             )}
           </Row>
