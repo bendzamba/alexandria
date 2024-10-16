@@ -10,7 +10,7 @@ from app.models.book import (
 )
 from app.models.openlibrary import Works
 from app.models.exception import ExceptionHandler
-from app.services.openlibrary import get_open_library
+from app.services.book_search import get_book_search
 from app.db.sqlite import get_db
 from sqlmodel import Session, select
 
@@ -44,9 +44,9 @@ def get_book(
 async def create_book(
     book_create: BookCreate,
     db: Session = Depends(get_db),
-    open_library=Depends(get_open_library)
+    book_search=Depends(get_book_search)
 ):
-    await open_library.fetch_image_from_olid(book_create.olid)
+    await book_search.fetch_image_from_olid(book_create.olid)
     db_book = Book.model_validate(book_create)
     db.add(db_book)
     db.commit()
@@ -58,7 +58,7 @@ async def update_book(
     book_id: Annotated[int, Path(title="The ID of the book to update")],
     book_update: BookUpdate,
     db: Session = Depends(get_db),
-    open_library=Depends(get_open_library)
+    book_search=Depends(get_book_search)
 ):
     db_book = db.get(Book, book_id)
     if not db_book:
@@ -67,7 +67,7 @@ async def update_book(
     book_data = book_update.model_dump(exclude_unset=True)
 
     if "olid" in book_data:
-        await open_library.fetch_image_from_olid(book_update.olid)
+        await book_search.fetch_image_from_olid(book_update.olid)
 
     db_book.sqlmodel_update(book_data)
     db.add(db_book)
@@ -109,9 +109,9 @@ def delete_book(
 @router.get("/search/{title}", status_code=status.HTTP_200_OK)
 async def search_by_title(
     title: Annotated[str, Path(title="The title we are searching for")],
-    open_library=Depends(get_open_library)
+    book_search=Depends(get_book_search)
 ):
-    results: Works | ExceptionHandler = await open_library.search_by_title(title=title)
+    results: Works | ExceptionHandler = await book_search.search_by_title(title=title)
 
     if isinstance(results, ExceptionHandler):
         raise HTTPException(status_code=results.status_code, detail=results.message)
