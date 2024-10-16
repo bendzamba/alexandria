@@ -90,11 +90,3 @@ class OpenLibrary:
 
     def get_cover_uri(self):
         return self.cover_uri
-
-
-def get_open_library():
-    open_library = OpenLibrary()
-    try:
-        yield open_library
-    finally:
-        pass
