@@ -154,10 +154,11 @@ resource "aws_lambda_function" "lambda_function" {
 
   environment {
     variables = {
-      DATABASE_URL          = "sqlite:////mnt/lambda/${var.app_name}.db",
-      LOCAL_IMAGE_DIRECTORY = "/tmp",
-      S3_IMAGE_BUCKET       = aws_s3_bucket.images_bucket.bucket,
-      STORAGE_BACKEND       = "s3"
+      DATABASE_URL                  = "sqlite:////mnt/lambda/${var.app_name}.db",
+      LOCAL_IMAGE_DIRECTORY         = "/tmp",
+      S3_IMAGE_BUCKET               = aws_s3_bucket.images_bucket.bucket,
+      STORAGE_BACKEND               = "s3"
+      NON_VPC_LAMBDA_FUNCTION_NAME  = "${var.app_name}-backend-lambda-function-no-vpc-${var.environment}"
     }
   }
 
@@ -182,6 +183,7 @@ resource "aws_lambda_function" "lambda_function" {
   }
 }
 
+# TODO - is this used??
 resource "aws_lambda_permission" "apigateway_invoke_lambda" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
@@ -211,4 +213,122 @@ resource "aws_iam_role_policy_attachment" "lambda_invoke_policy_attachment" {
   policy_arn = aws_iam_policy.lambda_invoke_policy.arn
 
   depends_on = [aws_lambda_function.lambda_function]
+}
+
+# This separate Lambda function is in most senses a duplicate of the first, 
+# however it will reside outside of our VPC for internet access
+# The role and environment variables vary slightly
+# Our main Lambda function will call this one via the AWS SDK
+
+resource "aws_iam_role" "lambda_exec_no_vpc" {
+  name = "${var.app_name}-backend-iam-role-lambda-exec-${var.environment}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    application = var.app_name
+    environment = var.environment
+  }
+}
+
+resource "aws_iam_policy" "lambda_no_vpc_policy" {
+  name    = "${var.app_name}-backend-lambda-iam-policy-no-vpc-${var.environment}"
+  policy  = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = [
+          "s3:PutObject",
+          "s3:GetObject"
+        ]
+        Resource = "arn:aws:s3:::${aws_s3_bucket.images_bucket.bucket}/*"
+      }
+    ] 
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_no_vpc_policy_attachment" {
+  role        = aws_iam_role.lambda_exec_no_vpc.name
+  policy_arn  = aws_iam_policy.lambda_no_vpc_policy.arn
+}
+
+resource "aws_lambda_function" "lambda_function_no_vpc" {
+  function_name = "${var.app_name}-backend-lambda-function-no-vpc-${var.environment}"
+  filename      = data.archive_file.lambda_zip.output_path
+  role          = aws_iam_role.lambda_exec_no_vpc.arn
+  handler       = "app.main.handler"
+  runtime       = "python3.12"
+  timeout       = 60
+
+  # For our initial Lambda creation, we need to include our temporary file
+  # However, when updates run, we don't want Terraform to manage the filename
+  # because elsewhere in our CICD pipeline we are updating our Lambda function
+  # to fetch our packaged, production code from S3
+  lifecycle {
+    ignore_changes = [
+      filename
+    ]
+  }
+
+  environment {
+    variables = {
+      DATABASE_URL          = "sqlite://", # In-memory DB
+      LOCAL_IMAGE_DIRECTORY = "/tmp",
+      S3_IMAGE_BUCKET       = aws_s3_bucket.images_bucket.bucket,
+      STORAGE_BACKEND       = "s3"
+    }
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.lambda_no_vpc_policy_attachment
+  ]
+
+  tags = {
+    application = var.app_name
+    environment = var.environment
+  }
+}
+
+
+# Allow our main Lambda to invoke our non-VPC Lambda
+resource "aws_iam_policy" "lambda_no_vpc_invoke_policy" {
+  name   = "${var.app_name}-lambda-no-vpc-invoke-policy-${var.environment}"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Action    = "lambda:InvokeFunction"
+        Resource  = "arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:${aws_lambda_function.lambda_function_no_vpc.function_name}"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_invoke_policy_attachment" {
+  role       = aws_iam_role.lambda_exec
+  policy_arn = aws_iam_policy.lambda_no_vpc_invoke_policy.arn
+
+  depends_on = [aws_lambda_function.lambda_function_no_vpc]
 }
