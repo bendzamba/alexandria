@@ -1,5 +1,5 @@
 import pytest
-from app.services.openlibrary import OpenLibrary
+from app.services.open_library import OpenLibrary
 
 @pytest.fixture(scope="function")
 def open_library():

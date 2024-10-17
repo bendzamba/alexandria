@@ -2,7 +2,7 @@ import pytest
 import os
 from fastapi.testclient import TestClient
 from sqlmodel import SQLModel, create_engine, Session
-from app.services.openlibrary import get_open_library
+from app.services.open_library import get_open_library
 from app.models.openlibrary import Work, Works
 from app.models.exception import ExceptionHandler
 from app.db.sqlite import get_db
