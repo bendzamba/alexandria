@@ -325,8 +325,8 @@ resource "aws_iam_policy" "lambda_no_vpc_invoke_policy" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_invoke_policy_attachment" {
-  role       = aws_iam_role.lambda_exec
+resource "aws_iam_role_policy_attachment" "lambda_no_vpc_invoke_policy_attachment" {
+  role       = aws_iam_role.lambda_exec.name
   policy_arn = aws_iam_policy.lambda_no_vpc_invoke_policy.arn
 
   depends_on = [aws_lambda_function.lambda_function_no_vpc]
