@@ -215,8 +215,7 @@ resource "aws_iam_role_policy_attachment" "lambda_invoke_policy_attachment" {
   depends_on = [aws_lambda_function.lambda_function]
 }
 
-# This separate Lambda function is in most senses a duplicate of the first, 
-# however it will reside outside of our VPC for internet access
+# This separate Lambda function needs to reside outside of our VPC for internet access
 # The role and environment variables vary slightly
 # Our main Lambda function will call this one via the AWS SDK
 
