@@ -22,7 +22,7 @@ class RemoteOpenLibraryHandler(BaseOpenLibraryHandler):
       }
     }
 
-    remote_response = self._invoke_lambda(event_payload=event_payload)
+    remote_response = await self._invoke_lambda(event_payload=event_payload)
 
     works = []
     for doc in remote_response:
@@ -39,7 +39,7 @@ class RemoteOpenLibraryHandler(BaseOpenLibraryHandler):
       }
     }
 
-    return self._invoke_lambda(event_payload=event_payload)
+    return await self._invoke_lambda(event_payload=event_payload)
   
   async def _invoke_lambda(self, event_payload: dict):
 
