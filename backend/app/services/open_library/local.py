@@ -53,7 +53,7 @@ class LocalOpenLibraryHandler(BaseOpenLibraryHandler):
           except ValidationError as exc:
             print(repr(exc.errors()[0]["type"]))
 
-          return Works(**{"works": works})
+        return Works(**{"works": works})
 
       except Exception as e:
         return ExceptionHandler(status_code=ExceptionHandler.get_no_results_status_code(), message=str(e))
