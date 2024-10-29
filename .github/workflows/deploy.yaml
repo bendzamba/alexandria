@@ -92,7 +92,7 @@ jobs:
             --region 'us-east-1'
 
       - name: Deploy to non-VPC Lambda
-        run: cd ./app/services/open_lirary/remote && sh bundler.sh
+        run: cd ./app/services/open_library/remote && sh bundler.sh
 
   frontend:
     name: frontend
