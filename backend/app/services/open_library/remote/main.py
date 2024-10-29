@@ -28,7 +28,7 @@ async def async_handler(method, arguments):
     open_library = LocalOpenLibraryHandler()
     response = await getattr(open_library, method)(**arguments)
 
-    if hasattr(response, "modeL_dump"):
+    if hasattr(response, "model_dump"):
         # We need to serialize the response
         return response.model_dump()
     
