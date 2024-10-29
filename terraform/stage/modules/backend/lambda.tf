@@ -220,7 +220,7 @@ resource "aws_iam_role_policy_attachment" "lambda_invoke_policy_attachment" {
 # Our main Lambda function will call this one via the AWS SDK
 
 resource "aws_iam_role" "lambda_exec_no_vpc" {
-  name = "${var.app_name}-backend-iam-role-lambda-exec-${var.environment}"
+  name = "${var.app_name}-backend-iam-role-lambda-exec-no-vpc-${var.environment}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
