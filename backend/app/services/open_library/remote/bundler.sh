@@ -5,7 +5,9 @@ mkdir lambda_package
 mkdir lambda_package/app
 mkdir lambda_package/app/models
 mkdir lambda_package/app/services
+mkdir lambda_package/app/services/open_library
 mkdir lambda_package/app/utils
+mkdir lambda_package/app/utils/images
 
 # Copy in our Lambda handler
 cp ./lambda_handler.py lambda_package/app/lambda_handler.py
