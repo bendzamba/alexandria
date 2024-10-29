@@ -4,7 +4,7 @@ import boto3
 import inspect
 from app.services.open_library.base import BaseOpenLibraryHandler
 from app.models.exception import ExceptionHandler
-from app.models.openlibrary import Works
+from app.models.openlibrary import Works, Work
 
 
 class RemoteOpenLibraryHandler(BaseOpenLibraryHandler):
@@ -22,7 +22,13 @@ class RemoteOpenLibraryHandler(BaseOpenLibraryHandler):
       }
     }
 
-    return self._invoke_lambda(event_payload=event_payload)
+    remote_response = self._invoke_lambda(event_payload=event_payload)
+
+    works = []
+    for doc in remote_response:
+      works.append(Work(**doc))
+      
+    return Works(**{"works": works})
 
   async def fetch_image_from_olid(self, olid: str | None) -> str:
 
