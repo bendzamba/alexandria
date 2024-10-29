@@ -10,7 +10,7 @@ mkdir lambda_package/app/utils
 mkdir lambda_package/app/utils/images
 
 # Copy in our Lambda handler
-cp ./lambda_handler.py lambda_package/app/lambda_handler.py
+cp ./main.py lambda_package/app/main.py
 
 # Copy in required files used by Open Library
 cp ../local.py lambda_package/app/services/open_library/local.py

@@ -1,8 +1,9 @@
-import os
+import asyncio
 from app.services.open_library.local import LocalOpenLibraryHandler
 
-def lambda_handler(event, context):
-    
+
+def handler(event, context):
+
     method = event.get('method')
     arguments = event.get('arguments')
     
@@ -10,13 +11,20 @@ def lambda_handler(event, context):
         print("We did not receive a method")
         return None
 
-    if method not in dir(os):
+    if not hasattr(LocalOpenLibraryHandler, method):
         print("We did not recognize the method", method)
         return None
 
     if arguments is None:
         print("We did not receive any arguments")
         return None
-    
+
+    loop = asyncio.get_event_loop()
+
+    return loop.run_until_complete(async_handler(method, arguments))
+
+
+async def async_handler(method, arguments):
     open_library = LocalOpenLibraryHandler()
-    return getattr(open_library, method)(**arguments)
+    response = await getattr(open_library, method)(**arguments)
+    return response.model_dump()
