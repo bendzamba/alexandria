@@ -27,6 +27,7 @@ cp ../../../utils/images/local.py lambda_package/app/utils/images/local.py
 # TODO may need to peg these to versions from requirements.txt?
 pip install --target ./lambda_package pydantic
 pip install --target ./lambda_package fastapi
+pip install --target ./lambda_package httpx
 
 # Zip contents
 cd lambda_package
