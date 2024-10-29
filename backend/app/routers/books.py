@@ -10,7 +10,7 @@ from app.models.book import (
 )
 from app.models.openlibrary import Works
 from app.models.exception import ExceptionHandler
-from app.services.openlibrary import get_open_library
+from app.services.open_library.factory import get_open_library
 from app.db.sqlite import get_db
 from sqlmodel import Session, select
 

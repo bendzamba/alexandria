@@ -1,4 +1,4 @@
-from app.services.openlibrary import OpenLibrary
+from app.services.open_library import OpenLibrary
 from sqlmodel import Session, select, create_engine
 from app.models.book import Book
 import asyncio
