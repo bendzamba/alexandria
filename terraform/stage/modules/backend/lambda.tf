@@ -173,7 +173,8 @@ resource "aws_lambda_function" "lambda_function" {
   }
 
   depends_on = [
-    aws_efs_mount_target.efs_mount_target,
+    aws_efs_mount_target.efs_mount_target_1,
+    aws_efs_mount_target.efs_mount_target_2,
     aws_iam_role_policy_attachment.lambda_vpc_policy_attachment
   ]
 
