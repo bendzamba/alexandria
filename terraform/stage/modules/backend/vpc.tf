@@ -72,6 +72,20 @@ resource "aws_vpc_security_group_egress_rule" "lambda_security_group_egress" {
   security_group_id = aws_security_group.lambda_security_group.id
   cidr_ipv4         = "0.0.0.0/0"
   ip_protocol       = "-1" # semantically equivalent to all ports
+  tags              = {
+    Name = "${var.app_name}-backend-security-group-lambda-outbound-rule"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "lambda_security_group_ingress" {
+  security_group_id             = aws_security_group.lambda_security_group.id
+  referenced_security_group_id  = aws_security_group.lambda_security_group.id
+  from_port                     = 443
+  to_port                       = 443
+  ip_protocol                   = "tcp"
+  tags                          = {
+    Name = "${var.app_name}-backend-security-group-lambda-inbound-rule"
+  }
 }
 
 resource "aws_vpc_endpoint" "lambda_endpoint" {
