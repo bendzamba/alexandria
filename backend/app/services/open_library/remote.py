@@ -24,11 +24,8 @@ class RemoteOpenLibraryHandler(BaseOpenLibraryHandler):
 
     remote_response = await self._invoke_lambda(event_payload=event_payload)
 
-    print("remote response")
-    print(remote_response)
-
+    # We need to transform this back into a format we'd expect from Open Library's API to handle it gracefully
     remote_response_transformed = []
-
     for doc in remote_response:
       transformed_doc = doc
       # Convert author back to list
@@ -40,15 +37,9 @@ class RemoteOpenLibraryHandler(BaseOpenLibraryHandler):
       del transformed_doc["olids"]
       remote_response_transformed.append(transformed_doc)
 
-    print("remote response transformed")
-    print(remote_response_transformed)
-
     works = []
     for doc in remote_response_transformed:
       works.append(Work(**doc))
-
-    print("works")
-    print(Works)
       
     return Works(**{"works": works})
 
