@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CreateBook as CreateBookService,
@@ -28,9 +28,14 @@ function CreateBook() {
   );
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
+  const [coverImageToUpload, setCoverImageToUpload] = useState<string | null>(
+    null
+  );
   const navigate = useNavigate();
 
   const placeholderImageText = "No Cover Image Selected";
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleSearch = async () => {
     setSearching(true);
@@ -172,6 +177,19 @@ function CreateBook() {
     }
   };
 
+  function handleButtonToSetCoverImageToUpload() {
+    fileInputRef.current?.click();
+  }
+
+  function handleSetCoverImageToUpload(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    console.log(event.target.files);
+    if (event.target.files?.length) {
+      setCoverImageToUpload(URL.createObjectURL(event.target.files[0]));
+    }
+  }
+
   return (
     <Container className="mt-4">
       <form onSubmit={handleSearchClick}>
@@ -278,6 +296,39 @@ function CreateBook() {
                       borderRadius: ".375em",
                     }}
                   >
+                    <Col className={"m-2"}>
+                      <input
+                        type="file"
+                        id="cover-image-upload"
+                        onChange={handleSetCoverImageToUpload}
+                        ref={fileInputRef}
+                        hidden
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary"
+                        style={{ width: "90px", height: "150px" }}
+                        onClick={handleButtonToSetCoverImageToUpload}
+                        aria-label="Add Book to Bookshelf"
+                      >
+                        Upload Image
+                      </button>
+                    </Col>
+                    {coverImageToUpload && (
+                      <Col className={"m-2"}>
+                        <img
+                          src={coverImageToUpload}
+                          style={{
+                            height: "150px",
+                            boxSizing: "border-box",
+                            padding: "2px",
+                          }}
+                          className={`border border-2 border-primary`}
+                          alt={`Available Book Cover`}
+                          role="presentation"
+                        />
+                      </Col>
+                    )}
                     {olids.map((map_olid, index) => (
                       <Col key={map_olid} className={"m-2"}>
                         <img
