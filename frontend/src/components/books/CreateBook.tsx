@@ -14,44 +14,51 @@ import { createPlaceholderImage } from "../../utils/create_placeholder_image";
 import { BookCoverInterface } from "../../interfaces/book_cover";
 
 function CreateBook() {
-  const [searchTitle, setSearchTitle] = useState<string>("");
+  // Book metadata
   const [title, setTitle] = useState<string | null>(null);
   const [author, setAuthor] = useState<string | null>(null);
   const [year, setYear] = useState<number | null>(null);
+  const [olids, setOlids] = useState<string[]>([]);
   const [chosenBookCover, setChosenBookCover] =
     useState<Partial<BookCoverInterface> | null>(null);
-  const [searching, setSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState(false);
+
+  // Search
+  const [searchTitle, setSearchTitle] = useState<string>("");
   const [noResults, setNoResults] = useState(false);
-  const [olids, setOlids] = useState<string[]>([]);
-  const [coverUrl, setCoverUrl] = useState<string>("");
   const [booksToChooseFrom, setBooksToChooseFrom] = useState<WorkInterface[]>(
     []
   );
+
+  // Book selected from search results
+  const [selectedBook, setSelectedBook] = useState<number | null>(null);
+
+  // Book covers to choose from selected book
   const [bookCoversToChooseFrom, setBookCoversToChooseFrom] = useState<
     Partial<BookCoverInterface>[]
   >([]);
-  const [selectedBook, setSelectedBook] = useState<number | null>(null);
+
+  // Processing states
+  const [searching, setSearching] = useState(false);
   const [creating, setCreating] = useState(false);
-  const navigate = useNavigate();
 
+  // Static values
   const placeholderImageText = "No Cover Image Selected";
-
   const olidImagePath = "https://covers.openlibrary.org/b/olid/";
 
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleSearch = async () => {
     setSearching(true);
-    setSearchResults(false);
     setNoResults(false);
+    setTitle(null);
     setAuthor(null);
     setYear(null);
     setOlids([]);
-    setCoverUrl("");
+    setBooksToChooseFrom([]);
     setBookCoversToChooseFrom([]);
     setChosenBookCover(null);
-    setTitle(null);
+    setSelectedBook(null);
 
     const response: WorkInterface[] | boolean =
       await SearchBookByTitle(searchTitle);
@@ -68,17 +75,22 @@ function CreateBook() {
       return true;
     }
 
+    setBooksToChooseFrom(response);
+
     if (response.length === 1) {
-      setSearchResults(true);
       setTitle(response[0].title);
       setAuthor(response[0].author_name);
       setYear(response[0].first_publish_year);
       setOlids(response[0].olids);
-      setCoverUrl("");
-      setBookCoversToChooseFrom([]);
-      setChosenBookCover(null);
-    } else {
-      setBooksToChooseFrom(response);
+      const bookCoversToChooseFrom = response[0].olids.map((olid) => {
+        const bookCover: Partial<BookCoverInterface> = {
+          olid: olid,
+          thumb_uri: olidImagePath + olid + "-M.jpg",
+          uri: olidImagePath + olid + "-L.jpg",
+        };
+        return bookCover;
+      });
+      setBookCoversToChooseFrom(bookCoversToChooseFrom);
     }
   };
 
@@ -93,12 +105,10 @@ function CreateBook() {
   ) => {
     event.preventDefault();
     setSelectedBook(index);
-    setSearchResults(true);
     setTitle(booksToChooseFrom[index].title);
     setAuthor(booksToChooseFrom[index].author_name);
     setYear(booksToChooseFrom[index].first_publish_year);
     setOlids(booksToChooseFrom[index].olids);
-    setCoverUrl("");
     // Create book covers
     const bookCoversToChooseFrom = booksToChooseFrom[index].olids.map(
       (olid) => {
@@ -183,10 +193,9 @@ function CreateBook() {
 
   useEffect(() => {
     if (olids && olids.length === 0) {
-      setCoverUrl("");
       setBookCoversToChooseFrom([]);
     }
-  }, [olids, setCoverUrl, setBookCoversToChooseFrom]);
+  }, [olids, setBookCoversToChooseFrom]);
 
   const toggleBookCoverSelection = (
     event:
@@ -198,11 +207,6 @@ function CreateBook() {
     const localChosenBookCover =
       chosenBookCover === bookCoverToChoose ? null : bookCoverToChoose;
     setChosenBookCover(localChosenBookCover);
-    if (chosenBookCover === bookCoverToChoose) {
-      setCoverUrl("");
-    } else if (localChosenBookCover && localChosenBookCover.uri) {
-      setCoverUrl(localChosenBookCover.uri);
-    }
   };
 
   function handleButtonToSetCoverImageToUpload() {
@@ -268,7 +272,7 @@ function CreateBook() {
         </Row>
       )}
 
-      {searchResults && (
+      {selectedBook !== null && (
         <>
           <Row
             className="mt-4 mb-4 align-items-center"
@@ -307,12 +311,12 @@ function CreateBook() {
             <Col xs={3} className="mb-3">
               <img
                 src={
-                  coverUrl !== ""
-                    ? coverUrl
+                  chosenBookCover !== null
+                    ? chosenBookCover.uri
                     : createPlaceholderImage(320, 484, placeholderImageText)
                 }
                 className="img-fluid"
-                alt={`${coverUrl !== "" ? "Selected" : "Placeholder"} Book Cover: ${title}`}
+                alt={`${chosenBookCover !== null ? "Selected" : "Placeholder"} Book Cover: ${title}`}
                 height="300px"
               />
             </Col>
@@ -395,7 +399,7 @@ function CreateBook() {
         </>
       )}
 
-      {booksToChooseFrom.length > 0 && (
+      {booksToChooseFrom.length > 1 && (
         <>
           <Row className="mt-4">
             <Col>
