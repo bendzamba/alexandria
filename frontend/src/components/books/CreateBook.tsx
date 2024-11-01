@@ -37,6 +37,8 @@ function CreateBook() {
 
   const placeholderImageText = "No Cover Image Selected";
 
+  const olidImagePath = "https://covers.openlibrary.org/b/olid/";
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleSearch = async () => {
@@ -102,8 +104,8 @@ function CreateBook() {
       (olid) => {
         const bookCover: Partial<BookCoverInterface> = {
           olid: olid,
-          thumb_uri: "https://covers.openlibrary.org/b/olid/" + olid + "-M.jpg",
-          uri: "https://covers.openlibrary.org/b/olid/" + olid + "-L.jpg",
+          thumb_uri: olidImagePath + olid + "-M.jpg",
+          uri: olidImagePath + olid + "-L.jpg",
         };
         return bookCover;
       }
