@@ -32,6 +32,7 @@ export interface CreateOrUpdateBookInterface {
   year: number;
   olid: string;
   cover_uri: string;
+  cover_upload: File;
   olids: string;
   rating: number | null;
   review: string | null;

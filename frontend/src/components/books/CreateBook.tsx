@@ -11,13 +11,15 @@ import styles from "./css/CreateBook.module.css";
 import { WorkInterface } from "../../interfaces/work";
 import { CreateOrUpdateBookInterface } from "../../interfaces/book_and_bookshelf";
 import { createPlaceholderImage } from "../../utils/create_placeholder_image";
+import { BookCoverInterface } from "../../interfaces/book_cover";
 
 function CreateBook() {
   const [searchTitle, setSearchTitle] = useState<string>("");
   const [title, setTitle] = useState<string | null>(null);
   const [author, setAuthor] = useState<string | null>(null);
   const [year, setYear] = useState<number | null>(null);
-  const [olid, setOlid] = useState<string | null>(null);
+  const [chosenBookCover, setChosenBookCover] =
+    useState<Partial<BookCoverInterface> | null>(null);
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState(false);
   const [noResults, setNoResults] = useState(false);
@@ -26,11 +28,11 @@ function CreateBook() {
   const [booksToChooseFrom, setBooksToChooseFrom] = useState<WorkInterface[]>(
     []
   );
+  const [bookCoversToChooseFrom, setBookCoversToChooseFrom] = useState<
+    Partial<BookCoverInterface>[]
+  >([]);
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
-  const [coverImageToUpload, setCoverImageToUpload] = useState<string | null>(
-    null
-  );
   const navigate = useNavigate();
 
   const placeholderImageText = "No Cover Image Selected";
@@ -45,7 +47,8 @@ function CreateBook() {
     setYear(null);
     setOlids([]);
     setCoverUrl("");
-    setOlid(null);
+    setBookCoversToChooseFrom([]);
+    setChosenBookCover(null);
     setTitle(null);
 
     const response: WorkInterface[] | boolean =
@@ -70,6 +73,8 @@ function CreateBook() {
       setYear(response[0].first_publish_year);
       setOlids(response[0].olids);
       setCoverUrl("");
+      setBookCoversToChooseFrom([]);
+      setChosenBookCover(null);
     } else {
       setBooksToChooseFrom(response);
     }
@@ -92,6 +97,18 @@ function CreateBook() {
     setYear(booksToChooseFrom[index].first_publish_year);
     setOlids(booksToChooseFrom[index].olids);
     setCoverUrl("");
+    // Create book covers
+    const bookCoversToChooseFrom = booksToChooseFrom[index].olids.map(
+      (olid) => {
+        const bookCover: Partial<BookCoverInterface> = {
+          olid: olid,
+          thumb_uri: "https://covers.openlibrary.org/b/olid/" + olid + "-M.jpg",
+          uri: "https://covers.openlibrary.org/b/olid/" + olid + "-L.jpg",
+        };
+        return bookCover;
+      }
+    );
+    setBookCoversToChooseFrom(bookCoversToChooseFrom);
   };
 
   const handleCreate = async () => {
@@ -104,8 +121,15 @@ function CreateBook() {
     if (title != null) filteredBookData.title = title;
     if (author != null) filteredBookData.author = author;
     if (year != null) filteredBookData.year = year;
-    if (olid != null) filteredBookData.olid = olid;
     if (json_olids != null) filteredBookData.olids = json_olids;
+    if (chosenBookCover != null) {
+      if (chosenBookCover.olid) {
+        filteredBookData.olid = chosenBookCover.olid;
+      }
+      if (chosenBookCover.file_to_upload) {
+        filteredBookData.cover_upload = chosenBookCover.file_to_upload;
+      }
+    }
 
     const response: boolean = await CreateBookService(filteredBookData);
     if (!response) {
@@ -117,8 +141,8 @@ function CreateBook() {
     setSearchTitle("");
     setAuthor(null);
     setYear(null);
-    setOlid(null);
     setOlids([]);
+    setBookCoversToChooseFrom([]);
     navigate(`/books/`);
   };
 
@@ -133,8 +157,8 @@ function CreateBook() {
     setSearchTitle("");
     setAuthor(null);
     setYear(null);
-    setOlid(null);
     setOlids([]);
+    setBookCoversToChooseFrom([]);
     navigate(`/books/`);
   };
 
@@ -145,10 +169,12 @@ function CreateBook() {
     const img = event.currentTarget;
     // Images returned from Open Library that are 'blank' seem to render as 1x1s
     if (img.naturalWidth === 1 || img.naturalHeight === 1) {
-      setOlids((prevOlids) => {
-        return prevOlids.filter((prevOlid) => {
-          return prevOlid !== olid;
-        });
+      setBookCoversToChooseFrom((previousBookCoversToChooseFrom) => {
+        return previousBookCoversToChooseFrom.filter(
+          (previousBookCoverToChooseFrom) => {
+            return previousBookCoverToChooseFrom.olid !== olid;
+          }
+        );
       });
     }
   };
@@ -156,24 +182,24 @@ function CreateBook() {
   useEffect(() => {
     if (olids && olids.length === 0) {
       setCoverUrl("");
+      setBookCoversToChooseFrom([]);
     }
-  }, [olids, setCoverUrl]);
+  }, [olids, setCoverUrl, setBookCoversToChooseFrom]);
 
   const toggleBookCoverSelection = (
     event:
       | React.MouseEvent<HTMLImageElement>
       | React.KeyboardEvent<HTMLImageElement>,
-    olidToToggle: string
+    bookCoverToChoose: Partial<BookCoverInterface>
   ) => {
     event.preventDefault();
-    const localOlid = olid === olidToToggle ? "" : olidToToggle;
-    setOlid(localOlid);
-    if (olid === olidToToggle) {
+    const localChosenBookCover =
+      chosenBookCover === bookCoverToChoose ? null : bookCoverToChoose;
+    setChosenBookCover(localChosenBookCover);
+    if (chosenBookCover === bookCoverToChoose) {
       setCoverUrl("");
-    } else {
-      setCoverUrl(
-        "https://covers.openlibrary.org/b/olid/" + olidToToggle + "-L.jpg"
-      );
+    } else if (localChosenBookCover && localChosenBookCover.uri) {
+      setCoverUrl(localChosenBookCover.uri);
     }
   };
 
@@ -186,7 +212,15 @@ function CreateBook() {
   ) {
     console.log(event.target.files);
     if (event.target.files?.length) {
-      setCoverImageToUpload(URL.createObjectURL(event.target.files[0]));
+      const objectUrl = URL.createObjectURL(event.target.files[0]);
+      const coverImageToUpload: Partial<BookCoverInterface> = {
+        uri: objectUrl,
+        thumb_uri: objectUrl,
+        file_to_upload: event.target.files[0],
+      };
+      setBookCoversToChooseFrom((previousBookCoversToChooseFrom) => {
+        return [...[coverImageToUpload], ...previousBookCoversToChooseFrom];
+      });
     }
   }
 
@@ -314,50 +348,43 @@ function CreateBook() {
                         Upload Image
                       </button>
                     </Col>
-                    {coverImageToUpload && (
-                      <Col className={"m-2"}>
-                        <img
-                          src={coverImageToUpload}
-                          style={{
-                            height: "150px",
-                            boxSizing: "border-box",
-                            padding: "2px",
-                          }}
-                          className={`border border-2 border-primary`}
-                          alt={`Available Book Cover`}
-                          role="presentation"
-                        />
-                      </Col>
-                    )}
-                    {olids.map((map_olid, index) => (
-                      <Col key={map_olid} className={"m-2"}>
-                        <img
-                          src={
-                            "https://covers.openlibrary.org/b/olid/" +
-                            map_olid +
-                            "-M.jpg"
-                          }
-                          style={{
-                            height: "150px",
-                            boxSizing: "border-box",
-                            padding: "2px",
-                          }}
-                          onLoad={(event) => imageOnload(event, map_olid)}
-                          onClick={(event) =>
-                            toggleBookCoverSelection(event, map_olid)
-                          }
-                          className={`border border-2 ${olid === map_olid ? "border-primary" : "border-light"}`}
-                          alt={`Available Book Cover ${index.toString()}`}
-                          loading="lazy"
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                              toggleBookCoverSelection(event, map_olid); // Trigger the click handler
+                    {bookCoversToChooseFrom.map(
+                      (bookCoverToChooseFrom, index) => (
+                        <Col key={index} className={"m-2"}>
+                          <img
+                            src={bookCoverToChooseFrom.thumb_uri}
+                            style={{
+                              height: "150px",
+                              boxSizing: "border-box",
+                              padding: "2px",
+                            }}
+                            onLoad={(event) =>
+                              bookCoverToChooseFrom.olid
+                                ? imageOnload(event, bookCoverToChooseFrom.olid)
+                                : null
                             }
-                          }}
-                          role="presentation"
-                        />
-                      </Col>
-                    ))}
+                            onClick={(event) =>
+                              toggleBookCoverSelection(
+                                event,
+                                bookCoverToChooseFrom
+                              )
+                            }
+                            className={`border border-2 ${chosenBookCover === bookCoverToChooseFrom ? "border-primary" : "border-light"}`}
+                            alt={`Available Book Cover ${index.toString()}`}
+                            loading="lazy"
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                toggleBookCoverSelection(
+                                  event,
+                                  bookCoverToChooseFrom
+                                );
+                              }
+                            }}
+                            role="presentation"
+                          />
+                        </Col>
+                      )
+                    )}
                   </Row>
                 </Col>
               </>

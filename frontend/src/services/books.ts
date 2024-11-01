@@ -14,13 +14,29 @@ export const GetBooks = async (): Promise<
 export const CreateBook = async (
   data: Partial<CreateOrUpdateBookInterface>
 ): Promise<boolean> => {
-  return await Base("/books/", {
+  const options: RequestInit = {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  };
+  if (data.cover_upload) {
+    // Use FormData when a file is provided
+    const formData = new FormData();
+    for (const key in data) {
+      // Skip cover upload as that is added as a 'file' below
+      if (key !== "cover_upload") {
+        formData.append(
+          key,
+          data[key as keyof CreateOrUpdateBookInterface] as string
+        );
+      }
+    }
+    formData.append("file", data.cover_upload);
+    options.body = formData;
+  } else {
+    // Use JSON if no file is provided
+    options.headers = { "Content-Type": "application/json" };
+    options.body = JSON.stringify(data);
+  }
+  return await Base("/books/", options);
 };
 
 export const GetBook = async (
