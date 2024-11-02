@@ -44,6 +44,12 @@ function CreateBook() {
   // Static values
   const placeholderImageText = "No Cover Image Selected";
   const olidImagePath = "https://covers.openlibrary.org/b/olid/";
+  const acceptableMimeTypes = [
+    "image/png",
+    "image/jpeg",
+    "image/jpg",
+    "image/gif",
+  ];
 
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -340,6 +346,7 @@ function CreateBook() {
                     id="cover-image-upload"
                     onChange={handleSetCoverImageToUpload}
                     ref={fileInputRef}
+                    accept={acceptableMimeTypes.join(",")}
                     hidden
                   />
                   <button
