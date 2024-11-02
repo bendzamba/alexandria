@@ -12,6 +12,7 @@ import { WorkInterface } from "../../interfaces/work";
 import { CreateOrUpdateBookInterface } from "../../interfaces/book_and_bookshelf";
 import { createPlaceholderImage } from "../../utils/create_placeholder_image";
 import { BookCoverInterface } from "../../interfaces/book_cover";
+import { toast } from "react-toastify";
 
 function CreateBook() {
   // Book metadata
@@ -44,12 +45,13 @@ function CreateBook() {
   // Static values
   const placeholderImageText = "No Cover Image Selected";
   const olidImagePath = "https://covers.openlibrary.org/b/olid/";
-  const acceptableMimeTypes = [
+  const allowedMimeTypes = [
     "image/png",
     "image/jpeg",
     "image/jpg",
     "image/gif",
   ];
+  const maxAllowedImageUploadSize = 5 * 1024 * 1024; // 5MB
 
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -222,18 +224,40 @@ function CreateBook() {
   function handleSetCoverImageToUpload(
     event: React.ChangeEvent<HTMLInputElement>
   ) {
-    console.log(event.target.files);
-    if (event.target.files?.length) {
-      const objectUrl = URL.createObjectURL(event.target.files[0]);
-      const coverImageToUpload: Partial<BookCoverInterface> = {
-        uri: objectUrl,
-        thumb_uri: objectUrl,
-        file_to_upload: event.target.files[0],
-      };
-      setBookCoversToChooseFrom((previousBookCoversToChooseFrom) => {
-        return [...[coverImageToUpload], ...previousBookCoversToChooseFrom];
+    if (event.target.files === null || event.target.files.length === 0) {
+      toast.error("No files were provided for upload", {
+        position: "bottom-right",
+        theme: "colored",
       });
+      return;
     }
+    const file_to_upload = event.target.files[0];
+    if (!allowedMimeTypes.includes(file_to_upload.type)) {
+      toast.error(
+        `Only files of type ${allowedMimeTypes.join(" or ")} are allowed`,
+        {
+          position: "bottom-right",
+          theme: "colored",
+        }
+      );
+      return;
+    }
+    if (file_to_upload.size > maxAllowedImageUploadSize) {
+      toast.error("File size must be less than 5MB", {
+        position: "bottom-right",
+        theme: "colored",
+      });
+      return;
+    }
+    const objectUrl = URL.createObjectURL(file_to_upload);
+    const coverImageToUpload: Partial<BookCoverInterface> = {
+      uri: objectUrl,
+      thumb_uri: objectUrl,
+      file_to_upload: file_to_upload,
+    };
+    setBookCoversToChooseFrom((previousBookCoversToChooseFrom) => {
+      return [...[coverImageToUpload], ...previousBookCoversToChooseFrom];
+    });
   }
 
   return (
@@ -346,7 +370,7 @@ function CreateBook() {
                     id="cover-image-upload"
                     onChange={handleSetCoverImageToUpload}
                     ref={fileInputRef}
-                    accept={acceptableMimeTypes.join(",")}
+                    accept={allowedMimeTypes.join(",")}
                     hidden
                   />
                   <button
