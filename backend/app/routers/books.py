@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, Path, status, HTTPException
-from typing import Annotated
+from fastapi import APIRouter, Depends, File, Path, UploadFile, status, HTTPException
+from typing import Annotated, Optional
 from app.models.book import (
     Book,
     BookCreate,
@@ -12,6 +12,7 @@ from app.models.openlibrary import Works
 from app.models.exception import ExceptionHandler
 from app.services.open_library.factory import get_open_library
 from app.db.sqlite import get_db
+from app.utils.dependencies import form_or_json
 from sqlmodel import Session, select
 
 
@@ -42,11 +43,17 @@ def get_book(
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_book(
-    book_create: BookCreate,
+    book_create: BookCreate = form_or_json(BookCreate),
+    file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
     open_library=Depends(get_open_library)
 ):
-    await open_library.fetch_image_from_olid(book_create.olid)
+    if "olid" in book_create:
+        await open_library.fetch_image_from_olid(book_create.olid)
+    if file:
+        contents = await file.read()
+        print(contents)
+
     db_book = Book.model_validate(book_create)
     db.add(db_book)
     db.commit()
