@@ -325,76 +325,67 @@ function CreateBook() {
               <h4 data-testid="selected-book-author">{author}</h4>
               <h6 data-testid="selected-book-year">{year}</h6>
             </Col>
-            {olids && olids.length > 0 && (
-              <>
-                <Col xs={12} lg={5}>
-                  <Row
-                    style={{
-                      maxHeight: "500px",
-                      overflow: "scroll",
-                      border: "1px solid grey",
-                      borderRadius: ".375em",
-                    }}
+            <Col xs={12} lg={5}>
+              <Row
+                style={{
+                  maxHeight: "500px",
+                  overflow: "scroll",
+                  border: "1px solid grey",
+                  borderRadius: ".375em",
+                }}
+              >
+                <Col className={"m-2"}>
+                  <input
+                    type="file"
+                    id="cover-image-upload"
+                    onChange={handleSetCoverImageToUpload}
+                    ref={fileInputRef}
+                    hidden
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary"
+                    style={{ width: "90px", height: "150px" }}
+                    onClick={handleButtonToSetCoverImageToUpload}
+                    aria-label="Add Book to Bookshelf"
                   >
-                    <Col className={"m-2"}>
-                      <input
-                        type="file"
-                        id="cover-image-upload"
-                        onChange={handleSetCoverImageToUpload}
-                        ref={fileInputRef}
-                        hidden
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-outline-primary"
-                        style={{ width: "90px", height: "150px" }}
-                        onClick={handleButtonToSetCoverImageToUpload}
-                        aria-label="Add Book to Bookshelf"
-                      >
-                        Upload Image
-                      </button>
-                    </Col>
-                    {bookCoversToChooseFrom.map(
-                      (bookCoverToChooseFrom, index) => (
-                        <Col key={index} className={"m-2"}>
-                          <img
-                            src={bookCoverToChooseFrom.thumb_uri}
-                            style={{
-                              height: "150px",
-                              boxSizing: "border-box",
-                              padding: "2px",
-                            }}
-                            onLoad={(event) =>
-                              bookCoverToChooseFrom.olid
-                                ? imageOnload(event, bookCoverToChooseFrom.olid)
-                                : null
-                            }
-                            onClick={(event) =>
-                              toggleBookCoverSelection(
-                                event,
-                                bookCoverToChooseFrom
-                              )
-                            }
-                            className={`border border-2 ${chosenBookCover === bookCoverToChooseFrom ? "border-primary" : "border-light"}`}
-                            alt={`Available Book Cover ${index.toString()}`}
-                            loading="lazy"
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter" || event.key === " ") {
-                                toggleBookCoverSelection(
-                                  event,
-                                  bookCoverToChooseFrom
-                                );
-                              }
-                            }}
-                            role="presentation"
-                          />
-                        </Col>
-                      )
-                    )}
-                  </Row>
+                    Upload Image
+                  </button>
                 </Col>
-              </>
-            )}
+                {bookCoversToChooseFrom.map((bookCoverToChooseFrom, index) => (
+                  <Col key={index} className={"m-2"}>
+                    <img
+                      src={bookCoverToChooseFrom.thumb_uri}
+                      style={{
+                        height: "150px",
+                        boxSizing: "border-box",
+                        padding: "2px",
+                      }}
+                      onLoad={(event) =>
+                        bookCoverToChooseFrom.olid
+                          ? imageOnload(event, bookCoverToChooseFrom.olid)
+                          : null
+                      }
+                      onClick={(event) =>
+                        toggleBookCoverSelection(event, bookCoverToChooseFrom)
+                      }
+                      className={`border border-2 ${chosenBookCover === bookCoverToChooseFrom ? "border-primary" : "border-light"}`}
+                      alt={`Available Book Cover ${index.toString()}`}
+                      loading="lazy"
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          toggleBookCoverSelection(
+                            event,
+                            bookCoverToChooseFrom
+                          );
+                        }
+                      }}
+                      role="presentation"
+                    />
+                  </Col>
+                ))}
+              </Row>
+            </Col>
           </Row>
         </>
       )}
