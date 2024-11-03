@@ -14,6 +14,7 @@ from app.services.open_library.factory import get_open_library
 from app.db.sqlite import get_db
 from app.utils.dependencies import form_or_json
 from sqlmodel import Session, select
+import magic
 
 ALLOWED_MIME_TYPES = {"image/png", "image/jpeg", "image/jpg", "image/gif"}
 MAX_ALLOWED_IMAGE_UPLOAD_SIZE = 5 * 1024 * 1024  # 5MB
@@ -56,11 +57,15 @@ async def create_book(
 
     # We are creating a book with a directly uploaded book cover image
     if file:
-        if file.content_type not in ALLOWED_MIME_TYPES:
+        mime = magic.Magic(mime=True)
+        file_type = mime.from_buffer(await file.read(2048))
+        if file_type not in ALLOWED_MIME_TYPES:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid file type. Only PNG, JPEG, and GIF files are allowed."
             )
+        # Reset file pointer to the beginning
+        await file.seek(0)
         contents = await file.read()
         if len(contents) > MAX_ALLOWED_IMAGE_UPLOAD_SIZE:
             raise HTTPException(
