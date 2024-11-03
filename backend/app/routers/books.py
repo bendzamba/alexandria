@@ -15,6 +15,8 @@ from app.db.sqlite import get_db
 from app.utils.dependencies import form_or_json
 from sqlmodel import Session, select
 
+ALLOWED_MIME_TYPES = {"image/png", "image/jpeg", "image/jpg", "image/gif"}
+MAX_ALLOWED_IMAGE_UPLOAD_SIZE = 5 * 1024 * 1024  # 5MB
 
 router = APIRouter()
 
@@ -48,10 +50,23 @@ async def create_book(
     db: Session = Depends(get_db),
     open_library=Depends(get_open_library)
 ):
-    if "olid" in book_create:
+    # We are creating a book with an Open Library ID for the book cover image
+    if "olid" in book_create and book_create.olid is not None:
         await open_library.fetch_image_from_olid(book_create.olid)
+
+    # We are creating a book with a directly uploaded book cover image
     if file:
+        if file.content_type not in ALLOWED_MIME_TYPES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid file type. Only PNG, JPEG, and GIF files are allowed."
+            )
         contents = await file.read()
+        if len(contents) > MAX_ALLOWED_IMAGE_UPLOAD_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="File size exceeded. Maximum allowed size is 5MB."
+            )
         print(contents)
 
     db_book = Book.model_validate(book_create)
@@ -73,7 +88,7 @@ async def update_book(
 
     book_data = book_update.model_dump(exclude_unset=True)
 
-    if "olid" in book_data:
+    if "olid" in book_data and book_data.olid is not None:
         await open_library.fetch_image_from_olid(book_update.olid)
 
     db_book.sqlmodel_update(book_data)
