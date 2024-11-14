@@ -8,12 +8,15 @@ from app.db.sqlite import get_engine
 from dotenv import load_dotenv
 from mangum import Mangum
 import os
+import logging
 
 # These are only imported for the create_all call
 # `noqa: F401` is used to suppress linter errors
 from app.models.book import Book  # noqa: F401
 from app.models.bookshelf import Bookshelf  # noqa: F401
 from app.models.book_bookshelf import BookBookshelfLink  # noqa: F401
+
+logging.disable(logging.INFO)
 
 # Load environment variables from a .env file
 load_dotenv()
