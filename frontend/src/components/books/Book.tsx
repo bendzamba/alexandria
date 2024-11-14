@@ -7,9 +7,13 @@ import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
 import styles from "./css/Book.module.scss";
-import { BookWithBookshelvesInterface } from "../../interfaces/book_and_bookshelf";
+import {
+  BookWithBookshelvesInterface,
+  AvailableCoverImageInterface,
+} from "../../interfaces/book_and_bookshelf";
 import DatePicker from "react-datepicker";
 import { createPlaceholderImage } from "../../utils/create_placeholder_image";
+import CoverImage from "./CoverImage";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface BookProps {
@@ -23,11 +27,9 @@ function Book({ book, preview }: BookProps) {
   const [bookProp] = useState<BookWithBookshelvesInterface | undefined>(book);
   const [currentBook, setCurrentBook] =
     useState<BookWithBookshelvesInterface>();
-  const [savedCoverUri, setSavedCoverUri] = useState("");
   const [savedReview, setSavedReview] = useState<string | null>("");
   const [loading, setLoading] = useState(true);
   const [availableOlids, setAvailableOlids] = useState<string[]>([]);
-  const [savedOlid, setSavedOlid] = useState("");
   const [selectingNewCover, setSelectingNewCover] = useState(false);
   const [addingReview, setAddingReview] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -38,14 +40,27 @@ function Book({ book, preview }: BookProps) {
   // when loaded from the Books component. We want to prevent unnecessarily
   // re-setting the current book below, which can overwrite our state
   const hasRenderedFromParent = useRef(false);
+  const hasInitialized = useRef(false);
   const navigate = useNavigate();
 
+  // Book covers to choose from selected book
+  const [availableCoverImages, setAvailableCoverImages] = useState<
+    Partial<AvailableCoverImageInterface>[]
+  >([]);
+
+  const [selectedCoverImage, setSelectedCoverImage] =
+    useState<Partial<AvailableCoverImageInterface> | null>(null);
+
   const placeholderImageText = "No Cover Image Selected";
+  const olidImagePath = "https://covers.openlibrary.org/b/olid/";
 
   // From /books/{id}
   const { id } = useParams();
 
   const initialize = useCallback(async () => {
+    if (hasInitialized.current) {
+      return;
+    }
     try {
       if (bookProp && !hasRenderedFromParent.current) {
         setCurrentBook(bookProp);
@@ -65,28 +80,42 @@ function Book({ book, preview }: BookProps) {
           return false;
         }
         setCurrentBook(book_fetched_from_api);
+        try {
+          if (availableOlids.length === 0) {
+            const allBookOlids: string[] = JSON.parse(
+              book_fetched_from_api.olids
+            ) as string[];
+            const localAvailableCoverImages = allBookOlids.map((olid) => {
+              const bookCover: Partial<AvailableCoverImageInterface> = {
+                unique_id: olid,
+                thumb_uri: olidImagePath + olid + "-M.jpg",
+                uri: olidImagePath + olid + "-L.jpg",
+              };
+              return bookCover;
+            });
+            if (
+              book_fetched_from_api.image &&
+              book_fetched_from_api.image.source === "direct_upload"
+            ) {
+              // Put selected image first
+              localAvailableCoverImages.unshift({
+                unique_id: book_fetched_from_api.image.source_id,
+                thumb_uri: book_fetched_from_api.image.uri,
+                uri: book_fetched_from_api.image.uri,
+              });
+            }
+            setAvailableCoverImages(localAvailableCoverImages);
+          }
+        } catch (e) {
+          console.log("Could not set available olids", e);
+        }
       }
 
       if (!currentBook) {
         console.log("Something went wrong and we have no book!");
         return false;
       }
-
-      setSavedOlid(currentBook.olid);
-      // olids should come back as a JSON encoded array or null
-      try {
-        if (availableOlids.length === 0) {
-          const allBookOlids: string[] = JSON.parse(
-            currentBook.olids
-          ) as string[];
-          if (allBookOlids !== undefined) {
-            setAvailableOlids(allBookOlids);
-          }
-        }
-      } catch (e) {
-        console.log("Could not set available olids", e);
-      }
-      setSavedCoverUri(currentBook.cover_uri);
+      // setSavedCoverUri(currentBook.cover_uri);
       setSavedReview(currentBook.review);
       if (currentBook.read_start_date) {
         setReadStartDate(new Date(currentBook.read_start_date));
@@ -94,6 +123,15 @@ function Book({ book, preview }: BookProps) {
       if (currentBook.read_end_date) {
         setReadEndDate(new Date(currentBook.read_end_date));
       }
+      if (currentBook.image) {
+        const coverImage: Partial<AvailableCoverImageInterface> = {
+          unique_id: currentBook.image.source_id,
+          thumb_uri: currentBook.image.uri,
+          uri: currentBook.image.uri,
+        };
+        setSelectedCoverImage(coverImage);
+      }
+      hasInitialized.current = true;
     } catch (error) {
       console.error("Error fetching book:", error);
     } finally {
@@ -106,24 +144,32 @@ function Book({ book, preview }: BookProps) {
     setSelectingNewCover(true);
   };
 
-  const handleUpdate = async () => {
+  const handleUpdateCoverImage = async () => {
     if (!currentBook) {
       console.log("We can not update a book we do not have.");
       return false;
     }
     try {
-      await UpdateBook(bookIdNumeric, { olid: currentBook.olid });
+      if (selectedCoverImage?.upload) {
+        await UpdateBook(bookIdNumeric, {
+          upload: selectedCoverImage.upload,
+        });
+      } else if (selectedCoverImage?.unique_id) {
+        await UpdateBook(bookIdNumeric, {
+          olid: selectedCoverImage?.unique_id,
+        });
+      }
       setSelectingNewCover(false);
-      // Other logic
     } catch (error) {
       console.error("Error updating:", error);
-      // Handle the error (e.g., show an error message)
     }
   };
 
-  const handleUpdateClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleCoverImageUpdateClick = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
-    void handleUpdate(); // Call the async function but don't return its Promise
+    void handleUpdateCoverImage(); // Call the async function but don't return its Promise
   };
 
   const handleDelete = async () => {
@@ -141,21 +187,6 @@ function Book({ book, preview }: BookProps) {
     setShowDeleteModal(true);
   };
 
-  const imageOnload = (
-    event: React.SyntheticEvent<HTMLImageElement>,
-    olid: string
-  ) => {
-    const img = event.currentTarget;
-    // Images returned from Open Library that are 'blank' seem to render as 1x1s
-    if (img.naturalWidth === 1 || img.naturalHeight === 1) {
-      setAvailableOlids((previousAvailableOlids) => {
-        return previousAvailableOlids.filter((previousAvailableOlid) => {
-          return previousAvailableOlid !== olid;
-        });
-      });
-    }
-  };
-
   const updateCurrentBook = (
     updates: Partial<BookWithBookshelvesInterface>
   ) => {
@@ -166,26 +197,12 @@ function Book({ book, preview }: BookProps) {
     }));
   };
 
-  const toggleBookCoverSelection = (
-    event:
-      | React.MouseEvent<HTMLImageElement>
-      | React.KeyboardEvent<HTMLImageElement>,
-    olidToToggle: string
+  const toggleCoverImageSelection = (
+    coverImageToSelect: Partial<AvailableCoverImageInterface>
   ) => {
-    event.preventDefault();
-    const localOlid =
-      currentBook?.olid === olidToToggle ? savedOlid : olidToToggle;
-    let newCoverUri = "";
-    if (currentBook?.olid === olidToToggle) {
-      newCoverUri = savedCoverUri;
-    } else {
-      newCoverUri =
-        "https://covers.openlibrary.org/b/olid/" + localOlid + "-L.jpg";
+    if (coverImageToSelect != null) {
+      setSelectedCoverImage(coverImageToSelect);
     }
-    updateCurrentBook({
-      olid: localOlid,
-      cover_uri: newCoverUri,
-    });
   };
 
   const changeRating = async (newRating: number) => {
@@ -542,7 +559,7 @@ function Book({ book, preview }: BookProps) {
                 type="button"
                 className="btn btn-primary btn-sm"
                 style={{ marginBottom: "0.5rem" }}
-                onClick={handleUpdateClick}
+                onClick={handleCoverImageUpdateClick}
               >
                 Update
               </button>
@@ -563,13 +580,13 @@ function Book({ book, preview }: BookProps) {
           <NavLink className="nav-link" to={"/books/" + bookIdString}>
             <img
               src={
-                currentBook?.cover_uri !== null
-                  ? currentBook?.cover_uri
+                selectedCoverImage !== null
+                  ? selectedCoverImage.uri
                   : createPlaceholderImage(320, 484, placeholderImageText)
               }
               className="img-fluid"
               alt={`${currentBook?.title}: Book Cover`}
-              data-testid={currentBook?.cover_uri}
+              data-testid={selectedCoverImage?.uri}
               loading="lazy"
             />
           </NavLink>
@@ -705,7 +722,7 @@ function Book({ book, preview }: BookProps) {
                   onKeyDown={(e) => {
                     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
                       e.preventDefault(); // Prevent inserting a newline
-                      changeReviewReturn(); // Trigger the click event or any other logic
+                      changeReviewReturn();
                     }
                   }}
                   tabIndex={0}
@@ -735,67 +752,13 @@ function Book({ book, preview }: BookProps) {
           )}
         </Col>
         {selectingNewCover && (
-          <>
-            {availableOlids && availableOlids.length > 0 && (
-              <Col xs={12} lg={4}>
-                <Row
-                  style={{
-                    maxHeight: "500px",
-                    overflow: "scroll",
-                    border: "1px solid grey",
-                    borderRadius: ".375em",
-                  }}
-                >
-                  {availableOlids.map((map_olid: string, index) => (
-                    <Col key={map_olid} className="m-1">
-                      <img
-                        src={
-                          "https://covers.openlibrary.org/b/olid/" +
-                          map_olid +
-                          "-M.jpg"
-                        }
-                        style={{
-                          height: "150px",
-                          boxSizing: "border-box",
-                          padding: "2px",
-                        }}
-                        onLoad={(event) => imageOnload(event, map_olid)}
-                        onClick={(event) =>
-                          toggleBookCoverSelection(event, map_olid)
-                        }
-                        className={`border border-2 ${currentBook?.olid === map_olid ? "border-primary" : "border-light"}`}
-                        alt={`Alternate Book Cover ${index.toString()}`}
-                        loading="lazy"
-                        onKeyDown={(event) => {
-                          if (
-                            (event.ctrlKey || event.metaKey) &&
-                            event.key === "Enter"
-                          ) {
-                            toggleBookCoverSelection(event, map_olid); // Trigger the click event or any other logic
-                          }
-                        }}
-                        role="presentation"
-                      />
-                    </Col>
-                  ))}
-                </Row>
-              </Col>
-            )}
-            {availableOlids.length === 0 && (
-              <Col xs={4}>
-                <Row
-                  style={{
-                    maxHeight: "500px",
-                    overflow: "scroll",
-                    border: "1px solid grey",
-                    borderRadius: ".375em",
-                  }}
-                >
-                  <h3>Sorry there are no additional covers to select from.</h3>
-                </Row>
-              </Col>
-            )}
-          </>
+          <Col xs={12} lg={4}>
+            <CoverImage
+              parentAvailableCoverImages={availableCoverImages}
+              parentSelectedCoverImage={selectedCoverImage}
+              onSelectCoverImage={toggleCoverImageSelection}
+            />
+          </Col>
         )}
       </Row>
       <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>

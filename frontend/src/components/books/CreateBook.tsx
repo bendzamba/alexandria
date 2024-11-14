@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CreateBook as CreateBookService,
@@ -9,10 +9,12 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import styles from "./css/CreateBook.module.css";
 import { WorkInterface } from "../../interfaces/work";
-import { CreateOrUpdateBookInterface } from "../../interfaces/book_and_bookshelf";
+import {
+  CreateOrUpdateBookInterface,
+  AvailableCoverImageInterface,
+} from "../../interfaces/book_and_bookshelf";
 import { createPlaceholderImage } from "../../utils/create_placeholder_image";
-import { BookCoverInterface } from "../../interfaces/book_cover";
-import { toast } from "react-toastify";
+import CoverImage from "./CoverImage";
 
 function CreateBook() {
   // Book metadata
@@ -20,8 +22,8 @@ function CreateBook() {
   const [author, setAuthor] = useState<string | null>(null);
   const [year, setYear] = useState<number | null>(null);
   const [olids, setOlids] = useState<string[]>([]);
-  const [chosenBookCover, setChosenBookCover] =
-    useState<Partial<BookCoverInterface> | null>(null);
+  const [selectedCoverImage, setSelectedCoverImage] =
+    useState<Partial<AvailableCoverImageInterface> | null>(null);
 
   // Search
   const [searchTitle, setSearchTitle] = useState<string>("");
@@ -34,8 +36,8 @@ function CreateBook() {
   const [selectedBook, setSelectedBook] = useState<number | null>(null);
 
   // Book covers to choose from selected book
-  const [bookCoversToChooseFrom, setBookCoversToChooseFrom] = useState<
-    Partial<BookCoverInterface>[]
+  const [availableCoverImages, setAvailableCoverImages] = useState<
+    Partial<AvailableCoverImageInterface>[]
   >([]);
 
   // Processing states
@@ -45,16 +47,8 @@ function CreateBook() {
   // Static values
   const placeholderImageText = "No Cover Image Selected";
   const olidImagePath = "https://covers.openlibrary.org/b/olid/";
-  const allowedMimeTypes = [
-    "image/png",
-    "image/jpeg",
-    "image/jpg",
-    "image/gif",
-  ];
-  const maxAllowedImageUploadSize = 5 * 1024 * 1024; // 5MB
 
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleSearch = async () => {
     setSearching(true);
@@ -64,8 +58,8 @@ function CreateBook() {
     setYear(null);
     setOlids([]);
     setBooksToChooseFrom([]);
-    setBookCoversToChooseFrom([]);
-    setChosenBookCover(null);
+    setAvailableCoverImages([]);
+    setSelectedCoverImage(null);
     setSelectedBook(null);
 
     const response: WorkInterface[] | boolean =
@@ -90,15 +84,15 @@ function CreateBook() {
       setAuthor(response[0].author_name);
       setYear(response[0].first_publish_year);
       setOlids(response[0].olids);
-      const bookCoversToChooseFrom = response[0].olids.map((olid) => {
-        const bookCover: Partial<BookCoverInterface> = {
-          olid: olid,
+      const localAvailableCoverImages = response[0].olids.map((olid) => {
+        const bookCover: Partial<AvailableCoverImageInterface> = {
+          unique_id: olid,
           thumb_uri: olidImagePath + olid + "-M.jpg",
           uri: olidImagePath + olid + "-L.jpg",
         };
         return bookCover;
       });
-      setBookCoversToChooseFrom(bookCoversToChooseFrom);
+      setAvailableCoverImages(localAvailableCoverImages);
     }
   };
 
@@ -118,17 +112,17 @@ function CreateBook() {
     setYear(booksToChooseFrom[index].first_publish_year);
     setOlids(booksToChooseFrom[index].olids);
     // Create book covers
-    const bookCoversToChooseFrom = booksToChooseFrom[index].olids.map(
+    const localAvailableCoverImages = booksToChooseFrom[index].olids.map(
       (olid) => {
-        const bookCover: Partial<BookCoverInterface> = {
-          olid: olid,
+        const bookCover: Partial<AvailableCoverImageInterface> = {
+          unique_id: olid,
           thumb_uri: olidImagePath + olid + "-M.jpg",
           uri: olidImagePath + olid + "-L.jpg",
         };
         return bookCover;
       }
     );
-    setBookCoversToChooseFrom(bookCoversToChooseFrom);
+    setAvailableCoverImages(localAvailableCoverImages);
   };
 
   const handleCreate = async () => {
@@ -142,12 +136,12 @@ function CreateBook() {
     if (author != null) filteredBookData.author = author;
     if (year != null) filteredBookData.year = year;
     if (json_olids != null) filteredBookData.olids = json_olids;
-    if (chosenBookCover != null) {
-      if (chosenBookCover.olid) {
-        filteredBookData.olid = chosenBookCover.olid;
+    if (selectedCoverImage != null) {
+      if (selectedCoverImage.unique_id) {
+        filteredBookData.olid = selectedCoverImage.unique_id;
       }
-      if (chosenBookCover.file_to_upload) {
-        filteredBookData.cover_upload = chosenBookCover.file_to_upload;
+      if (selectedCoverImage.upload) {
+        filteredBookData.upload = selectedCoverImage.upload;
       }
     }
 
@@ -162,7 +156,7 @@ function CreateBook() {
     setAuthor(null);
     setYear(null);
     setOlids([]);
-    setBookCoversToChooseFrom([]);
+    setAvailableCoverImages([]);
     navigate(`/books/`);
   };
 
@@ -178,87 +172,23 @@ function CreateBook() {
     setAuthor(null);
     setYear(null);
     setOlids([]);
-    setBookCoversToChooseFrom([]);
+    setAvailableCoverImages([]);
     navigate(`/books/`);
-  };
-
-  const imageOnload = (
-    event: React.SyntheticEvent<HTMLImageElement>,
-    olid: string
-  ) => {
-    const img = event.currentTarget;
-    // Images returned from Open Library that are 'blank' seem to render as 1x1s
-    if (img.naturalWidth === 1 || img.naturalHeight === 1) {
-      setBookCoversToChooseFrom((previousBookCoversToChooseFrom) => {
-        return previousBookCoversToChooseFrom.filter(
-          (previousBookCoverToChooseFrom) => {
-            return previousBookCoverToChooseFrom.olid !== olid;
-          }
-        );
-      });
-    }
   };
 
   useEffect(() => {
     if (olids && olids.length === 0) {
-      setBookCoversToChooseFrom([]);
+      setAvailableCoverImages([]);
     }
-  }, [olids, setBookCoversToChooseFrom]);
+  }, [olids, setAvailableCoverImages]);
 
-  const toggleBookCoverSelection = (
-    event:
-      | React.MouseEvent<HTMLImageElement>
-      | React.KeyboardEvent<HTMLImageElement>,
-    bookCoverToChoose: Partial<BookCoverInterface>
+  const toggleCoverImageSelection = (
+    bookCoverToSelect: Partial<AvailableCoverImageInterface>
   ) => {
-    event.preventDefault();
-    const localChosenBookCover =
-      chosenBookCover === bookCoverToChoose ? null : bookCoverToChoose;
-    setChosenBookCover(localChosenBookCover);
+    const localSelectedBookCover =
+      selectedCoverImage === bookCoverToSelect ? null : bookCoverToSelect;
+    setSelectedCoverImage(localSelectedBookCover);
   };
-
-  function handleButtonToSetCoverImageToUpload() {
-    fileInputRef.current?.click();
-  }
-
-  function handleSetCoverImageToUpload(
-    event: React.ChangeEvent<HTMLInputElement>
-  ) {
-    if (event.target.files === null || event.target.files.length === 0) {
-      toast.error("No files were provided for upload", {
-        position: "bottom-right",
-        theme: "colored",
-      });
-      return;
-    }
-    const file_to_upload = event.target.files[0];
-    if (!allowedMimeTypes.includes(file_to_upload.type)) {
-      toast.error(
-        `Only files of type ${allowedMimeTypes.join(" or ")} are allowed`,
-        {
-          position: "bottom-right",
-          theme: "colored",
-        }
-      );
-      return;
-    }
-    if (file_to_upload.size > maxAllowedImageUploadSize) {
-      toast.error("File size must be less than 5MB", {
-        position: "bottom-right",
-        theme: "colored",
-      });
-      return;
-    }
-    const objectUrl = URL.createObjectURL(file_to_upload);
-    const coverImageToUpload: Partial<BookCoverInterface> = {
-      uri: objectUrl,
-      thumb_uri: objectUrl,
-      file_to_upload: file_to_upload,
-    };
-    setBookCoversToChooseFrom((previousBookCoversToChooseFrom) => {
-      return [...[coverImageToUpload], ...previousBookCoversToChooseFrom];
-    });
-  }
 
   return (
     <Container className="mt-4">
@@ -341,12 +271,12 @@ function CreateBook() {
             <Col xs={3} className="mb-3">
               <img
                 src={
-                  chosenBookCover !== null
-                    ? chosenBookCover.uri
+                  selectedCoverImage !== null
+                    ? selectedCoverImage.uri
                     : createPlaceholderImage(320, 484, placeholderImageText)
                 }
                 className="img-fluid"
-                alt={`${chosenBookCover !== null ? "Selected" : "Placeholder"} Book Cover: ${title}`}
+                alt={`${selectedCoverImage !== null ? "Selected" : "Placeholder"} Book Cover: ${title}`}
                 height="300px"
               />
             </Col>
@@ -356,66 +286,10 @@ function CreateBook() {
               <h6 data-testid="selected-book-year">{year}</h6>
             </Col>
             <Col xs={12} lg={5}>
-              <Row
-                style={{
-                  maxHeight: "500px",
-                  overflow: "scroll",
-                  border: "1px solid grey",
-                  borderRadius: ".375em",
-                }}
-              >
-                <Col className={"m-2"}>
-                  <input
-                    type="file"
-                    id="cover-image-upload"
-                    onChange={handleSetCoverImageToUpload}
-                    ref={fileInputRef}
-                    accept={allowedMimeTypes.join(",")}
-                    hidden
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-outline-primary"
-                    style={{ width: "90px", height: "150px" }}
-                    onClick={handleButtonToSetCoverImageToUpload}
-                    aria-label="Add Book to Bookshelf"
-                  >
-                    Upload Image
-                  </button>
-                </Col>
-                {bookCoversToChooseFrom.map((bookCoverToChooseFrom, index) => (
-                  <Col key={index} className={"m-2"}>
-                    <img
-                      src={bookCoverToChooseFrom.thumb_uri}
-                      style={{
-                        height: "150px",
-                        boxSizing: "border-box",
-                        padding: "2px",
-                      }}
-                      onLoad={(event) =>
-                        bookCoverToChooseFrom.olid
-                          ? imageOnload(event, bookCoverToChooseFrom.olid)
-                          : null
-                      }
-                      onClick={(event) =>
-                        toggleBookCoverSelection(event, bookCoverToChooseFrom)
-                      }
-                      className={`border border-2 ${chosenBookCover === bookCoverToChooseFrom ? "border-primary" : "border-light"}`}
-                      alt={`Available Book Cover ${index.toString()}`}
-                      loading="lazy"
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          toggleBookCoverSelection(
-                            event,
-                            bookCoverToChooseFrom
-                          );
-                        }
-                      }}
-                      role="presentation"
-                    />
-                  </Col>
-                ))}
-              </Row>
+              <CoverImage
+                parentAvailableCoverImages={availableCoverImages}
+                onSelectCoverImage={toggleCoverImageSelection}
+              />
             </Col>
           </Row>
         </>

@@ -361,7 +361,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
               >
                 <img
                   height="150px"
-                  src={book.cover_uri}
+                  src={book.image?.uri}
                   alt={`${book.title}: Book Cover`}
                   loading="lazy"
                   style={{
@@ -415,7 +415,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                   key={`book-that-can-be-added-${book.id}`}
                 >
                   <LazyImage
-                    src={book.cover_uri}
+                    src={book.image.uri}
                     alt={`${book.title}: Book Cover`}
                     style={{ maxWidth: "100%", maxHeight: "100%" }}
                     rootElement={document.querySelector(".modal-content")}
