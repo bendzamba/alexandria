@@ -20,9 +20,9 @@ class S3ImageHandler(BaseImageHandler):
         self.s3.put_object(Bucket=self.bucket_name, Key=image_name, Body=image_content)
         # TODO - do we want to delete the local tmp image here?
 
-    def get_image_uri(self, olid):
+    def get_image_uri(self, key):
         return self.s3.generate_presigned_url(
             'get_object',
-            Params={'Bucket': self.bucket_name, 'Key': f'{olid}.jpg'},
+            Params={'Bucket': self.bucket_name, 'Key': key},
             ExpiresIn=3600
         )
