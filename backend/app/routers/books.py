@@ -13,11 +13,10 @@ from app.models.exception import ExceptionHandler
 from app.services.open_library.factory import get_open_library
 from app.db.sqlite import get_db
 from app.utils.dependencies import form_or_json
+from app.utils.book_cover import book_cover_handler
 from sqlmodel import Session, select
-import magic
 
-ALLOWED_MIME_TYPES = {"image/png", "image/jpeg", "image/jpg", "image/gif"}
-MAX_ALLOWED_IMAGE_UPLOAD_SIZE = 5 * 1024 * 1024  # 5MB
+from app.models.image import Image
 
 router = APIRouter()
 
@@ -38,9 +37,12 @@ def get_book(
     db: Session = Depends(get_db)
 ):
     book = db.get(Book, book_id)
+
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
+    
     book_public_with_bookshelves = BookPublicWithBookshelves.model_validate(book)
+
     return book_public_with_bookshelves.model_dump()
 
 
@@ -49,55 +51,60 @@ async def create_book(
     book_create: BookCreate = form_or_json(BookCreate),
     file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
-    open_library=Depends(get_open_library)
 ):
-    # We are creating a book with an Open Library ID for the book cover image
-    if "olid" in book_create and book_create.olid is not None:
-        await open_library.fetch_image_from_olid(book_create.olid)
+    db_book = Book.model_validate(book_create) 
 
-    # We are creating a book with a directly uploaded book cover image
-    if file:
-        mime = magic.Magic(mime=True)
-        file_type = mime.from_buffer(await file.read(2048))
-        if file_type not in ALLOWED_MIME_TYPES:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid file type. Only PNG, JPEG, and GIF files are allowed."
-            )
-        # Reset file pointer to the beginning
-        await file.seek(0)
-        contents = await file.read()
-        if len(contents) > MAX_ALLOWED_IMAGE_UPLOAD_SIZE:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="File size exceeded. Maximum allowed size is 5MB."
-            )
-        print(contents)
+    # Handle book cover
+    # This may raise an Exception if a file upload is invalid
+    # We hold on committing the book until we validate this
+    image = await book_cover_handler(book_create_or_update=book_create, file=file)
 
-    db_book = Book.model_validate(book_create)
     db.add(db_book)
     db.commit()
+
+    if image is not None:  
+        db.refresh(db_book)
+        image.book_id = db_book.id
+        db.add(image)
+        db.commit()
+    
     return None
 
 
 @router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_book(
     book_id: Annotated[int, Path(title="The ID of the book to update")],
-    book_update: BookUpdate,
+    book_update: BookUpdate = form_or_json(BookUpdate),
+    file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db),
-    open_library=Depends(get_open_library)
 ):
     db_book = db.get(Book, book_id)
+
     if not db_book:
         raise HTTPException(status_code=404, detail="Book not found")
 
-    book_data = book_update.model_dump(exclude_unset=True)
+    book_data = book_update.model_dump(exclude_unset=True) 
 
-    if "olid" in book_data and book_data.olid is not None:
-        await open_library.fetch_image_from_olid(book_update.olid)
+    # Handle book cover
+    # This may raise an Exception if a file upload is invalid
+    new_image = await book_cover_handler(book_create_or_update=book_update, file=file)
 
     db_book.sqlmodel_update(book_data)
     db.add(db_book)
+
+    if new_image:
+        # Set the new image's book_id
+        new_image.book_id = book_id
+        # Check if an existing image is associated with this book
+        existing_image = db.exec(select(Image).where(Image.book_id == book_id)).first()
+        if existing_image:
+            # Delete the old image if it differs from the new one
+            db.delete(existing_image)
+            # TODO delete previously uploaded image if there is one?
+            db.commit()
+        # Add the new image
+        db.add(new_image)
+
     db.commit()
 
     return None
@@ -112,11 +119,15 @@ def bulk_delete_book(
     book_ids = bulk_delete.book_ids
     statement = select(Book).where(Book.id.in_(book_ids))
     books_to_delete = db.exec(statement).all()
+
     if not books_to_delete:
         raise HTTPException(status_code=404, detail="Books not found")
+    
     for book in books_to_delete:
         db.delete(book)
+
     db.commit()
+
     return None
 
 
@@ -126,10 +137,13 @@ def delete_book(
     db: Session = Depends(get_db)
 ):
     book = db.get(Book, book_id)
+
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
+    
     db.delete(book)
     db.commit()
+
     return None
 
 
