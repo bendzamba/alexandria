@@ -3,7 +3,8 @@ import random
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from sqlmodel import Session
-from app.models.book import Book, ReadStatus # noqa: F401
+from app.models.book import Book, ReadStatus
+from app.models.image import Image, ImageSource
 
 @pytest.fixture(scope="function")
 def create_book():
@@ -11,8 +12,17 @@ def create_book():
         title="The Great American Novel",
         author="John Doe",
         year=2000,
-        olid="abcde",
         read_status=random.choice([e.value for e in ReadStatus]),
+    )
+
+
+@pytest.fixture(scope="function")
+def create_image(create_book):
+    return Image(
+        book_id=create_book.id,
+        source=ImageSource.open_library,
+        source_id="abcde",
+        extension=".jpg"
     )
 
 
@@ -23,30 +33,49 @@ def seed_book(session: Session, create_book):
     yield session
 
 
+@pytest.fixture(scope="function")
+def seed_image(session: Session, create_image):
+    session.add(create_image)
+    session.commit()
+    yield session
+
+
 def test_get_books_empty(client: TestClient):
     response = client.get("/books")
     assert response.status_code == 200
     assert response.json() == []
 
 
-def test_get_books_populated(client: TestClient, seed_book, create_book):
-    with patch("app.models.book.image_handler") as mock_image_handler:
+def test_get_books_populated(client: TestClient, seed_book, seed_image, create_book, create_image):
+    with patch("app.models.image.image_handler") as mock_image_handler:
         mock_s3_uri = "https://mock-s3-bucket.s3.amazonaws.com/abcde.jpg"
         mock_image_handler.get_image_uri.return_value = mock_s3_uri
         response = client.get("/books")
         assert response.status_code == 200
-        cover = {"cover_uri": mock_s3_uri}
-        assert response.json() == [create_book.model_dump() | cover]
+        image = {
+            "id": create_image.id,
+            "source": ImageSource.open_library,
+            "source_id": "abcde",
+            "extension": ".jpg",
+            "uri": mock_s3_uri
+        }
+        assert response.json() == [create_book.model_dump() | {"image": image}]
 
 
-def test_get_book_exists(client: TestClient, seed_book, create_book):
-    with patch("app.models.book.image_handler") as mock_image_handler:
+def test_get_book_exists(client: TestClient, seed_book, seed_image, create_book, create_image):
+    with patch("app.models.image.image_handler") as mock_image_handler:
         mock_s3_uri = "https://mock-s3-bucket.s3.amazonaws.com/abcde.jpg"
         mock_image_handler.get_image_uri.return_value = mock_s3_uri
         response = client.get(f"/books/{create_book.id}")
         assert response.status_code == 200
-        cover = {"cover_uri": mock_s3_uri}
-        assert response.json() == create_book.model_dump() | {"bookshelves": []} | cover
+        image = {
+            "id": create_image.id,
+            "source": ImageSource.open_library,
+            "source_id": "abcde",
+            "extension": ".jpg",
+            "uri": mock_s3_uri
+        }
+        assert response.json() == create_book.model_dump() | {"bookshelves": []} | {"image": image}
 
 
 def test_get_book_not_exists(client: TestClient):
@@ -79,8 +108,8 @@ def test_create_book_incorrect(client: TestClient):
     assert response.status_code == 422
 
 
-def test_patch_book_exists(client: TestClient, seed_book, create_book):
-    with patch("app.models.book.image_handler") as mock_image_handler:
+def test_patch_book_exists(client: TestClient, seed_book, seed_image, create_book, create_image):
+    with patch("app.models.image.image_handler") as mock_image_handler:
         mock_s3_uri = "https://mock-s3-bucket.s3.amazonaws.com/abcde.jpg"
         mock_image_handler.get_image_uri.return_value = mock_s3_uri
         body = {"title": "The Worst American Novel", "year": 2024}
@@ -89,11 +118,17 @@ def test_patch_book_exists(client: TestClient, seed_book, create_book):
 
         response = client.get(f"/books/{create_book.id}")
         assert response.status_code == 200
-        cover = {"cover_uri": mock_s3_uri}
-        assert response.json() == create_book.model_dump() | body | {"bookshelves": []} | cover
+        image = {
+            "id": create_image.id,
+            "source": ImageSource.open_library,
+            "source_id": "abcde",
+            "extension": ".jpg",
+            "uri": mock_s3_uri
+        }
+        assert response.json() == create_book.model_dump() | body | {"bookshelves": []} | {"image": image}
 
 
-def test_patch_book_not_exists(client: TestClient, seed_book):
+def test_patch_book_not_exists(client: TestClient, seed_book, seed_image):
     body = {"title": "The Worst American Novel", "year": 2024}
     response = client.patch("/books/12345", json=body)
     assert response.status_code == 404
@@ -104,7 +139,7 @@ def test_delete_book(client: TestClient, seed_book, create_book):
     assert response.status_code == 204
 
 
-def test_delete_book_not_exists(client: TestClient, seed_book, create_book):
+def test_delete_book_not_exists(client: TestClient, seed_book, seed_image, create_book):
     response = client.delete("/books/12345")
     assert response.status_code == 404
 
