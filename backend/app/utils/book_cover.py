@@ -1,6 +1,4 @@
-from typing import Optional
-
-from fastapi import HTTPException, UploadFile, status
+from fastapi import HTTPException, status
 import filetype
 from nanoid import generate
 from app.models.book import BookCreate, BookUpdate
@@ -14,12 +12,11 @@ image_handler = get_image_handler()
 open_library = get_open_library()
 
 async def book_cover_handler(
-  book_create_or_update: BookCreate | BookUpdate,
-  file: Optional[UploadFile]
+  book_create_or_update: BookCreate | BookUpdate
 ) -> Image | None:
-
-  # We are creating a book with an Open Library ID for the book cover image
+  
   if book_create_or_update.olid is not None:
+      # We are creating a book with an Open Library ID for the book cover image
       await open_library.fetch_image_from_olid(book_create_or_update.olid)
       image = Image(
           source=ImageSource.open_library,
@@ -28,10 +25,9 @@ async def book_cover_handler(
       )
       return image
 
-  # We are creating a book with a directly uploaded book cover image
-  if file:
-      # Read file contents
-      contents = await file.read()
+  if book_create_or_update.file is not None:
+      # We are creating a book with a directly uploaded book cover image
+      contents = book_create_or_update.file
       file_type = filetype.guess(contents)
       if file_type.mime not in ALLOWED_MIME_TYPES:
           raise HTTPException(
@@ -45,6 +41,7 @@ async def book_cover_handler(
               detail="File size exceeded. Maximum allowed size is 5MB."
           )
       
+      # Since we do not have an OLID, we generate a unique alphanumeric ID
       unique_id = generate(size=10)
       extension = f".{file_type.mime.split('/')[-1]}"
 
@@ -58,3 +55,7 @@ async def book_cover_handler(
       return image
 
   return None
+
+
+def get_book_cover_handler():
+    yield book_cover_handler
