@@ -39,9 +39,18 @@ class Book(BookBase, table=True):
         # sa_relationship_kwargs=dict(lazy="selectin"), 
     )
 
+    # There are instances where we want to validate with the Book class
+    # for database preparation, but allow and ignore additional data from
+    # the BookCreate class
+    class Config:
+        extra = "allow" 
 
+
+# These fields may be present when creating a book, but do not ultimately
+# become a part of a Book record
 class BookCreate(BookBase):
     olid: Optional[str] = None
+    file: Optional[bytes] = None
 
 
 class BookPublic(BookBase):
@@ -68,7 +77,11 @@ class BookUpdate(SQLModel):
     read_status: Optional[ReadStatus] = None
     read_start_date: Optional[str] = None
     read_end_date: Optional[str] = None
+
+    # These fields may be present when creating a book, but do not ultimately
+    # become a part of a Book record
     olid: Optional[str] = None
+    file: Optional[bytes] = None
 
 
 class BookPublicWithBookshelves(BookPublic):
