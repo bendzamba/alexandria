@@ -59,7 +59,7 @@ def open_library_fixture():
     yield OpenLibrary()
 
 
-@pytest.fixture(name="boock_cover_handler", scope="function")
+@pytest.fixture(name="book_cover_handler", scope="function")
 def book_cover_handler_fixture():
     yield book_cover_handler_mock
 
