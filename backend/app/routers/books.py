@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, File, Path, UploadFile, status, HTTPException
-from typing import Annotated, Optional
+from fastapi import APIRouter, Depends, Path, status, HTTPException
+from typing import Annotated
 from app.models.book import (
     Book,
     BookCreate,
@@ -12,8 +12,7 @@ from app.models.openlibrary import Works
 from app.models.exception import ExceptionHandler
 from app.services.open_library.factory import get_open_library
 from app.db.sqlite import get_db
-from app.utils.dependencies import form_or_json
-from app.utils.book_cover import book_cover_handler
+from app.utils.book_cover import get_book_cover_handler
 from sqlmodel import Session, select
 
 from app.models.image import Image
@@ -48,16 +47,16 @@ def get_book(
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_book(
-    book_create: BookCreate = form_or_json(BookCreate),
-    file: Optional[UploadFile] = File(None),
+    book_create: BookCreate,
     db: Session = Depends(get_db),
+    book_cover_handler = Depends(get_book_cover_handler),
 ):
     db_book = Book.model_validate(book_create) 
 
     # Handle book cover
     # This may raise an Exception if a file upload is invalid
     # We hold on committing the book until we validate this
-    image = await book_cover_handler(book_create_or_update=book_create, file=file)
+    image = await book_cover_handler(book_create_or_update=book_create)
 
     db.add(db_book)
     db.commit()
@@ -74,20 +73,27 @@ async def create_book(
 @router.patch("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_book(
     book_id: Annotated[int, Path(title="The ID of the book to update")],
-    book_update: BookUpdate = form_or_json(BookUpdate),
-    file: Optional[UploadFile] = File(None),
+    book_update: BookUpdate,
     db: Session = Depends(get_db),
+    book_cover_handler = Depends(get_book_cover_handler),
 ):
     db_book = db.get(Book, book_id)
 
     if not db_book:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    book_data = book_update.model_dump(exclude_unset=True) 
+        raise HTTPException(status_code=404, detail="Book not found") 
 
     # Handle book cover
     # This may raise an Exception if a file upload is invalid
-    new_image = await book_cover_handler(book_create_or_update=book_update, file=file)
+    # We hold on committing the book until we validate this
+    new_image = await book_cover_handler(book_create_or_update=book_update)
+
+    if book_update.file:
+        del book_update.file
+
+    if book_update.olid:
+        del book_update.olid
+
+    book_data = book_update.model_dump(exclude_unset=True)
 
     db_book.sqlmodel_update(book_data)
     db.add(db_book)
