@@ -14,15 +14,20 @@ const book: BookWithBookshelvesInterface = {
   title: "The Grapes of Wrath",
   author: "John Steinbeck",
   year: 1939,
-  olid: "OL14994208M",
   olids: '["OL14994208M","OL46855753M","OL13890061M","OL7641090M"]',
-  cover_uri: "/images/OL14994208M.jpg",
   read_status: "read",
   read_start_date: "2022-02-13T05:00:00.000Z",
   read_end_date: "2022-02-21T05:00:00.000Z",
   rating: 5,
   review: "I liked it!",
   bookshelves: [],
+  image: {
+    id: 1,
+    source: "open_library",
+    source_id: "OL14994208M",
+    uri: "/images/OL14994208M.jpg",
+    extension: ".jpg",
+  },
 };
 
 const checkEditSaved = async (body: Partial<CreateOrUpdateBookInterface>) => {
@@ -355,12 +360,12 @@ test("edits book cover", async () => {
   const parsedOlids: Array<string> = JSON.parse(bookToEdit.olids);
   for (const [index, olid] of parsedOlids.entries()) {
     const cover = await screen.findByAltText(
-      `Alternate Book Cover ${index.toString()}`
+      `Available Book Cover ${index.toString()}`
     );
     expect(cover).toBeInTheDocument();
 
     // Test that our selected cover is highlighted and the rest are not
-    if (olid === bookToEdit.olid) {
+    if (olid === bookToEdit.image.source_id) {
       expect(cover).toHaveClass("border-primary");
     } else {
       expect(cover).toHaveClass("border-light");
@@ -369,7 +374,7 @@ test("edits book cover", async () => {
 
   // Find new cover to select
   const newCover = await screen.findByAltText(
-    `Alternate Book Cover ${newOlidIndex}`
+    `Available Book Cover ${newOlidIndex}`
   );
 
   // Select new cover
