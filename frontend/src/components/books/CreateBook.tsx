@@ -80,6 +80,7 @@ function CreateBook() {
     setBooksToChooseFrom(response);
 
     if (response.length === 1) {
+      setSelectedBook(0);
       setTitle(response[0].title);
       setAuthor(response[0].author_name);
       setYear(response[0].first_publish_year);
