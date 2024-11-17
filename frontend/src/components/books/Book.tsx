@@ -29,7 +29,6 @@ function Book({ book, preview }: BookProps) {
     useState<BookWithBookshelvesInterface>();
   const [savedReview, setSavedReview] = useState<string | null>("");
   const [loading, setLoading] = useState(true);
-  const [availableOlids, setAvailableOlids] = useState<string[]>([]);
   const [selectingNewCover, setSelectingNewCover] = useState(false);
   const [addingReview, setAddingReview] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -80,40 +79,43 @@ function Book({ book, preview }: BookProps) {
           return false;
         }
         setCurrentBook(book_fetched_from_api);
-        try {
-          if (availableOlids.length === 0) {
-            const allBookOlids: string[] = JSON.parse(
-              book_fetched_from_api.olids
-            ) as string[];
-            const localAvailableCoverImages = allBookOlids.map((olid) => {
-              const bookCover: Partial<AvailableCoverImageInterface> = {
-                unique_id: olid,
-                thumb_uri: olidImagePath + olid + "-M.jpg",
-                uri: olidImagePath + olid + "-L.jpg",
-              };
-              return bookCover;
-            });
-            if (
-              book_fetched_from_api.image &&
-              book_fetched_from_api.image.source === "direct_upload"
-            ) {
-              // Put selected image first
-              localAvailableCoverImages.unshift({
-                unique_id: book_fetched_from_api.image.source_id,
-                thumb_uri: book_fetched_from_api.image.uri,
-                uri: book_fetched_from_api.image.uri,
-              });
-            }
-            setAvailableCoverImages(localAvailableCoverImages);
-          }
-        } catch (e) {
-          console.log("Could not set available olids", e);
-        }
+        console.log("About to try");
       }
 
       if (!currentBook) {
         console.log("Something went wrong and we have no book!");
         return false;
+      }
+
+      try {
+        if (availableCoverImages.length === 0) {
+          const allBookOlids: string[] = JSON.parse(
+            currentBook.olids
+          ) as string[];
+          const localAvailableCoverImages = allBookOlids.map((olid) => {
+            const bookCover: Partial<AvailableCoverImageInterface> = {
+              unique_id: olid,
+              thumb_uri: olidImagePath + olid + "-M.jpg",
+              uri: olidImagePath + olid + "-L.jpg",
+            };
+            return bookCover;
+          });
+          if (
+            currentBook.image &&
+            currentBook.image.source === "direct_upload"
+          ) {
+            // Put selected image first
+            localAvailableCoverImages.unshift({
+              unique_id: currentBook.image.source_id,
+              thumb_uri: currentBook.image.uri,
+              uri: currentBook.image.uri,
+            });
+          }
+          console.log("About to set available cover images");
+          setAvailableCoverImages(localAvailableCoverImages);
+        }
+      } catch (e) {
+        console.log("Could not set available olids", e);
       }
       // setSavedCoverUri(currentBook.cover_uri);
       setSavedReview(currentBook.review);
@@ -137,7 +139,7 @@ function Book({ book, preview }: BookProps) {
     } finally {
       setLoading(false);
     }
-  }, [id, bookProp, currentBook, availableOlids]);
+  }, [id, bookProp, currentBook]);
 
   const handleChangeCover = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
