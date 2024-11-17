@@ -161,8 +161,8 @@ test("creates a book from multiple search results", async () => {
           title: firstResultTitle,
           author: firstResultAuthor,
           year: parseInt(firstResultYear),
-          olid: "OL24206828M",
           olids: '["OL24206828M","OL32992800M","OL32596124M"]',
+          olid: "OL24206828M",
         }),
       })
     );
@@ -187,13 +187,14 @@ test("creates a book from one search result", async () => {
   const searchButton = await screen.findByText("Search");
 
   // Search
-  await userEvent.type(searchInput, "Tale of Two Cities");
+  const titleToSearch = "Tale of Two Cities";
+  await userEvent.type(searchInput, titleToSearch);
   await userEvent.click(searchButton);
 
   // Verify that search API call happens
   await waitFor(() => {
     expect(fetch).toHaveBeenCalledWith(
-      `${process.env.REACT_APP_API_URL}/books/search/Tale of Two Cities`,
+      `${process.env.REACT_APP_API_URL}/books/search/${titleToSearch}`,
       {}
     );
   });
@@ -272,8 +273,8 @@ test("creates a book from one search result", async () => {
           title: searchResultTitle,
           author: searchResultAuthor,
           year: parseInt(searchResultYear),
-          olid: "OL52151281M",
           olids: '["OL52151281M","OL51503229M","OL46911647M"]',
+          olid: "OL52151281M",
         }),
       })
     );
@@ -297,13 +298,14 @@ test("handles zero search results", async () => {
   const searchButton = await screen.findByText("Search");
 
   // Search
-  await userEvent.type(searchInput, "Potrzebie!");
+  const titleToSearch = "Potrzebie!";
+  await userEvent.type(searchInput, titleToSearch);
   await userEvent.click(searchButton);
 
   // Verify that search API call happens
   await waitFor(() => {
     expect(fetch).toHaveBeenCalledWith(
-      `${process.env.REACT_APP_API_URL}/books/search/Potrzebie!`,
+      `${process.env.REACT_APP_API_URL}/books/search/${titleToSearch}`,
       {}
     );
   });
