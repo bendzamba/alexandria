@@ -93,6 +93,9 @@ function CoverImage({
     setAvailableCoverImages((previousAvailableCoverImages) => {
       return [...[coverImageToUpload], ...previousAvailableCoverImages];
     });
+
+    // Auto-select our image to upload
+    toggleBookCoverSelection(coverImageToUpload);
   }
 
   const imageOnload = (
@@ -112,13 +115,19 @@ function CoverImage({
     }
   };
 
-  const toggleBookCoverSelection = (
+  const handleToggleBookCoverSelection = (
     event:
       | React.MouseEvent<HTMLImageElement>
       | React.KeyboardEvent<HTMLImageElement>,
     bookCoverImageToSelect: Partial<AvailableCoverImageInterface>
   ) => {
     event.preventDefault();
+    toggleBookCoverSelection(bookCoverImageToSelect);
+  };
+
+  const toggleBookCoverSelection = (
+    bookCoverImageToSelect: Partial<AvailableCoverImageInterface>
+  ) => {
     // Alert parent component via callback
     onSelectCoverImage(bookCoverImageToSelect);
 
@@ -176,14 +185,14 @@ function CoverImage({
                 : null
             }
             onClick={(event) =>
-              toggleBookCoverSelection(event, availableCoverImage)
+              handleToggleBookCoverSelection(event, availableCoverImage)
             }
             className={`border border-2 ${selectedCoverImage?.unique_id === availableCoverImage?.unique_id ? "border-primary" : "border-light"}`}
             alt={`Available Book Cover ${index.toString()}`}
             loading="lazy"
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {
-                toggleBookCoverSelection(event, availableCoverImage);
+                handleToggleBookCoverSelection(event, availableCoverImage);
               }
             }}
             role="presentation"
