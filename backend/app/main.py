@@ -1,4 +1,10 @@
-from fastapi import FastAPI, Request, UploadFile
+import base64
+import json
+import os
+import logging
+
+from fastapi import FastAPI, Request
+from starlette.datastructures import UploadFile
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -8,8 +14,6 @@ from sqlmodel import SQLModel, text
 from app.db.sqlite import get_engine
 from dotenv import load_dotenv
 from mangum import Mangum
-import os
-import logging
 
 # These are only imported for the create_all call
 # `noqa: F401` is used to suppress linter errors
@@ -42,15 +46,21 @@ class FormToJSONMiddleware(BaseHTTPMiddleware):
         if content_type == "multipart/form-data":
             form_data = await request.form()
             # This can include a File of type UploadFile
-            json_data = None
+            json_data = {}
             for key, value in form_data.items():
                 if isinstance(value, UploadFile):
-                    json_data[key] = await value.read()
+                    json_data[key] = base64.b64encode(await value.read()).decode("utf-8")
                 else:
                     json_data[key] = value
-            request.headers.__delitem__("content-type")
-            request.headers["Content-Type"] = "application/json"
-            request._json = json_data
+            # Convert JSON data to bytes and set as the new request body
+            json_body = json.dumps(json_data).encode("utf-8")
+            # Update the request scope
+            request.scope["headers"] = [
+                (b"content-type", b"application/json"),
+                *(header for header in request.scope["headers"] if header[0] != b"content-type"),
+            ]
+            request._body = json_body  # Set the new body directly
+
         return await call_next(request)
 
 

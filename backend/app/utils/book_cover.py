@@ -1,3 +1,4 @@
+import base64
 from fastapi import HTTPException, status
 import filetype
 from nanoid import generate
@@ -27,7 +28,7 @@ async def book_cover_handler(
 
   if book_create_or_update.file is not None:
       # We are creating a book with a directly uploaded book cover image
-      contents = book_create_or_update.file
+      contents = base64.b64decode(book_create_or_update.file)
       file_type = filetype.guess(contents)
       if file_type.mime not in ALLOWED_MIME_TYPES:
           raise HTTPException(
