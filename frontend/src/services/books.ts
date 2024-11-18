@@ -22,7 +22,7 @@ export const CreateBook = async (
     const formData = new FormData();
     for (const key in data) {
       // Skip cover upload as that is added as a 'file' below
-      if (key !== "image") {
+      if (key !== "upload") {
         formData.append(
           key,
           data[key as keyof CreateOrUpdateBookInterface] as string
