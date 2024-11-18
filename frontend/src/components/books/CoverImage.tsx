@@ -158,6 +158,7 @@ function CoverImage({
           onChange={handleSetCoverImageToUpload}
           ref={fileInputRef}
           accept={allowedMimeTypes.join(",")}
+          data-testid="image-uploader"
           hidden
         />
         <button
