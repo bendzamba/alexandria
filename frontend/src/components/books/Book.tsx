@@ -56,6 +56,10 @@ function Book({ book, preview }: BookProps) {
   // From /books/{id}
   const { id } = useParams();
 
+  const noop = () => {
+    // No-op to satisfy controlled input requirements
+  };
+
   const initialize = useCallback(async () => {
     if (hasInitialized.current) {
       return;
@@ -111,7 +115,6 @@ function Book({ book, preview }: BookProps) {
               uri: currentBook.image.uri,
             });
           }
-          console.log("About to set available cover images");
           setAvailableCoverImages(localAvailableCoverImages);
         }
       } catch (e) {
@@ -671,6 +674,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="5"
                 onClick={changeRatingClick}
+                onChange={noop}
                 checked={currentBook?.rating === 5}
               />
               <label htmlFor={`star5-${bookIdString}`}>5 stars</label>
@@ -680,6 +684,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="4"
                 onClick={changeRatingClick}
+                onChange={noop}
                 checked={currentBook?.rating === 4}
               />
               <label htmlFor={`star4-${bookIdString}`}>4 stars</label>
@@ -689,6 +694,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="3"
                 onClick={changeRatingClick}
+                onChange={noop}
                 checked={currentBook?.rating === 3}
               />
               <label htmlFor={`star3-${bookIdString}`}>3 stars</label>
@@ -698,6 +704,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="2"
                 onClick={changeRatingClick}
+                onChange={noop}
                 checked={currentBook?.rating === 2}
               />
               <label htmlFor={`star2-${bookIdString}`}>2 stars</label>
@@ -707,6 +714,7 @@ function Book({ book, preview }: BookProps) {
                 name={`rating-${bookIdString}`}
                 value="1"
                 onClick={changeRatingClick}
+                onChange={noop}
                 checked={currentBook?.rating === 1}
               />
               <label htmlFor={`star1-${bookIdString}`}>1 star</label>
