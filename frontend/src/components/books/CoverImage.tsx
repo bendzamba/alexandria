@@ -189,7 +189,7 @@ function CoverImage({
               handleToggleBookCoverSelection(event, availableCoverImage)
             }
             className={`border border-2 ${selectedCoverImage?.unique_id === availableCoverImage?.unique_id ? "border-primary" : "border-light"}`}
-            alt={`Available Book Cover ${index.toString()}`}
+            alt={`Available Book Cover ${availableCoverImage.unique_id}`}
             loading="lazy"
             onKeyDown={(event) => {
               if (event.key === "Enter" || event.key === " ") {

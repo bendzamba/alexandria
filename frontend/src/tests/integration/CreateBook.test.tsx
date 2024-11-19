@@ -115,7 +115,7 @@ test("creates a book from multiple search results", async () => {
   expect(selectedBookYear).toHaveTextContent(firstResultYear);
 
   const selectedBookAvailableCover1 = await screen.findByAltText(
-    "Available Book Cover 0"
+    "Available Book Cover OL24206828M"
   );
   expect(selectedBookAvailableCover1).toBeInTheDocument();
 
@@ -227,7 +227,7 @@ test("creates a book from one search result", async () => {
   expect(selectedBookYear).toHaveTextContent(searchResultYear);
 
   const selectedBookAvailableCover1 = await screen.findByAltText(
-    "Available Book Cover 0"
+    "Available Book Cover OL52151281M"
   );
   expect(selectedBookAvailableCover1).toBeInTheDocument();
 
@@ -342,7 +342,7 @@ test("creates a book with an uploaded image", async () => {
   expect(selectedBookYear).toHaveTextContent(searchResultYear);
 
   const selectedBookAvailableCover1 = await screen.findByAltText(
-    "Available Book Cover 0"
+    "Available Book Cover OL52151281M"
   );
   expect(selectedBookAvailableCover1).toBeInTheDocument();
 
