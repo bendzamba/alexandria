@@ -58,10 +58,7 @@ class LocalOpenLibraryHandler(BaseOpenLibraryHandler):
       except Exception as e:
         return ExceptionHandler(status_code=ExceptionHandler.get_no_results_status_code(), message=str(e))
 
-  async def fetch_image_from_olid(self, olid: str | None) -> str:
-      if olid is None:
-          return
-
+  async def fetch_image_from_olid(self, olid: str) -> str:
       # URL where we can find the cover image we want using OLID
       open_library_url = self._build_image_url_from_olid(olid=olid)
 

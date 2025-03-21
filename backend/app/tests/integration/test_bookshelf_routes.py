@@ -5,7 +5,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 from app.models.bookshelf import Bookshelf, SortKey # noqa: F401
 from app.models.book import Book, ReadStatus # noqa: F401
-from app.models.book_bookshelf import BookBookshelfLink # noqa: F401
+from app.models.book_bookshelf import BookBookshelfLink
+from app.models.image import Image, ImageSource # noqa: F401
 
 @pytest.fixture(scope="function")
 def create_bookshelf():
@@ -22,9 +23,7 @@ def create_book():
         title="The Great American Novel",
         author="John Doe",
         year=2000,
-        olid="abcde",
         read_status=random.choice([e.value for e in ReadStatus]),
-        cover_uri="http://www.example.com"
     )
 
 @pytest.fixture(scope="function")
@@ -32,6 +31,15 @@ def create_bookshelf_book(create_bookshelf, create_book):
     return BookBookshelfLink(
         book_id=create_book.id,
         bookshelf_id=create_bookshelf.id
+    )
+
+@pytest.fixture(scope="function")
+def create_image(create_book):
+    return Image(
+        book_id=create_book.id,
+        source=ImageSource.open_library,
+        source_id="abcde",
+        extension=".jpg"
     )
 
 @pytest.fixture(scope="function")
@@ -52,6 +60,11 @@ def seed_bookshelf_book(session: Session, seed_book, seed_bookshelf, create_book
     session.commit()
     yield session
 
+@pytest.fixture(scope="function")
+def seed_image(session: Session, create_image):
+    session.add(create_image)
+    session.commit()
+    yield session
 
 def test_get_bookshelves_empty(client: TestClient):
     response = client.get("/bookshelves")
@@ -136,8 +149,8 @@ def test_delete_bookshelf_not_exists(client: TestClient, seed_bookshelf, create_
     assert response.status_code == 404
 
 
-def test_add_book_to_bookshelf(client: TestClient, seed_bookshelf, seed_book, create_bookshelf, create_book):
-    with patch("app.models.book.image_handler") as mock_image_handler:
+def test_add_book_to_bookshelf(client: TestClient, seed_bookshelf, seed_book, seed_image, create_bookshelf, create_book, create_image):
+    with patch("app.models.image.image_handler") as mock_image_handler:
         mock_s3_uri = "https://mock-s3-bucket.s3.amazonaws.com/abcde.jpg"
         mock_image_handler.get_image_uri.return_value = mock_s3_uri
 
@@ -148,8 +161,14 @@ def test_add_book_to_bookshelf(client: TestClient, seed_bookshelf, seed_book, cr
 
         response = client.get(f"/bookshelves/{create_bookshelf.id}")
         assert response.status_code == 200
-        cover = {"cover_uri": mock_s3_uri}
-        assert response.json() == create_bookshelf.model_dump() | {"books": [create_book.model_dump() | cover]}
+        image = {
+            "id": create_image.id,
+            "source": ImageSource.open_library,
+            "source_id": "abcde",
+            "extension": ".jpg",
+            "uri": mock_s3_uri
+        }
+        assert response.json() == create_bookshelf.model_dump() | {"books": [create_book.model_dump() | {"image": image}]}
 
 
 def test_add_book_to_bookshelf_bookshelf_not_exists(client: TestClient, seed_bookshelf, seed_book, create_bookshelf, create_book):
@@ -194,12 +213,18 @@ def test_delete_book_cascade(client: TestClient, seed_bookshelf_book, create_boo
     assert response.json() == create_bookshelf.model_dump() | {"books": []}
 
 
-def test_get_books_not_on_bookshelf(client: TestClient, seed_bookshelf, seed_book, create_book, create_bookshelf):
-    with patch("app.models.book.image_handler") as mock_image_handler:
+def test_get_books_not_on_bookshelf(client: TestClient, seed_bookshelf, seed_book, seed_image, create_book, create_bookshelf, create_image):
+    with patch("app.models.image.image_handler") as mock_image_handler:
         mock_s3_uri = "https://mock-s3-bucket.s3.amazonaws.com/abcde.jpg"
         mock_image_handler.get_image_uri.return_value = mock_s3_uri
     
         response = client.get(f"/bookshelves/{create_bookshelf.id}/books/exclude/")
         assert response.status_code == 200
-        cover = {"cover_uri": mock_s3_uri}
-        assert response.json() == [create_book.model_dump() | cover]
+        image = {
+            "id": create_image.id,
+            "source": ImageSource.open_library,
+            "source_id": "abcde",
+            "extension": ".jpg",
+            "uri": mock_s3_uri
+        }
+        assert response.json() == [create_book.model_dump() | {"image": image}]

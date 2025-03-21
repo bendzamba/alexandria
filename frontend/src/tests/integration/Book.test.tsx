@@ -1,4 +1,4 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
 import Book from "../../components/books/Book";
@@ -14,15 +14,41 @@ const book: BookWithBookshelvesInterface = {
   title: "The Grapes of Wrath",
   author: "John Steinbeck",
   year: 1939,
-  olid: "OL14994208M",
   olids: '["OL14994208M","OL46855753M","OL13890061M","OL7641090M"]',
-  cover_uri: "/images/OL14994208M.jpg",
   read_status: "read",
   read_start_date: "2022-02-13T05:00:00.000Z",
   read_end_date: "2022-02-21T05:00:00.000Z",
   rating: 5,
   review: "I liked it!",
   bookshelves: [],
+  image: {
+    id: 1,
+    source: "open_library",
+    source_id: "OL14994208M",
+    uri: "/images/OL14994208M.jpg",
+    extension: ".jpg",
+  },
+};
+
+const book_with_direct_upload: BookWithBookshelvesInterface = {
+  id: 3,
+  title: "Hamlet",
+  author: "William Shakespeare",
+  year: 1623,
+  olids: '["OL37044895M", "OL51155008M", "OL50528569M", "OL37846508M"]',
+  read_status: "reading",
+  read_start_date: "2024-08-20T05:00:00.000Z",
+  read_end_date: null,
+  rating: 4,
+  review: "Not bad?",
+  bookshelves: [],
+  image: {
+    id: 1,
+    source: "direct_upload",
+    source_id: "fahdiceu234",
+    uri: "/images/fahdiceu234.jpg",
+    extension: ".jpg",
+  },
 };
 
 const checkEditSaved = async (body: Partial<CreateOrUpdateBookInterface>) => {
@@ -354,13 +380,11 @@ test("edits book cover", async () => {
   // Test that all alternate book covers show up
   const parsedOlids: Array<string> = JSON.parse(bookToEdit.olids);
   for (const [index, olid] of parsedOlids.entries()) {
-    const cover = await screen.findByAltText(
-      `Alternate Book Cover ${index.toString()}`
-    );
+    const cover = await screen.findByAltText(`Available Book Cover ${olid}`);
     expect(cover).toBeInTheDocument();
 
     // Test that our selected cover is highlighted and the rest are not
-    if (olid === bookToEdit.olid) {
+    if (olid === bookToEdit.image.source_id) {
       expect(cover).toHaveClass("border-primary");
     } else {
       expect(cover).toHaveClass("border-light");
@@ -369,7 +393,7 @@ test("edits book cover", async () => {
 
   // Find new cover to select
   const newCover = await screen.findByAltText(
-    `Alternate Book Cover ${newOlidIndex}`
+    `Available Book Cover ${parsedOlids[newOlidIndex]}`
   );
 
   // Select new cover
@@ -391,6 +415,46 @@ test("edits book cover", async () => {
   // await checkEditSaved({ olid: parsedOlids[newOlidIndex] });
 
   fetchSpy.mockRestore(); // Restore fetch after test
+});
+
+test("verifies available covers as a combination of olids and direct upload", async () => {
+  const bookToEdit = { ...book_with_direct_upload };
+
+  render(
+    <BrowserRouter>
+      <Book book={bookToEdit} />
+    </BrowserRouter>
+  );
+
+  const coverButton = await screen.findByText("Cover");
+  expect(coverButton).toBeInTheDocument();
+
+  await userEvent.click(coverButton);
+
+  // Cover button should have been replaced by Update button
+  const updateButton = await screen.findByText("Update");
+  expect(updateButton).toBeInTheDocument();
+
+  // Test that all alternate book covers show up
+  const totallyRandomUniqueIds: Array<string> = JSON.parse(bookToEdit.olids);
+
+  // Add our direct upload image source ID, which should be added to available covers
+  totallyRandomUniqueIds.push("fahdiceu234");
+
+  for (const [index, uniqueId] of totallyRandomUniqueIds.entries()) {
+    const cover = await screen.findByAltText(
+      `Available Book Cover ${uniqueId}`
+    );
+    expect(cover).toBeInTheDocument();
+
+    // Test that our selected cover is highlighted and the rest are not
+    if (uniqueId === bookToEdit.image.source_id) {
+      expect(cover).toHaveClass("border-primary");
+    } else {
+      // console.log(uniqueId);
+      expect(cover).toHaveClass("border-light");
+    }
+  }
 });
 
 test("deletes a book", async () => {

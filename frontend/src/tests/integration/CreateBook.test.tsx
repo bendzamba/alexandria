@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import CreateBook from "../../components/books/CreateBook";
 import userEvent from "@testing-library/user-event";
@@ -115,7 +115,7 @@ test("creates a book from multiple search results", async () => {
   expect(selectedBookYear).toHaveTextContent(firstResultYear);
 
   const selectedBookAvailableCover1 = await screen.findByAltText(
-    "Available Book Cover 0"
+    "Available Book Cover OL24206828M"
   );
   expect(selectedBookAvailableCover1).toBeInTheDocument();
 
@@ -161,8 +161,8 @@ test("creates a book from multiple search results", async () => {
           title: firstResultTitle,
           author: firstResultAuthor,
           year: parseInt(firstResultYear),
-          olid: "OL24206828M",
           olids: '["OL24206828M","OL32992800M","OL32596124M"]',
+          olid: "OL24206828M",
         }),
       })
     );
@@ -187,13 +187,14 @@ test("creates a book from one search result", async () => {
   const searchButton = await screen.findByText("Search");
 
   // Search
-  await userEvent.type(searchInput, "Tale of Two Cities");
+  const titleToSearch = "Tale of Two Cities";
+  await userEvent.type(searchInput, titleToSearch);
   await userEvent.click(searchButton);
 
   // Verify that search API call happens
   await waitFor(() => {
     expect(fetch).toHaveBeenCalledWith(
-      `${process.env.REACT_APP_API_URL}/books/search/Tale of Two Cities`,
+      `${process.env.REACT_APP_API_URL}/books/search/${titleToSearch}`,
       {}
     );
   });
@@ -226,7 +227,7 @@ test("creates a book from one search result", async () => {
   expect(selectedBookYear).toHaveTextContent(searchResultYear);
 
   const selectedBookAvailableCover1 = await screen.findByAltText(
-    "Available Book Cover 0"
+    "Available Book Cover OL52151281M"
   );
   expect(selectedBookAvailableCover1).toBeInTheDocument();
 
@@ -272,11 +273,153 @@ test("creates a book from one search result", async () => {
           title: searchResultTitle,
           author: searchResultAuthor,
           year: parseInt(searchResultYear),
-          olid: "OL52151281M",
           olids: '["OL52151281M","OL51503229M","OL46911647M"]',
+          olid: "OL52151281M",
         }),
       })
     );
+  });
+
+  fetchSpy.mockRestore(); // Restore fetch after test
+});
+
+test("creates a book with an uploaded image", async () => {
+  // Required for MSW to be able to monitor the request
+  const fetchSpy = jest.spyOn(global, "fetch");
+
+  // Mock URL.createObjectURL to prevent errors in the test environment
+  const filename = "file.jpg";
+  global.URL.createObjectURL = jest.fn(() => filename);
+
+  render(
+    <BrowserRouter>
+      <CreateBook />
+    </BrowserRouter>
+  );
+
+  // Search form
+  const searchInput = await screen.findByLabelText("Search for a title");
+  const searchButton = await screen.findByText("Search");
+
+  // Search
+  const titleToSearch = "Tale of Two Cities";
+  await userEvent.type(searchInput, titleToSearch);
+  await userEvent.click(searchButton);
+
+  // Verify that search API call happens
+  await waitFor(() => {
+    expect(fetch).toHaveBeenCalledWith(
+      `${process.env.REACT_APP_API_URL}/books/search/${titleToSearch}`,
+      {}
+    );
+  });
+
+  // The single book, and its cover choices, show up for finalization
+  const searchResultsHeader = await screen.findByText("Search Results");
+  expect(searchResultsHeader).toBeInTheDocument();
+
+  const createButton = await screen.findByText("Create");
+  expect(createButton).toBeInTheDocument();
+
+  const searchResultTitle = "A Tale of Two Cities";
+  const selectedBookTitle = await screen.findByTestId("selected-book-title");
+  expect(selectedBookTitle).toBeInTheDocument();
+  expect(selectedBookTitle).toHaveTextContent(searchResultTitle);
+
+  const imagePlaceholder = await screen.findByAltText(
+    "Placeholder Book Cover: " + searchResultTitle
+  );
+  expect(imagePlaceholder).toBeInTheDocument();
+
+  const searchResultAuthor = "Charles Dickens";
+  const selectedBookAuthor = await screen.findByTestId("selected-book-author");
+  expect(selectedBookAuthor).toBeInTheDocument();
+  expect(selectedBookAuthor).toHaveTextContent(searchResultAuthor);
+
+  const searchResultYear = "1859";
+  const selectedBookYear = await screen.findByTestId("selected-book-year");
+  expect(selectedBookYear).toBeInTheDocument();
+  expect(selectedBookYear).toHaveTextContent(searchResultYear);
+
+  const selectedBookAvailableCover1 = await screen.findByAltText(
+    "Available Book Cover OL52151281M"
+  );
+  expect(selectedBookAvailableCover1).toBeInTheDocument();
+
+  const uploadImageButton = await screen.findByLabelText(
+    "Add Book to Bookshelf"
+  );
+  expect(uploadImageButton).toBeInTheDocument();
+
+  // Select the upload image button
+  await userEvent.click(uploadImageButton);
+
+  // Get the upload button
+  const uploader = await screen.findByTestId("image-uploader");
+
+  // Create mock file
+  const file = new File([new ArrayBuffer(1)], filename, {
+    type: "image/jpg",
+  });
+
+  // simulate upload event and wait until finish
+  await waitFor(() =>
+    fireEvent.change(uploader, {
+      target: { files: [file] },
+    })
+  );
+
+  // Check that the selected cover is now populated in the image element
+  const selectedImage = await screen.findByAltText(
+    "Selected Book Cover: " + searchResultTitle
+  );
+  expect(selectedImage).toBeInTheDocument();
+  expect(selectedImage).toHaveAttribute("src", filename);
+
+  // Create the book
+  await waitFor(() => {
+    userEvent.click(createButton);
+  });
+
+  // Wait for the "Creating..." button to appear
+  const creatingButton = await screen.findByText("Creating...");
+  expect(creatingButton).toBeInTheDocument();
+
+  // Button should be disabled
+  expect(creatingButton).toHaveAttribute("disabled");
+
+  // Ensure the original "Create" button is no longer present
+  expect(screen.queryByText("Create")).not.toBeInTheDocument();
+
+  // Verify that create API call happens
+  await waitFor(() => {
+    expect(fetch).toHaveBeenCalledWith(
+      `${process.env.REACT_APP_API_URL}/books/`,
+      expect.objectContaining({
+        method: "POST",
+        body: expect.any(FormData),
+      })
+    );
+  });
+
+  // Extract the body from the mock fetch call
+  const call = fetchSpy.mock.calls[1][1]; // Second fetch call, search being first
+  const body = call?.body as FormData;
+
+  // Create a helper function to extract FormData entries
+  const formDataEntries: Record<string, string | File> = {};
+  body.forEach((value, key) => {
+    formDataEntries[key] = value;
+  });
+
+  // Assert that the FormData contents match the expected data
+  expect(formDataEntries).toEqual({
+    title: searchResultTitle,
+    author: searchResultAuthor,
+    year: searchResultYear,
+    read_status: "not_read",
+    olids: JSON.stringify(["OL52151281M", "OL51503229M", "OL46911647M"]),
+    file: file, // File should match the mock `file` object
   });
 
   fetchSpy.mockRestore(); // Restore fetch after test
@@ -297,13 +440,14 @@ test("handles zero search results", async () => {
   const searchButton = await screen.findByText("Search");
 
   // Search
-  await userEvent.type(searchInput, "Potrzebie!");
+  const titleToSearch = "Potrzebie!";
+  await userEvent.type(searchInput, titleToSearch);
   await userEvent.click(searchButton);
 
   // Verify that search API call happens
   await waitFor(() => {
     expect(fetch).toHaveBeenCalledWith(
-      `${process.env.REACT_APP_API_URL}/books/search/Potrzebie!`,
+      `${process.env.REACT_APP_API_URL}/books/search/${titleToSearch}`,
       {}
     );
   });

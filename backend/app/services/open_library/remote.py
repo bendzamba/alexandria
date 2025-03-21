@@ -43,7 +43,7 @@ class RemoteOpenLibraryHandler(BaseOpenLibraryHandler):
       
     return Works(**{"works": works})
 
-  async def fetch_image_from_olid(self, olid: str | None) -> str:
+  async def fetch_image_from_olid(self, olid: str) -> str:
 
     event_payload = {
       "method": inspect.currentframe().f_code.co_name,

@@ -42,7 +42,13 @@ def get_bookshelf(
         raise HTTPException(status_code=404, detail="Bookshelf not found")
     
     bookshelf_with_books = BookshelfPublicWithBooks.model_validate(bookshelf)
-    bookshelf_with_books.books = [book.model_dump() for book in bookshelf_with_books.books]
+
+    book_publics = []
+    for book in bookshelf_with_books.books:
+        book_public = BookPublic.model_validate(book)
+        book_publics.append(book_public.model_dump())
+
+    bookshelf_with_books.books = book_publics
     
     return bookshelf_with_books
 

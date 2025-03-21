@@ -17,7 +17,9 @@ class LocalImageHandler(BaseImageHandler):
 
     def save_image(self, image_name, image_content):
         # No action needed locally, image already saved by `download_image`
+        # TODO if directly uploading an image, we have not 'downloaded' the image
+        # TODO and thus we need to handle the saving
         pass
 
-    def get_image_uri(self, olid):
-        return os.path.join(self.api_url, self.image_mount_path, olid + ".jpg")
+    def get_image_uri(self, key):
+        return os.path.join(self.api_url, self.image_mount_path, key)

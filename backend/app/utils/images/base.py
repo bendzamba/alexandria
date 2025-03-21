@@ -17,6 +17,6 @@ class BaseImageHandler(ABC):
         pass
 
     @abstractmethod
-    def get_image_uri(self, olid):
+    def get_image_uri(self, key):
         """To be implemented by subclass."""
         pass

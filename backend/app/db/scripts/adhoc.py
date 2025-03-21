@@ -104,6 +104,19 @@ def drop_tables_book_and_bookshelf():
     connection.commit()
 
 
+def port_image_data_from_book_to_image_table():
+    connection = sqlite3.connect("data/alexandria.db", check_same_thread=False)
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+    cursor.execute("""
+        INSERT INTO image (book_id, source, source_id, extension)
+        SELECT id, 'open_library', olid, '.jpg'
+        FROM book
+        WHERE olid IS NOT NULL;
+    """)
+    connection.commit()
+    connection.close()
+
 # rename_cover_image_to_cover_uri_in_books_table()
 # add_cover_olid_to_books_table()
 # show_table_schema('books')
@@ -112,3 +125,4 @@ def drop_tables_book_and_bookshelf():
 # add_rating_and_review_to_books_table()
 # remove_category_column_from_book_table()
 # drop_tables_book_and_bookshelf()
+# port_image_data_from_book_to_image_table()

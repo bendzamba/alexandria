@@ -14,13 +14,29 @@ export const GetBooks = async (): Promise<
 export const CreateBook = async (
   data: Partial<CreateOrUpdateBookInterface>
 ): Promise<boolean> => {
-  return await Base("/books/", {
+  const options: RequestInit = {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  };
+  if (data?.upload) {
+    // Use FormData when a file is provided
+    const formData = new FormData();
+    for (const key in data) {
+      // Skip cover upload as that is added as a 'file' below
+      if (key !== "upload") {
+        formData.append(
+          key,
+          data[key as keyof CreateOrUpdateBookInterface] as string
+        );
+      }
+    }
+    formData.append("file", data.upload);
+    options.body = formData;
+  } else {
+    // Use JSON if no file is provided
+    options.headers = { "Content-Type": "application/json" };
+    options.body = JSON.stringify(data);
+  }
+  return await Base("/books/", options);
 };
 
 export const GetBook = async (
@@ -33,13 +49,29 @@ export const UpdateBook = async (
   id: number,
   data: Partial<CreateOrUpdateBookInterface>
 ): Promise<boolean> => {
-  return await Base(`/books/${id}`, {
+  const options: RequestInit = {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
+  };
+  if (data?.upload) {
+    // Use FormData when a file is provided
+    const formData = new FormData();
+    for (const key in data) {
+      // Skip cover upload as that is added as a 'file' below
+      if (key !== "image") {
+        formData.append(
+          key,
+          data[key as keyof CreateOrUpdateBookInterface] as string
+        );
+      }
+    }
+    formData.append("file", data.upload);
+    options.body = formData;
+  } else {
+    // Use JSON if no file is provided
+    options.headers = { "Content-Type": "application/json" };
+    options.body = JSON.stringify(data);
+  }
+  return await Base(`/books/${id}`, options);
 };
 
 export const DeleteBook = async (id: number): Promise<boolean> => {

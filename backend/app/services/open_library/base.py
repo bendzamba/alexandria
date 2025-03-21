@@ -11,6 +11,6 @@ class BaseOpenLibraryHandler(ABC):
     pass
 
   @abstractmethod
-  async def fetch_image_from_olid(self, olid: str | None) -> str:
+  async def fetch_image_from_olid(self, olid: str) -> str:
     """To be implemented by subclass."""
     pass
