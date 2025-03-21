@@ -142,7 +142,7 @@ function Book({ book, preview }: BookProps) {
     } finally {
       setLoading(false);
     }
-  }, [id, bookProp, currentBook]);
+  }, [id, bookProp, currentBook, availableCoverImages.length]);
 
   const handleChangeCover = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
