@@ -58,12 +58,12 @@ async def book_cover_handler(
   book_create_or_update: BookCreate | BookUpdate
 ) -> Image | None:
 
-    if olid := book_create_or_update.olid is not None:
+    if (olid := book_create_or_update.olid) is not None:
       # We are creating a book with an Open Library ID for the book cover image
         return await handle_olid(olid=olid, open_library=open_library)
 
-    if file := book_create_or_update.file is not None:
-    # Since we do not have an OLID, we generate a unique alphanumeric ID
+    if (file := book_create_or_update.file) is not None:
+        # Since we do not have an OLID, we generate a unique alphanumeric ID
         unique_id = generate(size=10)
         return await handle_file_upload(
             file=file,

@@ -59,7 +59,7 @@ resource "aws_vpc_security_group_ingress_rule" "efs_security_group_ingress" {
   ip_protocol                   = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "efs_security_group_ingress" {
+resource "aws_vpc_security_group_ingress_rule" "efs_security_group_ingress_self" {
   security_group_id             = aws_security_group.efs_security_group.id
   referenced_security_group_id  = aws_security_group.efs_security_group.id
   from_port                     = 2049
