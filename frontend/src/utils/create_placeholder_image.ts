@@ -14,7 +14,7 @@ export const createPlaceholderImage = (
 
   if (context === null) {
     console.log("Somehow the 2d context is not available");
-    return;
+    return "";
   }
 
   // Set background color

@@ -21,6 +21,7 @@ import {
 } from "../../interfaces/book_and_bookshelf";
 import { bookSort } from "../../utils/book_sort";
 import styles from "./css/Bookshelf.module.scss";
+import { createPlaceholderImage } from "../../utils/create_placeholder_image";
 
 interface BookshelfProps {
   bookshelfId?: number;
@@ -47,6 +48,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   const [sortKey, setSortKey] = useState("");
   const [sortDirection, setSortDirection] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const placeholderImageText = "No Cover Image Selected";
   const navigate = useNavigate();
 
   const fetchBookshelf = useCallback(async () => {
@@ -361,7 +363,11 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
               >
                 <img
                   height="150px"
-                  src={book.image?.uri}
+                  src={
+                    book.image !== null
+                      ? book.image.uri
+                      : createPlaceholderImage(320, 484, placeholderImageText)
+                  }
                   alt={`${book.title}: Book Cover`}
                   loading="lazy"
                   style={{
@@ -415,7 +421,11 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                   key={`book-that-can-be-added-${book.id}`}
                 >
                   <LazyImage
-                    src={book.image.uri}
+                    src={
+                      book.image !== null
+                        ? book.image.uri
+                        : createPlaceholderImage(320, 484, placeholderImageText)
+                    }
                     alt={`${book.title}: Book Cover`}
                     style={{ maxWidth: "100%", maxHeight: "100%" }}
                     rootElement={document.querySelector(".modal-content")}
