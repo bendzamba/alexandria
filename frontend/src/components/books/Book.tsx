@@ -34,6 +34,7 @@ function Book({ book, preview }: BookProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [readStartDate, setReadStartDate] = useState<Date | null>(null);
   const [readEndDate, setReadEndDate] = useState<Date | null>(null);
+  const [updating, setUpdating] = useState<boolean>(false);
   const reviewPlaceholder = "Share your thoughts on this book ...";
   // This is for tracking whether or not we've rendered the Book already
   // when loaded from the Books component. We want to prevent unnecessarily
@@ -154,6 +155,7 @@ function Book({ book, preview }: BookProps) {
       console.log("We can not update a book we do not have.");
       return false;
     }
+    setUpdating(true);
     try {
       if (selectedCoverImage?.upload) {
         await UpdateBook(bookIdNumeric, {
@@ -164,10 +166,11 @@ function Book({ book, preview }: BookProps) {
           olid: selectedCoverImage?.unique_id,
         });
       }
-      setSelectingNewCover(false);
     } catch (error) {
       console.error("Error updating:", error);
     }
+    setSelectingNewCover(false);
+    setUpdating(false);
   };
 
   const handleCoverImageUpdateClick = (
@@ -565,8 +568,19 @@ function Book({ book, preview }: BookProps) {
                 className="btn btn-primary btn-sm"
                 style={{ marginBottom: "0.5rem" }}
                 onClick={handleCoverImageUpdateClick}
+                disabled={updating}
               >
-                Update
+                {updating && (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm me-1"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    Updating...
+                  </>
+                )}
+                {!updating && <span>Update</span>}
               </button>
             )}
             <button

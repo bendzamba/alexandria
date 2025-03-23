@@ -62,7 +62,9 @@ function Header() {
               <NavDropdown.Item
                 as={Link}
                 to="/books/"
-                onClick={(e) => location.pathname === "/" && e.preventDefault()}
+                onClick={(e) =>
+                  location.pathname === "/books/" && e.preventDefault()
+                }
               >
                 View
               </NavDropdown.Item>
