@@ -3,6 +3,8 @@ import Col from "react-bootstrap/Col";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { AvailableCoverImageInterface } from "../../interfaces/book_and_bookshelf";
+import useLazyLoad from "../../hooks/useLazyLoad";
+import LazyImage from "../common/LazyLoadImage";
 
 interface CoverImageProps {
   parentAvailableCoverImages: Partial<AvailableCoverImageInterface>[];
@@ -27,7 +29,8 @@ function CoverImage({
   }, [parentAvailableCoverImages]);
 
   const hasRenderedFromParent = useRef(false);
-
+  const lazyLoadContainerRef = useRef<HTMLDivElement>(null);
+  const { observe, visibleImages } = useLazyLoad(lazyLoadContainerRef);
   const [selectedCoverImage, setSelectedCoverImage] = useState<
     Partial<AvailableCoverImageInterface> | null | undefined
   >(null);
@@ -116,9 +119,7 @@ function CoverImage({
   };
 
   const handleToggleBookCoverSelection = (
-    event:
-      | React.MouseEvent<HTMLImageElement>
-      | React.KeyboardEvent<HTMLImageElement>,
+    event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
     bookCoverImageToSelect: Partial<AvailableCoverImageInterface>
   ) => {
     event.preventDefault();
@@ -150,6 +151,7 @@ function CoverImage({
         border: "1px solid grey",
         borderRadius: ".375em",
       }}
+      ref={lazyLoadContainerRef}
     >
       <Col className={"m-2"}>
         <input
@@ -172,32 +174,36 @@ function CoverImage({
         </button>
       </Col>
       {availableCoverImages.map((availableCoverImage, index) => (
-        <Col key={index} className={"m-2"}>
-          <img
-            src={availableCoverImage.thumb_uri}
+        <Col
+          key={index}
+          className={"m-2"}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              handleToggleBookCoverSelection(event, availableCoverImage);
+            }
+          }}
+          onClick={(event) =>
+            handleToggleBookCoverSelection(event, availableCoverImage)
+          }
+        >
+          <LazyImage
+            src={availableCoverImage.thumb_uri || ""}
             style={{
               height: "150px",
+              minWidth: "90px",
               boxSizing: "border-box",
               padding: "2px",
             }}
+            elementClass={`border border-2 ${selectedCoverImage?.unique_id === availableCoverImage?.unique_id ? "border-primary" : "border-light"}`}
+            alt={`Available Book Cover ${availableCoverImage.unique_id}`}
+            observe={observe}
+            visibleImages={visibleImages}
             onLoad={(event) =>
               availableCoverImage.unique_id
                 ? imageOnload(event, availableCoverImage.unique_id)
                 : null
             }
-            onClick={(event) =>
-              handleToggleBookCoverSelection(event, availableCoverImage)
-            }
-            className={`border border-2 ${selectedCoverImage?.unique_id === availableCoverImage?.unique_id ? "border-primary" : "border-light"}`}
-            alt={`Available Book Cover ${availableCoverImage.unique_id}`}
-            loading="lazy"
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                handleToggleBookCoverSelection(event, availableCoverImage);
-              }
-            }}
-            role="presentation"
-          />
+          ></LazyImage>
         </Col>
       ))}
     </Row>
