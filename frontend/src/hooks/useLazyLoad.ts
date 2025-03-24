@@ -25,7 +25,7 @@ const useLazyLoad = (rootRef: React.RefObject<HTMLElement>) => {
     );
 
     return () => observerRef.current?.disconnect();
-  }, []);
+  }, [rootRef]);
 
   return {
     observe: (el: Element | null) => el && observerRef.current?.observe(el),
