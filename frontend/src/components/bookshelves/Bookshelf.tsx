@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -13,6 +13,7 @@ import {
   DeleteBookFromBookshelf,
   UpdateBookshelf,
 } from "../../services/bookshelves";
+import useLazyLoad from "../../hooks/useLazyLoad";
 import LazyImage from "../common/LazyLoadImage";
 import {
   BookInterface,
@@ -50,6 +51,8 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const placeholderImageText = "No Cover Image Selected";
   const navigate = useNavigate();
+  const lazyLoadContainerRef = useRef<HTMLDivElement>(null);
+  const { observe, visibleImages } = useLazyLoad(lazyLoadContainerRef);
 
   const fetchBookshelf = useCallback(async () => {
     try {
@@ -405,7 +408,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
         <Modal.Header closeButton>
           <Modal.Title>Choose one or more book to add</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body ref={lazyLoadContainerRef}>
           <Container>
             <Row>
               {booksThatCanBeAdded.map((book) => (
@@ -428,7 +431,8 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                     }
                     alt={`${book.title}: Book Cover`}
                     style={{ maxWidth: "100%", maxHeight: "100%" }}
-                    rootElement={document.querySelector(".modal-content")}
+                    observe={observe}
+                    visibleImages={visibleImages}
                   ></LazyImage>
                 </Col>
               ))}
