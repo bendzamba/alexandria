@@ -116,7 +116,7 @@ function Book({ book, preview }: BookProps) {
     } finally {
       setLoading(false);
     }
-  }, [id, bookProp, currentBook, availableCoverImages.length]);
+  }, [id, bookProp, currentBook]);
 
   const handleSetAvailableCoverImages = (
     localCurrentBook: BookWithBookshelvesInterface
