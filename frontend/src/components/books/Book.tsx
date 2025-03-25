@@ -92,35 +92,8 @@ function Book({ book, preview }: BookProps) {
         return false;
       }
 
-      try {
-        if (availableCoverImages.length === 0) {
-          const allBookOlids: string[] = JSON.parse(
-            currentBook.olids
-          ) as string[];
-          const localAvailableCoverImages = allBookOlids.map((olid) => {
-            const bookCover: Partial<AvailableCoverImageInterface> = {
-              unique_id: olid,
-              thumb_uri: olidImagePath + olid + "-M.jpg",
-              uri: olidImagePath + olid + "-L.jpg",
-            };
-            return bookCover;
-          });
-          if (
-            currentBook.image &&
-            currentBook.image.source === "direct_upload"
-          ) {
-            // Put selected image first
-            localAvailableCoverImages.unshift({
-              unique_id: currentBook.image.source_id,
-              thumb_uri: currentBook.image.uri,
-              uri: currentBook.image.uri,
-            });
-          }
-          setAvailableCoverImages(localAvailableCoverImages);
-        }
-      } catch (e) {
-        console.log("Could not set available olids", e);
-      }
+      handleSetAvailableCoverImages(currentBook);
+
       // setSavedCoverUri(currentBook.cover_uri);
       setSavedReview(currentBook.review);
       if (currentBook.read_start_date) {
@@ -145,6 +118,52 @@ function Book({ book, preview }: BookProps) {
     }
   }, [id, bookProp, currentBook, availableCoverImages.length]);
 
+  const handleSetAvailableCoverImages = (
+    localCurrentBook: BookWithBookshelvesInterface
+  ) => {
+    try {
+      const allBookOlids: string[] = JSON.parse(
+        localCurrentBook.olids
+      ) as string[];
+      const selectedCoverImages = [];
+      if (localCurrentBook.image) {
+        // Put selected image first
+        selectedCoverImages.push({
+          unique_id: localCurrentBook.image.source_id,
+          thumb_uri: localCurrentBook.image.uri,
+          uri: localCurrentBook.image.uri,
+        });
+      }
+      const unselectedCoverImages = allBookOlids
+        .filter((olid) => {
+          if (
+            localCurrentBook.image &&
+            localCurrentBook.image.source === "open_library" &&
+            localCurrentBook.image.source_id === olid
+          ) {
+            // Already added as first in array
+            return false;
+          }
+          return true;
+        })
+        .map((olid) => {
+          const bookCover: Partial<AvailableCoverImageInterface> = {
+            unique_id: olid,
+            thumb_uri: olidImagePath + olid + "-M.jpg",
+            uri: olidImagePath + olid + "-L.jpg",
+          };
+          return bookCover;
+        });
+
+      setAvailableCoverImages([
+        ...selectedCoverImages,
+        ...unselectedCoverImages,
+      ]);
+    } catch (e) {
+      console.log("Could not set available olids", e);
+    }
+  };
+
   const handleChangeCover = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     setSelectingNewCover(true);
@@ -158,6 +177,7 @@ function Book({ book, preview }: BookProps) {
     setUpdating(true);
     try {
       if (selectedCoverImage?.upload) {
+        // TODO How to handle updating local current book with this
         await UpdateBook(bookIdNumeric, {
           upload: selectedCoverImage.upload,
         });
