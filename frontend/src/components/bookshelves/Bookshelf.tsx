@@ -424,6 +424,7 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                   key={`book-that-can-be-added-${book.id}`}
                 >
                   <LazyImage
+                    key={String(book.image.id)}
                     src={
                       book.image !== null
                         ? book.image.uri
