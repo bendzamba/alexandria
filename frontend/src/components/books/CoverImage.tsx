@@ -118,6 +118,19 @@ function CoverImage({
     }
   };
 
+  const imageOnError = (
+    event: React.SyntheticEvent<HTMLImageElement>,
+    unique_id: string
+  ) => {
+    setAvailableCoverImages((previousAvailableCoverImages) => {
+      return previousAvailableCoverImages.filter(
+        (previousAvailableCoverImage) => {
+          return previousAvailableCoverImage.unique_id !== unique_id;
+        }
+      );
+    });
+  };
+
   const handleToggleBookCoverSelection = (
     event: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
     bookCoverImageToSelect: Partial<AvailableCoverImageInterface>
@@ -187,6 +200,7 @@ function CoverImage({
           }
         >
           <LazyImage
+            key={availableCoverImage.unique_id as string}
             src={availableCoverImage.thumb_uri || ""}
             style={{
               height: "150px",
@@ -201,6 +215,11 @@ function CoverImage({
             onLoad={(event) =>
               availableCoverImage.unique_id
                 ? imageOnload(event, availableCoverImage.unique_id)
+                : null
+            }
+            onError={(event) =>
+              availableCoverImage.unique_id
+                ? imageOnError(event, availableCoverImage.unique_id)
                 : null
             }
           ></LazyImage>
