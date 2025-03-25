@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import "./style/LazyLoadImage.css";
 
 const LazyImage = ({
-  key,
   src,
   alt,
   elementClass,
@@ -12,7 +11,6 @@ const LazyImage = ({
   onLoad,
   onError,
 }: {
-  key: string;
   src: string;
   alt: string;
   elementClass?: string;

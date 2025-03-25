@@ -119,7 +119,7 @@ function CoverImage({
   };
 
   const imageOnError = (
-    event: React.SyntheticEvent<HTMLImageElement>,
+    _event: React.SyntheticEvent<HTMLImageElement>,
     unique_id: string
   ) => {
     setAvailableCoverImages((previousAvailableCoverImages) => {
