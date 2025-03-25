@@ -1,6 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import "./style/LazyLoadImage.css";
 
 const LazyImage = ({
+  key,
   src,
   alt,
   elementClass,
@@ -8,7 +10,9 @@ const LazyImage = ({
   observe,
   visibleImages,
   onLoad,
+  onError,
 }: {
+  key: string;
   src: string;
   alt: string;
   elementClass?: string;
@@ -16,12 +20,37 @@ const LazyImage = ({
   observe: (el: Element | null) => void | null | undefined;
   visibleImages: Set<string>;
   onLoad?: (event: React.SyntheticEvent<HTMLImageElement>) => void;
+  onError?: (event: React.SyntheticEvent<HTMLImageElement>) => void;
 }) => {
   const imgRef = useRef<HTMLImageElement>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     observe(imgRef.current);
   }, [observe]);
+
+  const localOnLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    if (visibleImages.has(src)) {
+      /**
+       * Only handle load event when we have our actual src
+       * Do not handle load event produced by an empty string as src
+       */
+      setLoaded(true);
+      if (onLoad) onLoad(event);
+    }
+  };
+
+  const localOnError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    if (visibleImages.has(src)) {
+      /**
+       * Only handle error event when we have our actual src
+       * Do not handle error event produced by an empty string as src
+       */
+      if (onError) {
+        onError(event);
+      }
+    }
+  };
 
   return (
     <img
@@ -29,9 +58,10 @@ const LazyImage = ({
       src={visibleImages.has(src) ? src : ""}
       data-src={src}
       alt={alt}
-      className={elementClass}
+      className={`${elementClass} lazy-img ${loaded ? "loaded" : ""}`}
       style={style}
-      onLoad={onLoad}
+      onLoad={localOnLoad}
+      onError={localOnError}
     />
   );
 };
