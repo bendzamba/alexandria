@@ -16,3 +16,13 @@
 .search-result-book-metadata span {
   font-size: 12px;
 }
+
+.manual-create-cover-image-button-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+button.manual-create-cover-image-button {
+  width: 100%;
+  aspect-ratio: 1/1.5;
+}
