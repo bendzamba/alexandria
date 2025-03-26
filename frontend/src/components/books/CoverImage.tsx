@@ -5,6 +5,10 @@ import { toast } from "react-toastify";
 import { AvailableCoverImageInterface } from "../../interfaces/book_and_bookshelf";
 import useLazyLoad from "../../hooks/useLazyLoad";
 import LazyImage from "../common/LazyLoadImage";
+import {
+  allowedMimeTypes,
+  maxAllowedImageUploadSize,
+} from "../../constants/AppConstants";
 
 interface CoverImageProps {
   parentAvailableCoverImages: Partial<AvailableCoverImageInterface>[];
@@ -43,15 +47,6 @@ function CoverImage({
       hasRenderedFromParent.current = true;
     }
   }, [parentSelectedCoverImage]);
-
-  const allowedMimeTypes = [
-    "image/png",
-    "image/jpeg",
-    "image/jpg",
-    "image/gif",
-  ];
-
-  const maxAllowedImageUploadSize = 5 * 1024 * 1024; // 5MB
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -181,7 +176,7 @@ function CoverImage({
           className="btn btn-outline-primary"
           style={{ width: "90px", height: "150px" }}
           onClick={handleButtonToSetCoverImageToUpload}
-          aria-label="Add Book to Bookshelf"
+          aria-label="Upload Cover Image"
         >
           Upload Image
         </button>
