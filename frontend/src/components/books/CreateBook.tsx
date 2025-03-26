@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CreateBook as CreateBookService,
@@ -15,8 +15,21 @@ import {
 } from "../../interfaces/book_and_bookshelf";
 import { createPlaceholderImage } from "../../utils/create_placeholder_image";
 import CoverImage from "./CoverImage";
+import { toast } from "react-toastify";
+import {
+  allowedMimeTypes,
+  maxAllowedImageUploadSize,
+} from "../../constants/AppConstants";
 
 function CreateBook() {
+  // Methodology for creating
+  const [creatingManually, setCreatingManually] = useState<boolean>(true);
+  const [creatingWithOpenLibrary, setCreatingWithOpenLibrary] =
+    useState<boolean>(false);
+
+  // Cover upload for direct creation
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   // Book metadata
   const [title, setTitle] = useState<string | null>(null);
   const [author, setAuthor] = useState<string | null>(null);
@@ -49,6 +62,10 @@ function CreateBook() {
   const olidImagePath = "https://covers.openlibrary.org/b/olid/";
 
   const navigate = useNavigate();
+
+  function handleButtonToSetCoverImageToUpload() {
+    fileInputRef.current?.click();
+  }
 
   const handleSearch = async () => {
     setSearching(true);
@@ -183,6 +200,45 @@ function CreateBook() {
     }
   }, [olids, setAvailableCoverImages]);
 
+  function handleSetCoverImageToUpload(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    if (event.target.files === null || event.target.files.length === 0) {
+      toast.error("No files were provided for upload", {
+        position: "bottom-right",
+        theme: "colored",
+      });
+      return;
+    }
+    const file_to_upload = event.target.files[0];
+    if (!allowedMimeTypes.includes(file_to_upload.type)) {
+      toast.error(
+        `Only files of type ${allowedMimeTypes.join(" or ")} are allowed`,
+        {
+          position: "bottom-right",
+          theme: "colored",
+        }
+      );
+      return;
+    }
+    if (file_to_upload.size > maxAllowedImageUploadSize) {
+      toast.error("File size must be less than 5MB", {
+        position: "bottom-right",
+        theme: "colored",
+      });
+      return;
+    }
+    const objectUrl = URL.createObjectURL(file_to_upload);
+    const coverImageToUpload: Partial<AvailableCoverImageInterface> = {
+      uri: objectUrl,
+      thumb_uri: objectUrl,
+      upload: file_to_upload,
+    };
+
+    // Auto-select our image to upload
+    toggleCoverImageSelection(coverImageToUpload);
+  }
+
   const toggleCoverImageSelection = (
     bookCoverToSelect: Partial<AvailableCoverImageInterface>
   ) => {
@@ -191,68 +247,106 @@ function CreateBook() {
     setSelectedCoverImage(localSelectedBookCover);
   };
 
+  const toggleCreationMethod = () => {
+    setCreatingManually(!creatingManually);
+    setCreatingWithOpenLibrary(!creatingWithOpenLibrary);
+  };
+
   return (
     <Container className="mt-4">
-      <form onSubmit={handleSearchClick}>
-        <div className="mb-3">
-          <input
-            type="text"
-            className="form-control"
-            id="searchTitle"
-            value={searchTitle}
-            onChange={(e) => setSearchTitle(e.target.value)}
-            placeholder="Search for a title..."
-            aria-label="Search for a title"
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">
-          Search
-        </button>
-        <button
-          type="button"
-          className="btn btn-danger ms-1"
-          onClick={handleCancel}
-        >
-          Cancel
-        </button>
-      </form>
-
-      {searching && (
-        <Row>
-          <Col>
-            <h4>Searching...</h4>
-          </Col>
-        </Row>
-      )}
-
-      {noResults && (
-        <Row className="mt-4">
-          <Col>
-            <h4>No Results Found. Please Try Another Search.</h4>
-          </Col>
-        </Row>
-      )}
-
-      {selectedBook !== null && (
-        <>
-          <Row
-            className="mt-4 mb-4 align-items-center"
-            style={{ borderBottom: "3px solid black" }}
+      <Row className="mb-4">
+        <Col xs={12}>
+          <button
+            className="btn btn-outline-primary me-2"
+            disabled={creatingManually}
+            onClick={toggleCreationMethod}
           >
-            <Col x3={9}>
-              <h1 className="display-5 pull-left">Search Results</h1>
-            </Col>
-            <Col
-              xs={3}
-              style={{
-                textAlign: "right",
-              }}
-            >
+            Create Manually
+          </button>
+          <button
+            className="btn btn-outline-primary"
+            disabled={creatingWithOpenLibrary}
+            onClick={toggleCreationMethod}
+          >
+            Create with Open Library
+          </button>
+        </Col>
+      </Row>
+      {creatingManually && (
+        <Row>
+          <Col xs={12} sm={4}>
+            <input
+              type="file"
+              id="cover-image-upload"
+              onChange={handleSetCoverImageToUpload}
+              ref={fileInputRef}
+              accept={allowedMimeTypes.join(",")}
+              data-testid="image-uploader"
+              hidden
+            />
+            {selectedCoverImage && (
+              <img
+                src={selectedCoverImage.uri}
+                className="img-fluid "
+                alt={`${selectedCoverImage !== null ? "Selected" : "Placeholder"} Book Cover: ${title}`}
+                height="484px"
+              />
+            )}
+            {!selectedCoverImage && (
+              <div
+                className={`${styles["manual-create-cover-image-button-wrapper"]}`}
+              >
+                <button
+                  type="button"
+                  className={`btn btn-outline-primary ${styles["manual-create-cover-image-button"]}`}
+                  onClick={handleButtonToSetCoverImageToUpload}
+                  aria-label="Upload Cover Image"
+                >
+                  Upload Image
+                </button>
+              </div>
+            )}
+          </Col>
+          <Col xs={12} sm={8}>
+            <form>
+              <div className="mb-3">
+                <label htmlFor="title" className="form-label">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="title"
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="author" className="form-label">
+                  Author
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="author"
+                  onChange={(e) => setAuthor(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="year" className="form-label">
+                  Year
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="year"
+                  onChange={(e) => setYear(Number(e.target.value))}
+                />
+              </div>
               <button
-                type="button"
+                type="submit"
                 className="btn btn-primary"
-                onClick={handleCreateClick}
                 disabled={creating}
+                onClick={handleCreateClick}
               >
                 {creating && (
                   <>
@@ -266,88 +360,169 @@ function CreateBook() {
                 )}
                 {!creating && <span>Create</span>}
               </button>
-            </Col>
-          </Row>
-          <Row>
-            <Col xs={3} className="mb-3">
-              <img
-                src={
-                  selectedCoverImage !== null
-                    ? selectedCoverImage.uri
-                    : createPlaceholderImage(320, 484, placeholderImageText)
-                }
-                className="img-fluid"
-                alt={`${selectedCoverImage !== null ? "Selected" : "Placeholder"} Book Cover: ${title}`}
-                height="300px"
-              />
-            </Col>
-            <Col xs={9} lg={4}>
-              <h2 data-testid="selected-book-title">{title}</h2>
-              <h4 data-testid="selected-book-author">{author}</h4>
-              <h6 data-testid="selected-book-year">{year}</h6>
-            </Col>
-            <Col xs={12} lg={5}>
-              <CoverImage
-                parentAvailableCoverImages={availableCoverImages}
-                onSelectCoverImage={toggleCoverImageSelection}
-              />
-            </Col>
-          </Row>
-        </>
+            </form>
+          </Col>
+        </Row>
       )}
-
-      {booksToChooseFrom.length > 1 && (
+      {creatingWithOpenLibrary && (
         <>
-          <Row className="mt-4">
-            <Col>
-              <h3>Please select from the multiple results found</h3>
-            </Col>
-          </Row>
-          <Row className="mt-4">
-            {booksToChooseFrom.map((book, index) => (
-              <Col
-                xs={6}
-                md={4}
-                lg={3}
-                xl={2}
-                className={`mt-4 ${styles["search-result-book"]} ${index === selectedBook ? styles["search-result-book-selected"] : ""}`}
-                key={`col-booktochoosefrom-${index}`}
-                aria-label={`Book to choose from ${index.toString()}`}
-                onClick={(event) => handleSelectBook(event, index)}
+          <form onSubmit={handleSearchClick}>
+            <div className="mb-3">
+              <input
+                type="text"
+                className="form-control"
+                id="searchTitle"
+                value={searchTitle}
+                onChange={(e) => setSearchTitle(e.target.value)}
+                placeholder="Search for a title..."
+                aria-label="Search for a title"
+              />
+            </div>
+            <button type="submit" className="btn btn-primary">
+              Search
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger ms-1"
+              onClick={handleCancel}
+            >
+              Cancel
+            </button>
+          </form>
+
+          {searching && (
+            <Row>
+              <Col>
+                <h4>Searching...</h4>
+              </Col>
+            </Row>
+          )}
+
+          {noResults && (
+            <Row className="mt-4">
+              <Col>
+                <h4>No Results Found. Please Try Another Search.</h4>
+              </Col>
+            </Row>
+          )}
+
+          {selectedBook !== null && (
+            <>
+              <Row
+                className="mt-4 mb-4 align-items-center"
+                style={{ borderBottom: "3px solid black" }}
               >
-                <Row>
-                  <Col style={{ height: "125px" }}>
-                    <img
-                      src={
-                        "https://covers.openlibrary.org/b/olid/" +
-                        book["olids"][0] +
-                        "-M.jpg"
-                      }
-                      style={{ maxWidth: "100%", maxHeight: "100%" }}
-                      alt={`Book to choose from ${index.toString()}`}
-                      loading="lazy"
-                    />
-                  </Col>
+                <Col x3={9}>
+                  <h1 className="display-5 pull-left">Search Results</h1>
+                </Col>
+                <Col
+                  xs={3}
+                  style={{
+                    textAlign: "right",
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleCreateClick}
+                    disabled={creating}
+                  >
+                    {creating && (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-1"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                        Creating...
+                      </>
+                    )}
+                    {!creating && <span>Create</span>}
+                  </button>
+                </Col>
+              </Row>
+              <Row>
+                <Col xs={3} className="mb-3">
+                  <img
+                    src={
+                      selectedCoverImage !== null
+                        ? selectedCoverImage.uri
+                        : createPlaceholderImage(320, 484, placeholderImageText)
+                    }
+                    className="img-fluid"
+                    alt={`${selectedCoverImage !== null ? "Selected" : "Placeholder"} Book Cover: ${title}`}
+                    height="300px"
+                  />
+                </Col>
+                <Col xs={9} lg={4}>
+                  <h2 data-testid="selected-book-title">{title}</h2>
+                  <h4 data-testid="selected-book-author">{author}</h4>
+                  <h6 data-testid="selected-book-year">{year}</h6>
+                </Col>
+                <Col xs={12} lg={5}>
+                  <CoverImage
+                    parentAvailableCoverImages={availableCoverImages}
+                    onSelectCoverImage={toggleCoverImageSelection}
+                  />
+                </Col>
+              </Row>
+            </>
+          )}
+
+          {booksToChooseFrom.length > 1 && (
+            <>
+              <Row className="mt-4">
+                <Col>
+                  <h3>Please select from the multiple results found</h3>
+                </Col>
+              </Row>
+              <Row className="mt-4">
+                {booksToChooseFrom.map((book, index) => (
                   <Col
-                    className={`p-1 ${styles["search-result-book-metadata"]}`}
-                    style={{ overflow: "scroll" }}
+                    xs={6}
+                    md={4}
+                    lg={3}
+                    xl={2}
+                    className={`mt-4 ${styles["search-result-book"]} ${index === selectedBook ? styles["search-result-book-selected"] : ""}`}
+                    key={`col-booktochoosefrom-${index}`}
+                    aria-label={`Book to choose from ${index.toString()}`}
+                    onClick={(event) => handleSelectBook(event, index)}
                   >
                     <Row>
-                      <span>{book["title"]}</span>
-                    </Row>
-                    <Row>
-                      <span className="text-secondary">
-                        {book["author_name"]}
-                      </span>
-                    </Row>
-                    <Row>
-                      <span>{book["first_publish_year"]}</span>
+                      <Col style={{ height: "125px" }}>
+                        <img
+                          src={
+                            "https://covers.openlibrary.org/b/olid/" +
+                            book["olids"][0] +
+                            "-M.jpg"
+                          }
+                          style={{ maxWidth: "100%", maxHeight: "100%" }}
+                          alt={`Book to choose from ${index.toString()}`}
+                          loading="lazy"
+                        />
+                      </Col>
+                      <Col
+                        className={`p-1 ${styles["search-result-book-metadata"]}`}
+                        style={{ overflow: "scroll" }}
+                      >
+                        <Row>
+                          <span>{book["title"]}</span>
+                        </Row>
+                        <Row>
+                          <span className="text-secondary">
+                            {book["author_name"]}
+                          </span>
+                        </Row>
+                        <Row>
+                          <span>{book["first_publish_year"]}</span>
+                        </Row>
+                      </Col>
                     </Row>
                   </Col>
-                </Row>
-              </Col>
-            ))}
-          </Row>
+                ))}
+              </Row>
+            </>
+          )}
         </>
       )}
     </Container>
