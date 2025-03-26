@@ -200,6 +200,13 @@ function Book({ book, preview }: BookProps) {
     void handleUpdateCoverImage(); // Call the async function but don't return its Promise
   };
 
+  const handleCoverImageCancelClick = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event.preventDefault();
+    setSelectingNewCover(false);
+  };
+
   const handleDelete = async () => {
     const response: boolean = await DeleteBook(bookIdNumeric);
     if (!response) {
@@ -601,6 +608,17 @@ function Book({ book, preview }: BookProps) {
                   </>
                 )}
                 {!updating && <span>Update</span>}
+              </button>
+            )}
+            {selectingNewCover && (
+              <button
+                type="button"
+                className="btn btn-warning btn-sm ms-1"
+                style={{ marginBottom: "0.5rem" }}
+                onClick={handleCoverImageCancelClick}
+                disabled={updating}
+              >
+                <span>Cancel</span>
               </button>
             )}
             <button
