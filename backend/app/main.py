@@ -50,6 +50,7 @@ class FormToJSONMiddleware(BaseHTTPMiddleware):
             for key, value in form_data.items():
                 if isinstance(value, UploadFile):
                     json_data[key] = base64.b64encode(await value.read()).decode("utf-8")
+                    print(f"Base64 Encoded File Length: {len(json_data[key])}")
                 else:
                     json_data[key] = value
             # Convert JSON data to bytes and set as the new request body
