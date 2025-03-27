@@ -56,7 +56,7 @@ class FormToJSONMiddleware(BaseHTTPMiddleware):
                 # print(f"Value type {type(value)}")
                 if isinstance(value, UploadFile):
                     file_bytes = await value.read()
-                    # print(f"Raw file bytes (first 100 bytes): {file_bytes[:100]}")
+                    print(f"Raw file bytes (first 100 bytes): {file_bytes[:100]}")
                     json_data[key] = base64.b64encode(file_bytes).decode("utf-8")
                     print("Done encoding file")
                     # print(f"Base64 Encoded File Length: {len(json_data[key])}")
