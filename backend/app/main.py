@@ -95,4 +95,4 @@ app.include_router(books.router, prefix="/books", tags=["books"])
 app.include_router(bookshelves.router, prefix="/bookshelves", tags=["bookshelves"])
 
 # For Lambda. Ignored otherwise.
-handler = Mangum(app, text_mime_types=["multipart/form-data", "image/"])
+handler = Mangum(app)
