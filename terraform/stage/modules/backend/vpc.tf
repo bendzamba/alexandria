@@ -118,13 +118,6 @@ resource "aws_vpc_endpoint" "lambda_endpoint" {
  * Previously, our route table was created implicitly by AWS and implicitly
  * associated to our subnets.
  */
-data "aws_route_table" "default_route" {
-  vpc_id = aws_vpc.vpc.id
-  filter {
-    name   = "association.main"
-    values = ["true"]
-  }
-}
 
 # Create the S3 endpoint and attach it to the new route table
 resource "aws_vpc_endpoint" "s3_gateway" {
@@ -132,7 +125,7 @@ resource "aws_vpc_endpoint" "s3_gateway" {
   service_name    = "com.amazonaws.${var.region}.s3"
   vpc_endpoint_type = "Gateway"
 
-  route_table_ids = [data.aws_route_table.default_route.id]
+  route_table_ids = ["rtb-042b506c987674b33"]
 
   tags = {
     application = var.app_name
