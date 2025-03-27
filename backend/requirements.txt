@@ -1,5 +1,7 @@
 aiofiles==24.1.0
+anyio==4.4.0
 boto3==1.35.21
+email_validator==2.2.0
 fastapi==0.115.12
 filetype==1.2.0
 httpx==0.28.1
