@@ -44,7 +44,7 @@ class FormToJSONMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # print("AWS Event Scope")
         # print(request.scope["aws.event"])
-        # print(await request.body())
+        print(await request.body())
         content_type = request.headers.get("Content-Type", "").split(";", 1)[0]
         if content_type == "multipart/form-data":
             form_data = await request.form()
