@@ -112,15 +112,41 @@ resource "aws_vpc_endpoint" "lambda_endpoint" {
   }
 }
 
-resource "aws_vpc_endpoint" "s3_endpoint" {
-  vpc_id              = aws_vpc.vpc.id
-  service_name        = "com.amazonaws.${var.region}.s3"
-  vpc_endpoint_type   = "Gateway"
+/*
+ * The below is to facilitate an S3 VPC endpoint, which must be configured as a 
+ * Gateway instead of an Interface, and thus requires a route table association.
+ * Previously, our route table was created implicitly by AWS and implicitly
+ * associated to our subnets.
+ */
+resource "aws_route_table" "route_table" {
+  vpc_id = aws_vpc.vpc.id
+}
 
-  subnet_ids          = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]
-  security_group_ids  = [aws_security_group.lambda_security_group.id]
+# Add the same route as the default route table
+resource "aws_route" "local_route" {
+  route_table_id         = aws_route_table.route_table.id
+  destination_cidr_block = "10.0.0.0/16"
+  gateway_id             = "local"
+}
 
-  private_dns_enabled = true
+# Explicitly associate subnets with this new route table
+resource "aws_route_table_association" "route_table_subnet_1" {
+  subnet_id      = aws_subnet.private_subnet_1.id
+  route_table_id = aws_route_table.route_table.id
+}
+
+resource "aws_route_table_association" "route_table_subnet_2" {
+  subnet_id      = aws_subnet.private_subnet_2.id
+  route_table_id = aws_route_table.route_table.id
+}
+
+# Create the S3 endpoint and attach it to the new route table
+resource "aws_vpc_endpoint" "s3_gateway" {
+  vpc_id          = aws_vpc.vpc.id
+  service_name    = "com.amazonaws.${var.region}.s3"
+  vpc_endpoint_type = "Gateway"
+
+  route_table_ids = [aws_route_table.route_table.id]
 
   tags = {
     application = var.app_name
