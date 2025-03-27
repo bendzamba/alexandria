@@ -51,11 +51,13 @@ async def create_book(
     db: Session = Depends(get_db),
     book_cover_handler = Depends(get_book_cover_handler),
 ):
+    print("Entered POST books route")
     db_book = Book.model_validate(book_create) 
 
     # Handle book cover
     # This may raise an Exception if a file upload is invalid
     # We hold on committing the book until we validate this
+    print("About to call book_cover_handler")
     image = await book_cover_handler(book_create_or_update=book_create)
 
     db.add(db_book)
