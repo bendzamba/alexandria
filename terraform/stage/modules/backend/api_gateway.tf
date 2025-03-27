@@ -1,12 +1,6 @@
 resource "aws_api_gateway_rest_api" "api_gateway_rest_api" {
   name = "${var.app_name}-backend-api-gateway-api-${var.environment}"
-  binary_media_types = [
-    "multipart/form-data",
-    "image/png",
-    "image/jpeg",
-    "image/jpg",
-    "image/gif"
-  ]
+  binary_media_types = ["*/*"]
   tags = {
     application = var.app_name
     environment = var.environment
