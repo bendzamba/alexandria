@@ -111,3 +111,19 @@ resource "aws_vpc_endpoint" "lambda_endpoint" {
     Name        = "${var.app_name}-backend-vpc-endpoint-lambda"
   }
 }
+
+resource "aws_vpc_endpoint" "s3_endpoint" {
+  vpc_id              = aws_vpc.vpc.id
+  service_name        = "com.amazonaws.${var.region}.s3"
+  vpc_endpoint_type   = "Gateway"
+
+  subnet_ids          = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]
+  security_group_ids  = [aws_security_group.lambda_security_group.id]
+
+  private_dns_enabled = true
+
+  tags = {
+    application = var.app_name
+    Name        = "${var.app_name}-backend-vpc-endpoint-s3"
+  }
+}
