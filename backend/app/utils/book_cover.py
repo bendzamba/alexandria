@@ -28,7 +28,7 @@ async def handle_file_upload(file, allowed_mimes, max_size, unique_id, image_han
     print(f"Base64 Encoded File: {file}")
     # We are creating a book with a directly uploaded book cover image
     contents = base64.b64decode(file)
-    print(f"Base64 Decoded File: {file}")
+    print(f"Base64 Decoded File: {contents}")
     # Attempt to determine the file type from headers
     file_type = filetype.guess(contents)
 
