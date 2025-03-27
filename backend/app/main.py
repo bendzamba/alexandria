@@ -42,8 +42,8 @@ async def lifespan(app: FastAPI):
 # This comes into play when the client sends Form Data along with a file upload
 class FormToJSONMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        print("Entire Request")
-        print(request)
+        print("AWS Event Scope")
+        print(request.scope.get("aws_event") )
         content_type = request.headers.get("Content-Type", "").split(";", 1)[0]
         if content_type == "multipart/form-data":
             form_data = await request.form()
