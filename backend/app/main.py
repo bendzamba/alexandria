@@ -44,7 +44,7 @@ class FormToJSONMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # print("AWS Event Scope")
         # print(request.scope["aws.event"])
-        print(await request.body())
+        # print(await request.body())
         content_type = request.headers.get("Content-Type", "").split(";", 1)[0]
         if content_type == "multipart/form-data":
             form_data = await request.form()
@@ -58,6 +58,7 @@ class FormToJSONMiddleware(BaseHTTPMiddleware):
                     file_bytes = await value.read()
                     # print(f"Raw file bytes (first 100 bytes): {file_bytes[:100]}")
                     json_data[key] = base64.b64encode(file_bytes).decode("utf-8")
+                    print("Done encoding file")
                     # print(f"Base64 Encoded File Length: {len(json_data[key])}")
                 else:
                     json_data[key] = value
@@ -68,6 +69,7 @@ class FormToJSONMiddleware(BaseHTTPMiddleware):
                 (b"content-type", b"application/json"),
                 *(header for header in request.scope["headers"] if header[0] != b"content-type"),
             ]
+            print("About to return new request scope")
             request._body = json_body  # Set the new body directly
 
         return await call_next(request)
