@@ -194,6 +194,14 @@ resource "aws_api_gateway_deployment" "api_gateway_deployment" {
     aws_api_gateway_method.api_gateway_options_method
     ]
   rest_api_id = aws_api_gateway_rest_api.api_gateway_rest_api.id
+  # This forces a new deployment when the API Gateway configuration changes
+  triggers = {
+    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.api_gateway_rest_api))
+  }
+  # Ensures there’s no downtime when redeploying.
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_api_gateway_stage" "api_gateway_stage" {
