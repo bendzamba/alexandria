@@ -31,6 +31,7 @@ export const CreateBook = async (
     }
     formData.append("file", data.upload);
     options.body = formData;
+    options.headers = { Accept: "multipart/form-data" };
   } else {
     // Use JSON if no file is provided
     options.headers = { "Content-Type": "application/json" };
