@@ -27,11 +27,8 @@ async def handle_olid(olid: str, open_library) -> Image:
 async def handle_file_upload(file, allowed_mimes, max_size, unique_id, image_handler):
     # We are creating a book with a directly uploaded book cover image
     contents = base64.b64decode(file)
-    print("Decoded file")
     # Attempt to determine the file type from headers
     file_type = filetype.guess(contents)
-
-    print(f"Guessed mime type: {file_type.mime}")
 
     if file_type.mime not in allowed_mimes:
         raise HTTPException(
@@ -47,7 +44,6 @@ async def handle_file_upload(file, allowed_mimes, max_size, unique_id, image_han
     
     extension = f".{file_type.mime.split('/')[-1]}"
 
-    print("About to save image")
     image_handler.save_image(unique_id + extension, contents)
 
     image = Image(
@@ -55,7 +51,6 @@ async def handle_file_upload(file, allowed_mimes, max_size, unique_id, image_han
         source_id=unique_id,
         extension=extension
     )
-    print("returning image")
     return image
 
 
@@ -63,14 +58,11 @@ async def book_cover_handler(
   book_create_or_update: BookCreate | BookUpdate
 ) -> Image | None:
     
-    print("In book_cover_handler")
-
     if (olid := book_create_or_update.olid) is not None:
-      # We are creating a book with an Open Library ID for the book cover image
+        # We are creating a book with an Open Library ID for the book cover image
         return await handle_olid(olid=olid, open_library=open_library)
 
     if (file := book_create_or_update.file) is not None:
-        print("File found")
         # Since we do not have an OLID, we generate a unique alphanumeric ID
         unique_id = generate(size=10)
         return await handle_file_upload(
