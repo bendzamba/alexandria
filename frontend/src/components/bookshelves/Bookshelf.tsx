@@ -23,6 +23,7 @@ import {
 import { bookSort } from "../../utils/book_sort";
 import styles from "./css/Bookshelf.module.scss";
 import { createPlaceholderImage } from "../../utils/create_placeholder_image";
+import { truncateText } from "../../utils/string";
 
 interface BookshelfProps {
   bookshelfId?: number;
@@ -369,7 +370,11 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                   src={
                     book.image !== null
                       ? book.image.uri
-                      : createPlaceholderImage(320, 484, placeholderImageText)
+                      : createPlaceholderImage(
+                          320,
+                          484,
+                          truncateText(book.title, 75)
+                        )
                   }
                   alt={`${book.title}: Book Cover`}
                   loading="lazy"
@@ -424,11 +429,15 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                   key={`book-that-can-be-added-${book.id}`}
                 >
                   <LazyImage
-                    key={String(book.image.id)}
+                    key={String(book.id)}
                     src={
                       book.image !== null
                         ? book.image.uri
-                        : createPlaceholderImage(320, 484, placeholderImageText)
+                        : createPlaceholderImage(
+                            320,
+                            484,
+                            truncateText(book.title, 75)
+                          )
                     }
                     alt={`${book.title}: Book Cover`}
                     style={{ maxWidth: "100%", maxHeight: "100%" }}
