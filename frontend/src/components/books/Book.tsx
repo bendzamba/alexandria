@@ -15,6 +15,7 @@ import DatePicker from "react-datepicker";
 import { createPlaceholderImage } from "../../utils/create_placeholder_image";
 import CoverImage from "./CoverImage";
 import "react-datepicker/dist/react-datepicker.css";
+import { determineTitleFontSize, truncateText } from "../../utils/string";
 
 interface BookProps {
   book?: BookWithBookshelvesInterface;
@@ -53,6 +54,7 @@ function Book({ book, preview }: BookProps) {
 
   const placeholderImageText = "No Cover Image Selected";
   const olidImagePath = "https://covers.openlibrary.org/b/olid/";
+  const previewTitleMaxLength = 90;
 
   // From /books/{id}
   const { id } = useParams();
@@ -509,7 +511,7 @@ function Book({ book, preview }: BookProps) {
           className="mt-4 mb-4 align-items-center"
           style={{ borderBottom: "3px solid black" }}
         >
-          <Col xs={12} lg={6}>
+          <Col xs={12} lg={6} className="flex-grow-1">
             <div
               contentEditable="true"
               spellCheck={false}
@@ -527,12 +529,23 @@ function Book({ book, preview }: BookProps) {
               suppressContentEditableWarning={true}
               data-testid="book-title-content-editable"
             >
-              <h1 className="display-4" id="book-title">
+              <h1
+                id="book-title"
+                style={{
+                  fontSize: `${determineTitleFontSize(currentBook?.title.length as number)}rem`,
+                  fontWeight: 300,
+                  lineHeight: 1.2,
+                }}
+              >
                 {currentBook?.title}
               </h1>
             </div>
           </Col>
-          <Col xs={12} lg={6} className={styles["book-component-controls"]}>
+          <Col
+            xs={12}
+            lg="auto"
+            className={`${styles["book-component-controls"]} d-flex flex-wrap`}
+          >
             <div className={`form-floating ${styles["custom-form-floating"]}`}>
               <select
                 className="form-select"
@@ -651,11 +664,15 @@ function Book({ book, preview }: BookProps) {
         <Col xs={8} lg={selectingNewCover ? 5 : 9} className="mb-4">
           {preview && (
             <NavLink className="nav-link" to={"/books/" + bookIdString}>
-              <div>
-                <span>
-                  <strong>{currentBook?.title}</strong>
-                </span>
-              </div>
+              <span
+                className={styles["title-preview"]}
+                data-title={currentBook?.title}
+              >
+                {truncateText(
+                  currentBook?.title as string,
+                  previewTitleMaxLength
+                )}
+              </span>
             </NavLink>
           )}
           <Row>
