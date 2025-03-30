@@ -50,7 +50,6 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
   const [sortKey, setSortKey] = useState("");
   const [sortDirection, setSortDirection] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const placeholderImageText = "No Cover Image Selected";
   const navigate = useNavigate();
   const lazyLoadContainerRef = useRef<HTMLDivElement>(null);
   const { observe, visibleImages } = useLazyLoad(lazyLoadContainerRef);
