@@ -531,6 +531,7 @@ function Book({ book, preview }: BookProps) {
             >
               <h1
                 id="book-title"
+                className={`${styles["book-metadata-content-editable"]}`}
                 style={{
                   fontSize: `${determineTitleFontSize(currentBook?.title.length as number)}rem`,
                   fontWeight: 300,
@@ -699,7 +700,10 @@ function Book({ book, preview }: BookProps) {
                 suppressContentEditableWarning={true}
                 data-testid="book-author-content-editable"
               >
-                <h3 id="book-author" className="display-6">
+                <h3
+                  id="book-author"
+                  className={`display-6 ${styles["book-metadata-content-editable"]}`}
+                >
                   {currentBook?.author}
                 </h3>
               </div>
@@ -729,7 +733,12 @@ function Book({ book, preview }: BookProps) {
                 suppressContentEditableWarning={true}
                 data-testid="book-year-content-editable"
               >
-                <h5 id="book-year">{currentBook?.year}</h5>
+                <h5
+                  id="book-year"
+                  className={`${styles["book-metadata-content-editable"]}`}
+                >
+                  {currentBook?.year}
+                </h5>
               </div>
             )}
           </Row>

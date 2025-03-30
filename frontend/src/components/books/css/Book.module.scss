@@ -91,3 +91,11 @@
 .title-preview {
   font-weight: 700;
 }
+.book-metadata-content-editable {
+  cursor: text;
+  border-bottom: 3px solid transparent; /* Keeps space, but invisible initially */
+  transition: border-color 0.2s ease-in-out;
+}
+.book-metadata-content-editable:hover {
+  border-color: gray;
+}
