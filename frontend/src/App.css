@@ -39,6 +39,7 @@
 
 div.bookshelf-book-image-wrapper {
   position: relative;
+  cursor: pointer;
 }
 
 div.bookshelf-book-image-wrapper:hover div.remove-book-from-bookshelf-button,

@@ -364,6 +364,11 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
                 style={{ minHeight: "150px", minWidth: "80px" }}
                 key={`bookshelf-book-${book.id}`}
                 tabIndex={0}
+                onClick={() => {
+                  if (preview) {
+                    navigate(`/books/` + book.id.toString());
+                  }
+                }}
               >
                 <img
                   height="150px"
