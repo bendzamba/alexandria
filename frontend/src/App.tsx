@@ -11,24 +11,81 @@ import CreateBook from "./components/books/CreateBook";
 import Header from "./components/common/Header";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LoggedOut from "./components/common/Logout";
+import RequireAuth from "./components/common/RequireAuth";
+import { configure_amplify } from "./utils/amplify_config";
+import { AuthProvider } from "./components/common/AuthProvider";
 
 function App() {
+  configure_amplify();
   return (
-    <Router>
-      <Header />
-      <Container className="mt-4">
-        <Routes>
-          <Route path="/" element={<Bookshelves />} />
-          <Route path="/bookshelves/:id" element={<Bookshelf />} />
-          <Route path="/bookshelves/create" element={<CreateBookshelf />} />
-          <Route path="/bookshelves/update/:id" element={<UpdateBookshelf />} />
-          <Route path="/books/" element={<Books />} />
-          <Route path="/books/:id" element={<Book />} />
-          <Route path="/books/create" element={<CreateBook />} />
-        </Routes>
-      </Container>
-      <ToastContainer />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Header />
+        <Container className="mt-4">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <RequireAuth>
+                  <Bookshelves />
+                </RequireAuth>
+              }
+            />
+            <Route path="/logout" element={<LoggedOut />} />
+            <Route
+              path="/bookshelves/:id"
+              element={
+                <RequireAuth>
+                  <Bookshelf />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/bookshelves/create"
+              element={
+                <RequireAuth>
+                  <CreateBookshelf />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/bookshelves/update/:id"
+              element={
+                <RequireAuth>
+                  <UpdateBookshelf />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/books/"
+              element={
+                <RequireAuth>
+                  <Books />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/books/:id"
+              element={
+                <RequireAuth>
+                  <Book />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/books/create"
+              element={
+                <RequireAuth>
+                  <CreateBook />
+                </RequireAuth>
+              }
+            />
+          </Routes>
+        </Container>
+        <ToastContainer />
+      </Router>
+    </AuthProvider>
   );
 }
 
