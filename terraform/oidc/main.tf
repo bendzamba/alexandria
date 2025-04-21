@@ -177,7 +177,26 @@ resource "aws_iam_policy" "consolidated_policy" {
         "Effect": "Allow",
         "Action": "apigateway:GET",
         "Resource": "arn:aws:apigateway:*::/domainnames"
-      }
+      },
+      {
+      "Effect": "Allow",
+      "Action": [
+        "cognito-idp:ListUserPools",
+        "cognito-idp:DescribeUserPool",
+        "cognito-idp:ListUserPoolClients",
+        "cognito-idp:DescribeUserPoolClient",
+        "cognito-idp:GetUserPoolMfaConfig"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cognito-identity:ListIdentityPools",
+        "cognito-identity:DescribeIdentityPool"
+      ],
+      "Resource": "*"
+    }
     ]
   })
 }
