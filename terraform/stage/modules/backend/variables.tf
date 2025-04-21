@@ -29,3 +29,7 @@ variable "region" {
 variable "efs_datasync_schedule" {
   type = string
 }
+
+variable "cognito_user_pool_arn" {
+  type = string
+}

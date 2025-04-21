@@ -1,10 +1,18 @@
 resource "aws_api_gateway_rest_api" "api_gateway_rest_api" {
-  name = "${var.app_name}-backend-api-gateway-api-${var.environment}"
-  binary_media_types = ["multipart/form-data"]
-  tags = {
+  name                = "${var.app_name}-backend-api-gateway-api-${var.environment}"
+  binary_media_types  = ["multipart/form-data"]
+  tags                = {
     application = var.app_name
     environment = var.environment
   }
+}
+
+resource "aws_api_gateway_authorizer" "api_gateway_authorizer" {
+  name                    = "${var.app_name}-backend-api-gateway-authorizer-${var.environment}"
+  rest_api_id             = aws_api_gateway_rest_api.api_gateway_rest_api.id
+  identity_source         = "method.request.header.Authorization"
+  type                    = "COGNITO_USER_POOLS"
+  provider_arns           = [var.cognito_user_pool_arn]
 }
 
 resource "aws_api_gateway_resource" "api_gateway_resource" {
