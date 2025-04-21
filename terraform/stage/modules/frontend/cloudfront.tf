@@ -80,6 +80,18 @@ data "aws_iam_policy_document" "iam_policy_document" {
   }
 }
 
+resource "aws_route53_record" "route53_record_root" {
+  name    = var.app_domain
+  type    = "A"
+  zone_id = var.route53_zone_id
+
+  alias {
+    evaluate_target_health  = false
+    name                    = aws_cloudfront_distribution.cloudfront_distribution.domain_name
+    zone_id                 = aws_cloudfront_distribution.cloudfront_distribution.hosted_zone_id
+  }
+}
+
 resource "aws_route53_record" "route53_record_www" {
   name    = var.environment == "production" ? "www.${var.app_domain}" : "${var.domain_prefix}${var.app_domain}"
   type    = "A"

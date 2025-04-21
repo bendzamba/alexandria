@@ -1,4 +1,5 @@
 import { toast } from "react-toastify";
+import { fetchAuthSession } from "@aws-amplify/auth";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
@@ -6,6 +7,18 @@ export const Base = async <T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T | boolean> => {
+  const session = await fetchAuthSession();
+  const token = session.tokens?.accessToken?.toString();
+
+  if (!options.headers) {
+    options.headers = {};
+  }
+
+  options.headers = {
+    ...options.headers,
+    Authorization: `Bearer ${token}`,
+  };
+
   try {
     const url = API_BASE_URL + path;
     const response = await fetch(url, options);

@@ -22,7 +22,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.66"
+      version = "~> 5.95"
     }
   }
 
@@ -43,6 +43,14 @@ provider "aws" {
 
 data "aws_route53_zone" "route53_zone" {
   zone_id = "Z03068893L6HPT1E8HOW" # Taken from results of DNS directory terraform creation
+}
+
+module "auth" {
+  source                      = "./modules/auth"
+  app_name                    = var.app_name
+  app_domain                  = var.app_domain
+  certificate_arn             = aws_acm_certificate.acm_certificate_frontend.arn
+  route53_zone_id             = data.aws_route53_zone.route53_zone.zone_id
 }
 
 module "frontend" {
@@ -69,6 +77,7 @@ module "backend" {
   certificate_arn             = aws_acm_certificate.acm_certificate_backend.arn
   domain_prefix               = local.domain_prefix
   efs_datasync_schedule       = var.efs_datasync_schedule
+  cognito_user_pool_arn       = module.auth.cognito_user_pool_arn
   depends_on                  = [ 
     aws_acm_certificate.acm_certificate_backend,
     aws_acm_certificate_validation.acm_certificate_validation_backend,
