@@ -79,10 +79,6 @@ function Bookshelf({ bookshelfId, preview }: BookshelfProps) {
     void fetchData();
   }, [_bookshelfId, fetchBookshelf]);
 
-  useEffect(() => {
-    console.log("Updated booksToAdd:", booksToAdd);
-  }, [booksToAdd]);
-
   if (loading) {
     return <div>Loading...</div>;
   }
