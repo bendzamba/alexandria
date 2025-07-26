@@ -8,7 +8,7 @@ const signOutRedirectUrl = isLocal
 
 const signInRedirectUrl = isLocal
   ? "http://localhost:3000"
-  : "https://myalexandria.ai/";
+  : "https://myalexandria.ai";
 
 export const configure_amplify = () => {
   Amplify.configure({
